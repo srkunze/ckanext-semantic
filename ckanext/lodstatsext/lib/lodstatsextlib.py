@@ -1,19 +1,14 @@
 import os
 import datetime
+import lodstats
 import sqlalchemy
 import time
 import ckan.model as model
 import ckan.model.meta as meta
-import ckanext.lodstats.model as modelext
-
-import sys
-print sys.modules['lodstats']
+import ckanext.lodstatsext.model as modelext
 
 
 def perfom_lodstats_job():
-    print "Start"
-    dir(lodstats)
-    print "End"
     while True:
         time.sleep(1)
         dataset = choose_dataset()
@@ -84,20 +79,24 @@ def perform_lodstats(dataset):
 
 
     error = None
-    
+ 
+    dataset_lodstats = modelext.DatasetLODStats()
+    dataset_lodstats.dataset_id = dataset.id
+    dataset_in_progress
+    model.Session.add(dataset_lodstats)
+   
     if rdfish_resource is None:
         error = 'no RDF-ish resources available'
-
+        create_error_stats()
+        return
+        
     try:
         rdfdocstats = lodstats.RDFStats(format=rdfish_resource[1], rdfurl=rdfish_resource[0])
         rdfdocstats.parse(callback_fun)
         rdfdocstats.do_stats(callback_fun)
     except Exception, errorstr:
         error = errorstr
-
-    new_rdfstats = model.RDFStats()
-    model.Session.add(new_rdfstats)
-    new_rdfstats.package = package
+        print error
 
     if error is None:
         self.triples = rdfdocstats.no_of_triples()
@@ -142,3 +141,6 @@ def perform_lodstats(dataset):
 
     model.Session.commit()
     
+    
+def create_error_stats():
+    pass    

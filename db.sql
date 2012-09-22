@@ -6,7 +6,7 @@ DROP TABLE dataset_lodstats;
 CREATE TABLE dataset_lodstats
 (
     dataset_id TEXT PRIMARY KEY,
-    processing BOOLEAN NOT NULL,
+    in_progress BOOLEAN NOT NULL,
     last_evaluated TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     error TEXT,
     warnings BIGINT,
@@ -24,7 +24,7 @@ CREATE TABLE dataset_lodstats
 CREATE TABLE dataset_lodstats_revision
 (
     dataset_id TEXT NOT NULL,
-    processing BOOLEAN NOT NULL,
+    in_progress BOOLEAN NOT NULL,
     last_evaluated TIMESTAMP WITHOUT TIME ZONE NOT NULL,
     error TEXT,
     warning_count BIGINT NOT NULL,

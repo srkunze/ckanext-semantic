@@ -1,4 +1,4 @@
 
         [ckan.plugins]
-	    lodstats=ckanext.lodstats.plugin:LODstatsPlugin
+	    lodstats=ckanext.lodstatsext.plugin:LODstatsPlugin
 	

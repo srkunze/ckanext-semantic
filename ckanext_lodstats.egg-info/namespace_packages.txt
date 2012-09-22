@@ -1,2 +1,2 @@
 ckanext
-ckanext.lodstats
+ckanext.lodstatsext

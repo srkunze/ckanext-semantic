@@ -1,6 +1,6 @@
 import os
 import ckan.model as model
-import ckanext.lodstats.lib.lodstats as lodstatsext
+import ckanext.lodstatsext.lib.lodstatsextlib as lodstatsextlib
 
 from logging import getLogger
 
@@ -25,12 +25,12 @@ class LODstatsPlugin(SingletonPlugin):
         ####################################################
         #initialize lodstats table with "NO WORKING"
         ####################################################
-        
+   
         number_of_jobs = 1
         for job_index in range(number_of_jobs):
             my_pid = os.fork()
             if my_pid == 0:
-                lodstatsext.perfom_lodstats_job()
+                lodstatsextlib.perfom_lodstats_job()
                 os._exit(0)
 
         return app
