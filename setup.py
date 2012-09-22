@@ -16,7 +16,7 @@ setup(
 	url='',
 	license='',
 	packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
-	namespace_packages=['ckanext', 'ckanext.lodstats'],
+	namespace_packages=['ckanext', 'ckanext.lodstatsext'],
 	include_package_data=True,
 	zip_safe=False,
 	install_requires=[
@@ -25,6 +25,6 @@ setup(
 	entry_points=\
 	"""
         [ckan.plugins]
-	    lodstats=ckanext.lodstats.plugin:LODstatsPlugin
+	    lodstats=ckanext.lodstatsext.plugin:LODstatsPlugin
 	""",
 )

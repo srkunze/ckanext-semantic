@@ -6,8 +6,14 @@ import ckan.model as model
 import ckan.model.meta as meta
 import ckanext.lodstats.model as modelext
 
+import sys
+print sys.modules['lodstats']
+
 
 def perfom_lodstats_job():
+    print "Start"
+    dir(lodstats)
+    print "End"
     while True:
         time.sleep(1)
         dataset = choose_dataset()
@@ -76,12 +82,14 @@ def perform_lodstats(dataset):
     except BreakIt:
         pass
 
-    if rdfish_resource is None:
-        raise ckan.exceptions.NoRDFException, 'no RDF-ish resources available'
 
     error = None
+    
+    if rdfish_resource is None:
+        error = 'no RDF-ish resources available'
+
     try:
-        rdfdocstats = lodstats.RDFStats(format=rdfish_resource[1], uri=rdfish_resource[0])
+        rdfdocstats = lodstats.RDFStats(format=rdfish_resource[1], rdfurl=rdfish_resource[0])
         rdfdocstats.parse(callback_fun)
         rdfdocstats.do_stats(callback_fun)
     except Exception, errorstr:
@@ -90,7 +98,6 @@ def perform_lodstats(dataset):
     new_rdfstats = model.RDFStats()
     model.Session.add(new_rdfstats)
     new_rdfstats.package = package
-    model.Session.commit()
 
     if error is None:
         self.triples = rdfdocstats.no_of_triples()
@@ -133,3 +140,5 @@ def perform_lodstats(dataset):
     new_rdfstats.last_updated = datetime.datetime.now()
     self.rdf_last_updated = new_rdfstats.last_updated
 
+    model.Session.commit()
+    
