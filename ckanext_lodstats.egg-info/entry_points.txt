@@ -1,5 +1,4 @@
 
         [ckan.plugins]
-	# Add plugins here, eg
-	# myplugin=ckanext.lodstats:PluginClass
+	    lodstats=ckanext.lodstats.plugin:LODstatsPlugin
 	

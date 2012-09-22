@@ -1,6 +1,7 @@
 setup.py
 ckanext/__init__.py
 ckanext/lodstats/__init__.py
+ckanext/lodstats/plugin.py
 ckanext_lodstats.egg-info/PKG-INFO
 ckanext_lodstats.egg-info/SOURCES.txt
 ckanext_lodstats.egg-info/dependency_links.txt
