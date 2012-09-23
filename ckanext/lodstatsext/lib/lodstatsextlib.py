@@ -13,13 +13,8 @@ def perfom_lodstats_job():
     dataset, dataset_lodstats = choose_and_lock_dataset()
     
     if dataset is None:
-        print "process: ", os.getpid(), " found no datasets to perform LODStats on"
-        return
+        return "no update"
 
-    print "process: ", os.getpid(), " found dataset"    
-    print dataset
-    print dataset_lodstats
-    
     dataset_lodstats = update_dataset_lodstats(dataset, dataset_lodstats)
     model.Session.add(dataset_lodstats)
     model.Session.commit()
@@ -28,7 +23,7 @@ def perfom_lodstats_job():
     rev.author = u'LODStats'
     model.repo.commit()
     
-    print "process: ", os.getpid(), " finished"
+    return "updated"
 
 
 def choose_and_lock_dataset():

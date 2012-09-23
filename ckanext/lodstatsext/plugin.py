@@ -39,11 +39,14 @@ class LODstatsPlugin(SingletonPlugin):
                 job_count += 1
                 my_pid = os.fork()
                 if my_pid == 0:
-                    lodstatsextlib.perfom_lodstats_job()
+                    if lodstatsextlib.perfom_lodstats_job() == "no update":
+                        os._exit(1)
                     os._exit(0)
             else:
                 try:
-                    os.waitpid(-1, 0)
+                    x, res = os.waitpid(-1, 0)
+                    if res == 256:
+                        time.sleep(60)
                     job_count -= 1
                 except OSError as error:
                     print error
