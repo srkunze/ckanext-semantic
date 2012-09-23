@@ -14,8 +14,9 @@ from ckan.model import extension
 
 dataset_lodstats_table = Table(
     'dataset_lodstats', meta.metadata,
-    Column('dataset_id', types.UnicodeText, primary_key=True),
-    Column('processing', types.Boolean, default=False),
+    Column('id', types.UnicodeText, primary_key=True),
+    Column('dataset_id', types.UnicodeText, nullable=False),
+    Column('in_progress', types.Boolean, default=False),
     Column('last_evaluated', types.DateTime),
     Column('error', types.UnicodeText),
     Column('warning_count', types.BigInteger),
@@ -24,12 +25,13 @@ dataset_lodstats_table = Table(
     Column('triple_count', types.BigInteger),
     Column('class_count', types.BigInteger),
     Column('property_count', types.BigInteger),
-    Column('vocabulariy_count', types.BigInteger),
+    Column('vocabulary_count', types.BigInteger),
     )
 
 dataset_lodstats_class_partition_table = Table(
     'dataset_lodstats_class_partition', meta.metadata,
-    Column('dataset_id', types.UnicodeText, primary_key=True),
+    Column('id', types.UnicodeText, primary_key=True),
+    Column('dataset_lodstats_id', types.UnicodeText),
     Column('type', types.UnicodeText),
     Column('uri', types.UnicodeText),
     Column('uri_count', types.BigInteger),
@@ -46,13 +48,13 @@ class DatasetLODStats(vdm.sqlalchemy.RevisionedObjectMixin,
                vdm.sqlalchemy.StatefulObjectMixin,
                domain_object.DomainObject):
     def __init__(self):
-        pass
+        self.id = make_uuid()
 
 class DatasetLODStatsClassPartition(vdm.sqlalchemy.RevisionedObjectMixin,
                vdm.sqlalchemy.StatefulObjectMixin,
                domain_object.DomainObject):
     def __init__(self):
-        pass
+        self.id = make_uuid()
 
 
 ## Mappers

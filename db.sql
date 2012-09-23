@@ -5,17 +5,18 @@ DROP TABLE dataset_lodstats;
 
 CREATE TABLE dataset_lodstats
 (
-    dataset_id TEXT PRIMARY KEY,
+    id TEXT PRIMARY KEY,
+    dataset_id TEXT NOT NULL,
     in_progress BOOLEAN NOT NULL,
-    last_evaluated TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    last_evaluated TIMESTAMP WITHOUT TIME ZONE,
     error TEXT,
-    warnings BIGINT,
+    warning_count BIGINT,
     last_warning TEXT,
-    RDF TEXT,
-    triples BIGINT,
-    classes BIGINT,
-    properties BIGINT,
-    vocabularies BIGINT,
+    rdf TEXT,
+    triple_count BIGINT,
+    class_count BIGINT,
+    property_count BIGINT,
+    vocabulary_count BIGINT,
     
     state TEXT,
     revision_id TEXT REFERENCES revision (id) ON UPDATE NO ACTION ON DELETE NO ACTION
@@ -23,33 +24,35 @@ CREATE TABLE dataset_lodstats
 
 CREATE TABLE dataset_lodstats_revision
 (
+    id TEXT,
     dataset_id TEXT NOT NULL,
     in_progress BOOLEAN NOT NULL,
-    last_evaluated TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    last_evaluated TIMESTAMP WITHOUT TIME ZONE,
     error TEXT,
-    warning_count BIGINT NOT NULL,
+    warning_count BIGINT,
     last_warning TEXT,
-    rdf TEXT NOT NULL,
-    triple_count BIGINT NOT NULL,
-    class_count BIGINT NOT NULL,
-    property_count BIGINT NOT NULL,
-    vocabulary_count BIGINT NOT NULL,
+    rdf TEXT,
+    triple_count BIGINT,
+    class_count BIGINT,
+    property_count BIGINT,
+    vocabulary_count BIGINT,
     
     state TEXT,
     revision_id TEXT REFERENCES revision (id) ON UPDATE NO ACTION ON DELETE NO ACTION,
     
-    continuity_id TEXT REFERENCES dataset_lodstats (dataset_id) ON UPDATE NO ACTION ON DELETE NO ACTION,
+    continuity_id TEXT REFERENCES dataset_lodstats (id) ON UPDATE NO ACTION ON DELETE NO ACTION,
     expired_id TEXT,
     revision_timestamp TIMESTAMP WITHOUT TIME ZONE,
     expired_timestamp TIMESTAMP WITHOUT TIME ZONE,
     "current" BOOLEAN,
     
-    CONSTRAINT dataset_lodstats_revision_pkey PRIMARY KEY (dataset_id, revision_id)
+    CONSTRAINT dataset_lodstats_revision_pkey PRIMARY KEY (id, revision_id)
 );
 
 CREATE TABLE dataset_lodstats_class_partition
 (
-    dataset_id TEXT PRIMARY KEY REFERENCES dataset_lodstats (dataset_id) ON UPDATE NO ACTION ON DELETE NO ACTION,
+    id TEXT PRIMARY KEY ,
+    dataset_lodstats_id TEXT REFERENCES dataset_lodstats (id) ON UPDATE NO ACTION ON DELETE NO ACTION,
     type TEXT NOT NULL,
     uir TEXT NOT NULL,
     uri_count BIGINT NOT NULL,
@@ -60,7 +63,8 @@ CREATE TABLE dataset_lodstats_class_partition
 
 CREATE TABLE dataset_lodstats_class_partition_revision
 (
-    dataset_id TEXT REFERENCES dataset_lodstats (dataset_id) ON UPDATE NO ACTION ON DELETE NO ACTION,
+    id TEXT,
+    dataset_lodstats_id TEXT REFERENCES dataset_lodstats (id) ON UPDATE NO ACTION ON DELETE NO ACTION,
     type TEXT NOT NULL,
     uri TEXT NOT NULL,
     uri_count BIGINT NOT NULL,
@@ -68,12 +72,12 @@ CREATE TABLE dataset_lodstats_class_partition_revision
     state TEXT,
     revision_id TEXT REFERENCES revision (id) ON UPDATE NO ACTION ON DELETE NO ACTION,
     
-    continuity_id TEXT REFERENCES dataset_lodstats (dataset_id) ON UPDATE NO ACTION ON DELETE NO ACTION,
+    continuity_id TEXT REFERENCES dataset_lodstats (id) ON UPDATE NO ACTION ON DELETE NO ACTION,
     expired_id TEXT,
     revision_timestamp TIMESTAMP WITHOUT TIME ZONE,
     expired_timestamp TIMESTAMP WITHOUT TIME ZONE,
     "current" BOOLEAN,
     
-    CONSTRAINT dataset_lodstats_class_partition_revision_pkey PRIMARY KEY (dataset_id, revision_id)
+    CONSTRAINT dataset_lodstats_class_partition_revision_pkey PRIMARY KEY (id, revision_id)
 );
 

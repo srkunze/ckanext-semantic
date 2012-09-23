@@ -1,4 +1,5 @@
 import os
+import time
 import ckan.model as model
 import ckanext.lodstatsext.lib.lodstatsextlib as lodstatsextlib
 
@@ -22,16 +23,33 @@ class LODstatsPlugin(SingletonPlugin):
     def make_middleware(self, app, config):
         """
         """
+        server_pid = os.fork()
+        if server_pid != 0:
+            return app
+
         ####################################################
         #initialize lodstats table with "NO WORKING"
         ####################################################
-   
-        number_of_jobs = 1
-        for job_index in range(number_of_jobs):
-            my_pid = os.fork()
-            if my_pid == 0:
-                lodstatsextlib.perfom_lodstats_job()
-                os._exit(0)
+        
+        job_count = 0
+        desired_job_count = 3
+        while True:
+            time.sleep(0.1)
+            if desired_job_count > job_count:
+                job_count += 1
+                my_pid = os.fork()
+                if my_pid == 0:
+                    lodstatsextlib.perfom_lodstats_job()
+                    os._exit(0)
+            else:
+                try:
+                    os.waitpid(-1, 0)
+                    job_count -= 1
+                except OSError as error:
+                    print error
+                    job_count = 0
 
-        return app
+        # unreachable path
+        # find a way to terminate properly
+        os._exit(0)
 
