@@ -2,23 +2,17 @@ import os
 import time
 import ckan.model as model
 import ckanext.lodstatsext.lib.lodstatsextlib as lodstatsextlib
+import ckan.plugins as plugins
+import logging
 
-from logging import getLogger
-
-from pylons import request
-from genshi.input import HTML
-from genshi.filters.transform import Transformer
-
-from ckan.plugins import implements, SingletonPlugin
-from ckan.plugins import IMiddleware
-
-log = getLogger(__name__)
+log = logging.getLogger(__name__)
 
 
-class LODstatsPlugin(SingletonPlugin):
+class LODstatsPlugin(plugins.SingletonPlugin):
     """
     """
-    implements(IMiddleware, inherit=True)
+    plugins.implements(plugins.IMiddleware, inherit=True)
+    plugins.implements(plugins.IRoutes, inherit=True)
 
     def make_middleware(self, app, config):
         """
@@ -55,4 +49,9 @@ class LODstatsPlugin(SingletonPlugin):
         # unreachable path
         # find a way to terminate properly
         os._exit(0)
+        
+    def before_map(self, map):
+        map.connect('/dataset/{id}.{format}', controller='ckanext.lodstatsext.controller.lodstatsext:PackageController', action='read')
 
+        return map
+        
