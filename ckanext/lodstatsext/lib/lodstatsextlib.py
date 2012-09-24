@@ -12,22 +12,16 @@ def perfom_lodstats_job():
     if dataset is None:
         return "no update"
 
-    rev = model.repo.new_revision()
+    revision = model.repo.new_revision()
+    revision.message = u'Update VoID triples'
+    revision.author = u'LODStats'
+    
     dataset_lodstats = get_dataset_lodstats(dataset)
-    rev.message = u'Update VoID triples'
-    rev.author = u'LODStats'
-    model.repo.commit()
-
-
-    rev = model.repo.new_revision()
     dataset_lodstats = update_dataset_lodstats(dataset, dataset_lodstats)
-    print dataset_lodstats
     model.Session.add(dataset_lodstats)
-    
-    
-    rev.message = u'Update VoID triples'
-    rev.author = u'LODStats'
+
     model.repo.commit()
+    
     return "updated"
 
 
@@ -56,14 +50,12 @@ def get_dataset_lodstats(dataset):
     if query.count() == 0:
         dataset_lodstats = modelext.DatasetLODStats()
         dataset_lodstats.dataset_id = dataset.id
-        dataset_lodstats.in_progress = True
-        model.Session.add(dataset_lodstats)
-        model.Session.commit()
     else:
         dataset_lodstats = dataset_lodstats_query.one()
-        dataset_lodstats.in_progress = True
-        model.Session.add(dataset_lodstats)
-        model.Session.commit()        
+
+    dataset_lodstats.in_progress = True
+    model.Session.add(dataset_lodstats)
+    model.Session.commit()
             
     return dataset_lodstats
                 
