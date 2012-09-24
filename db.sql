@@ -6,7 +6,7 @@ DROP TABLE dataset_lodstats;
 CREATE TABLE dataset_lodstats
 (
     id TEXT PRIMARY KEY,
-    dataset_id TEXT NOT NULL,
+    dataset_id TEXT NOT NULL UNIQUE,
     in_progress BOOLEAN NOT NULL,
     last_evaluated TIMESTAMP WITHOUT TIME ZONE,
     error TEXT,
@@ -54,11 +54,13 @@ CREATE TABLE dataset_lodstats_partition
     id TEXT PRIMARY KEY ,
     dataset_lodstats_id TEXT NOT NULL REFERENCES dataset_lodstats (id) ON UPDATE NO ACTION ON DELETE NO ACTION,
     type TEXT NOT NULL,
-    uir TEXT NOT NULL,
+    uri TEXT NOT NULL,
     uri_count BIGINT NOT NULL,
     
     state TEXT,
-    revision_id TEXT REFERENCES revision (id) ON UPDATE NO ACTION ON DELETE NO ACTION
+    revision_id TEXT REFERENCES revision (id) ON UPDATE NO ACTION ON DELETE NO ACTION,
+    
+    CONSTRAINT dataset_lodstats_dataset_id_type_uri_key UNIQUE (dataset_lodstats_id, type, uri)
 );
 
 CREATE TABLE dataset_lodstats_partition_revision
@@ -72,7 +74,7 @@ CREATE TABLE dataset_lodstats_partition_revision
     state TEXT,
     revision_id TEXT REFERENCES revision (id) ON UPDATE NO ACTION ON DELETE NO ACTION,
     
-    continuity_id TEXT REFERENCES dataset_lodstats (id) ON UPDATE NO ACTION ON DELETE NO ACTION,
+    continuity_id TEXT REFERENCES dataset_lodstats_partition (id) ON UPDATE NO ACTION ON DELETE NO ACTION,
     expired_id TEXT,
     revision_timestamp TIMESTAMP WITHOUT TIME ZONE,
     expired_timestamp TIMESTAMP WITHOUT TIME ZONE,

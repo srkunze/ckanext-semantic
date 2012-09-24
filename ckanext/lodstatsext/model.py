@@ -14,7 +14,7 @@ from ckan.model import extension
 
 dataset_lodstats_table = Table(
     'dataset_lodstats', meta.metadata,
-    Column('id', types.UnicodeText, primary_key=True),
+    Column('id', types.UnicodeText, primary_key=True, default=make_uuid),
     Column('dataset_id', types.UnicodeText, nullable=False),
     Column('in_progress', types.Boolean, default=False),
     Column('last_evaluated', types.DateTime),
@@ -30,7 +30,7 @@ dataset_lodstats_table = Table(
 
 dataset_lodstats_partition_table = Table(
     'dataset_lodstats_partition', meta.metadata,
-    Column('id', types.UnicodeText, primary_key=True),
+    Column('id', types.UnicodeText, primary_key=True, default=make_uuid),
     Column('dataset_lodstats_id', types.UnicodeText, nullable=False),
     Column('type', types.UnicodeText, nullable=False),
     Column('uri', types.UnicodeText, nullable=False),
@@ -48,13 +48,14 @@ class DatasetLODStats(vdm.sqlalchemy.RevisionedObjectMixin,
                vdm.sqlalchemy.StatefulObjectMixin,
                domain_object.DomainObject):
     def __init__(self):
-        self.id = make_uuid()
+        pass
 
 class DatasetLODStatsPartition(vdm.sqlalchemy.RevisionedObjectMixin,
                vdm.sqlalchemy.StatefulObjectMixin,
                domain_object.DomainObject):
-    def __init__(self):
-        self.id = make_uuid()
+    def __init__(self, type_):
+        #self.id = make_uuid()
+        self.type = type_
 
 
 ## Mappers
@@ -66,9 +67,9 @@ meta.mapper(DatasetLODStats, dataset_lodstats_table,
                ],
 )
 
-meta.mapper(DatasetLODStatsClassPartition, dataset_lodstats_class_partition_table,
-    order_by=[dataset_lodstats_class_partition_table.c.uri],
-    extension=[vdm.sqlalchemy.Revisioner(dataset_lodstats_class_partition_revision_table),
+meta.mapper(DatasetLODStatsPartition, dataset_lodstats_partition_table,
+    order_by=[dataset_lodstats_partition_table.c.uri],
+    extension=[vdm.sqlalchemy.Revisioner(dataset_lodstats_partition_revision_table),
                extension.PluginMapperExtension(),
                ],
 )
@@ -78,9 +79,6 @@ meta.mapper(DatasetLODStatsClassPartition, dataset_lodstats_class_partition_tabl
 vdm.sqlalchemy.modify_base_object_mapper(DatasetLODStats, core.Revision, core.State)
 DatasetLODStatsRevision = vdm.sqlalchemy.create_object_version(meta.mapper, DatasetLODStats, dataset_lodstats_revision_table)
 
-vdm.sqlalchemy.modify_base_object_mapper(DatasetLODStatsClassPartition, core.Revision, core.State)
-DatasetLODStatsClassPartitionRevision = vdm.sqlalchemy.create_object_version(meta.mapper, DatasetLODStatsClassPartition, dataset_lodstats_class_partition_revision_table)
-
-DatasetLODStatsRevision.related_packages = lambda self: [self.continuity.package]
-DatasetLODStatsClassPartitionRevision.related_packages = lambda self: [self.continuity.package]
+vdm.sqlalchemy.modify_base_object_mapper(DatasetLODStatsPartition, core.Revision, core.State)
+DatasetLODStatsPartitionRevision = vdm.sqlalchemy.create_object_version(meta.mapper, DatasetLODStatsPartition, dataset_lodstats_partition_revision_table)
 

@@ -8,46 +8,52 @@ import ckanext.lodstatsext.model as modelext
 
 
 def perfom_lodstats_job():
-    rev = model.repo.new_revision()
-    
-    dataset, dataset_lodstats = choose_and_lock_dataset()
-    
+    dataset = choose_dataset()
     if dataset is None:
         return "no update"
 
-    dataset_lodstats = update_dataset_lodstats(dataset, dataset_lodstats)
-    model.Session.add(dataset_lodstats)
-    model.Session.commit()
-    
-    rev.message = u'Update VoID/triples'
+    rev = model.repo.new_revision()
+    dataset_lodstats = get_dataset_lodstats(dataset)
+    rev.message = u'Update VoID triples'
     rev.author = u'LODStats'
     model.repo.commit()
+
+
+    rev = model.repo.new_revision()
+    dataset_lodstats = update_dataset_lodstats(dataset, dataset_lodstats)
+    print dataset_lodstats
+    model.Session.add(dataset_lodstats)
     
+    
+    rev.message = u'Update VoID triples'
+    rev.author = u'LODStats'
+    model.repo.commit()
     return "updated"
 
 
-def choose_and_lock_dataset():
+def choose_dataset():
     day_4_weeks_ago = datetime.date.today() - datetime.timedelta(weeks=4)
 
     dataset_query = model.Session.query(model.Package)
     
-    query = dataset_query.outerjoin(modelext.DatasetLODStats, modelext.DatasetLODStats.dataset_id == model.Package.id)  
+    query = dataset_query.outerjoin(modelext.DatasetLODStats, model.Package.id == modelext.DatasetLODStats.dataset_id)  
     query = query.filter(sqlalchemy.or_(
                             modelext.DatasetLODStats.in_progress == None,
                             sqlalchemy.and_(
                                 modelext.DatasetLODStats.in_progress == False,
                                 modelext.DatasetLODStats.last_evaluated < day_4_weeks_ago)))
-           
-           
+
     if query.count() == 0:
-        return None, None
+        return None
         
-    dataset = query.first()
+    return query.first()
+        
+def get_dataset_lodstats(dataset):
+    dataset_query = model.Session.query(model.Package)
+    query = model.Session.query(modelext.DatasetLODStats)
+    query = query.filter(modelext.DatasetLODStats.dataset_id == dataset.id)
     
-    dataset_lodstats_query = model.Session.query(modelext.DatasetLODStats)
-    dataset_lodstats_query = dataset_lodstats_query.filter(modelext.DatasetLODStats.dataset_id == dataset.id)
-    
-    if dataset_lodstats_query.count() == 0:
+    if query.count() == 0:
         dataset_lodstats = modelext.DatasetLODStats()
         dataset_lodstats.dataset_id = dataset.id
         dataset_lodstats.in_progress = True
@@ -59,7 +65,7 @@ def choose_and_lock_dataset():
         model.Session.add(dataset_lodstats)
         model.Session.commit()        
             
-    return dataset, dataset_lodstats
+    return dataset_lodstats
                 
 
 def update_dataset_lodstats(dataset, dataset_lodstats):
@@ -112,28 +118,28 @@ def update_dataset_lodstats(dataset, dataset_lodstats):
     dataset_lodstats.property_count = len(rdf_stats.stats_results['propertiesall']['distinct'])
     dataset_lodstats.vocabulariy_count = len(rdf_stats.stats_results['vocabularies'])
     
-    for class_uri, result in rdfdocstats.stats_results['classes']['distinct'].iteritems():
-        class_partition = model.RDFClasses()
-        c.uri = class_uri
-        c.count = result
-        model.Session.add(c)
-        new_rdfstats.classes.append(c)
+    for class_uri, result in rdf_stats.stats_results['classes']['distinct'].iteritems():
+        partition = modelext.DatasetLODStatsPartition("class")
+        partition.dataset_lodstats_id = dataset_lodstats.id
+        partition.uri = class_uri
+        partition.uri_count = result
+        model.Session.add(partition)
 
-    for base_uri, result in rdfdocstats.stats_results['vocabularies'].iteritems():
+    for base_uri, result in rdf_stats.stats_results['vocabularies'].iteritems():
         if result > 0:
-            v = model.RDFVocabularies()
-            v.uri = base_uri
-            v.count = result
-            model.Session.add(v)
-            new_rdfstats.vocabularies.append(v)
+            partition = modelext.DatasetLODStatsPartition("vocabulary")
+            partition.dataset_lodstats_id = dataset_lodstats.id
+            partition.uri = base_uri
+            partition.uri_count = result
+            model.Session.add(partition)
 
-    for property_uri, result in rdfdocstats.stats_results['propertiesall']['distinct'].iteritems():
-        p = model.RDFProperties()
-        p.uri = property_uri
-        p.count = result
-        model.Session.add(p)
-        new_rdfstats.properties.append(p)
-          
+    for property_uri, result in rdf_stats.stats_results['propertiesall']['distinct'].iteritems():
+        partition = modelext.DatasetLODStatsPartition("property")
+        partition.dataset_lodstats_id = dataset_lodstats.id
+        partition.uri = property_uri
+        partition.uri_count = result
+        model.Session.add(partition)
+
     return dataset_lodstats
 
 

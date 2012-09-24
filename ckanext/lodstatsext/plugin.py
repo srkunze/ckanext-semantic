@@ -26,7 +26,7 @@ class LODstatsPlugin(plugins.SingletonPlugin):
         ####################################################
         
         job_count = 0
-        desired_job_count = 3
+        desired_job_count = 1
         while True:
             time.sleep(0.1)
             if desired_job_count > job_count:
