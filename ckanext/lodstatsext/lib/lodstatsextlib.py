@@ -28,9 +28,8 @@ def perfom_lodstats_job():
 def choose_dataset():
     day_4_weeks_ago = datetime.date.today() - datetime.timedelta(weeks=4)
 
-    dataset_query = model.Session.query(model.Package)
-    
-    query = dataset_query.outerjoin(modelext.DatasetLODStats, model.Package.id == modelext.DatasetLODStats.dataset_id)  
+    query = model.Session.query(model.Package)  
+    query = query.outerjoin(modelext.DatasetLODStats, model.Package.id == modelext.DatasetLODStats.dataset_id)  
     query = query.filter(sqlalchemy.or_(
                             modelext.DatasetLODStats.in_progress == None,
                             sqlalchemy.and_(
@@ -42,8 +41,7 @@ def choose_dataset():
         
     return query.first()
         
-def get_dataset_lodstats(dataset):
-    dataset_query = model.Session.query(model.Package)
+def get_and_lock_dataset_lodstats(dataset):
     query = model.Session.query(modelext.DatasetLODStats)
     query = query.filter(modelext.DatasetLODStats.dataset_id == dataset.id)
     
@@ -51,7 +49,7 @@ def get_dataset_lodstats(dataset):
         dataset_lodstats = modelext.DatasetLODStats()
         dataset_lodstats.dataset_id = dataset.id
     else:
-        dataset_lodstats = dataset_lodstats_query.one()
+        dataset_lodstats = query.one()
 
     dataset_lodstats.in_progress = True
     model.Session.add(dataset_lodstats)
@@ -147,4 +145,16 @@ def turn_into_error_dataset_lodstats(dataset_lodstats, error_message):
     dataset_lodstats.vocabulariy_count = None
         
     return dataset_lodstats
+
+
+def get_dataset_lodstats(dataset):
+    query = model.Session.query(modelext.DatasetLODStats)
+    query = query.filter(modelext.DatasetLODStats.dataset_id == dataset.id)
+    dataset_lodstats = query.one()
+    
+    query = model.Session.query(modelext.DatasetLODStatsPartition)
+    query = query.filter(modelext.DatasetLODStatsPartition.dataset_lodstats_id == dataset_lodstats.id)
+    dataset_lodstats_partitions = query.all()
+
+    return dataset_lodstats, dataset_lodstats_partitions
     

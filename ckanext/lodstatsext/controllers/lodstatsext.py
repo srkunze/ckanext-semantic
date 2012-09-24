@@ -1,69 +1,23 @@
-import logging
-from urllib import urlencode
+import ckan.lib.base as base
+import ckan.logic as logic
+import ckan.model as model
+import ckanext.lodstatsext.lib.lodstatsextlib as lodstatsextlib
 import datetime
-
-from pylons import config
-from pylons.i18n import _
-from genshi.template import MarkupTemplate
-from genshi.template.text import NewTextTemplate
-
-from ckan.logic import get_action, check_access
-from ckan.lib.helpers import date_str_to_datetime
-from ckan.lib.base import (request,
-                           render,
-                           BaseController,
-                           model,
-                           abort, h, g, c)
-from ckan.lib.base import response, redirect, gettext
-import ckan.lib.maintain as maintain
-from ckan.lib.package_saver import PackageSaver, ValidationException
-from ckan.lib.navl.dictization_functions import DataError, unflatten, validate
-from ckan.lib.helpers import json
-from ckan.logic import NotFound, NotAuthorized, ValidationError
-from ckan.logic import (tuplize_dict,
-                        clean_dict,
-                        parse_params,
-                        flatten_to_string_key)
-from ckan.lib.i18n import get_lang
-import ckan.forms
-import ckan.authz
-import ckan.rating
-import ckan.misc
-import ckan.lib.accept as accept
-from home import CACHE_PARAMETERS
-
-from ckan.lib.plugins import lookup_package_plugin
+import logging
+import RDF
 
 log = logging.getLogger(__name__)
 
 
+class PackageController(base.BaseController):
+    def read_n3(self, id):
+        base.response.headers['Content-Type'] = "text/n3; charset=utf-8"
 
-
-
-class PackageController(BaseController):
-    def read(self, id, format='html'):
-        print "Hello"
-        if not format == 'html':
-            ctype, extension, loader = \
-                self._content_type_from_extension(format)
-            if not ctype:
-                # An unknown format, we'll carry on in case it is a
-                # revision specifier and re-constitute the original id
-                id = "%s.%s" % (id, format)
-                ctype, format, loader = "text/html; charset=utf-8", "html", \
-                    MarkupTemplate
-        else:
-            ctype, format, loader = self._content_type_from_accept()
-
-        response.headers['Content-Type'] = ctype
-
-        package_type = self._get_package_type(id.split('@')[0])
         context = {'model': model, 'session': model.Session,
-                   'user': c.user or c.author, 'extras_as_string': True,
+                   'user': base.c.user or base.c.author, 'extras_as_string': True,
                    'for_view': True}
         data_dict = {'id': id}
-
-        # interpret @<revision_id> or @<date> suffix
+        
         split = id.split('@')
         if len(split) == 2:
             data_dict['id'], revision_ref = split
@@ -83,28 +37,69 @@ class PackageController(BaseController):
 
         #check if package exists
         try:
-            c.pkg_dict = get_action('package_show')(context, data_dict)
-            c.pkg = context['package']
-            c.resources_json = json.dumps(c.pkg_dict.get('resources', []))
-        except NotFound:
+            base.c.pkg_dict = logic.get_action('package_show')(context, data_dict)
+        except logic.NotFound:
             abort(404, _('Dataset not found'))
-        except NotAuthorized:
+        except logic.NotAuthorized:
             abort(401, _('Unauthorized to read package %s') % id)
+            
+        dataset = context['package']
+        dataset_lodstats, dataset_lodstats_partitions = lodstatsextlib.get_dataset_lodstats(dataset)
 
-        # used by disqus plugin
-        c.current_package_id = c.pkg.id
-        c.related_count = c.pkg.related_count
+        rdf_model = RDF.Model()
+        ns_xs = RDF.NS("http://www.w3.org/2001/XMLSchema#")
+        ns_rdf = RDF.NS("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+        ns_rdfs = RDF.NS("http://www.w3.org/2000/01/rdf-schema#")
+        ns_owl = RDF.NS("http://www.w3.org/2002/07/owl#")
+        ns_void = RDF.NS("http://rdfs.org/ns/void#")
+        ns_dcat = RDF.NS("http://www.w3.org/ns/dcat#")
+        ns_dct = RDF.NS("http://purl.org/dc/terms/")
+        ns_foaf = RDF.NS("http://xmlns.com/foaf/0.1/")
+        ns_qb = RDF.NS("http://purl.org/linked-data/cube#")
+        ns_stats = RDF.NS("http://example.org/XStats#")
+        ns_urn_uuid = RDF.NS("")
 
-        # Add the package's activity stream (already rendered to HTML) to the
-        # template context for the package/read.html template to retrieve
-        # later.
-        c.package_activity_stream = \
-            get_action('package_activity_list_html')(
-                context, {'id': c.current_package_id})
+        #import ipdb; ipdb.set_trace()
+        url = base.h.url_for(controller='package', action='read', id=dataset.name, qualified=True)
+        dataset.uri = RDF.Uri(url)
+        
+        rdf_model.append(RDF.Statement(dataset.uri, ns_owl.sameAs, RDF.Uri("urn:uuid:" + dataset.id)))
+        rdf_model.append(RDF.Statement(dataset.uri, ns_rdf.type, ns_dcat.Dataset))
+        rdf_model.append(RDF.Statement(dataset.uri, ns_rdfs.label, dataset.name))
+        rdf_model.append(RDF.Statement(dataset.uri, ns_dct.identifier, dataset.name))
+        rdf_model.append(RDF.Statement(dataset.uri, ns_dct.title, dataset.title))
+        rdf_model.append(RDF.Statement(dataset.uri, ns_dct.description, dataset.notes))
+        # + license, author, maintainer
 
-        PackageSaver().render_package(c.pkg_dict, context)
+        rdf_model.append(RDF.Statement(dataset.uri, ns_rdf.type, ns_void.Dataset))
+        rdf_model.append(RDF.Statement(
+            dataset.uri,
+            ns_void.triples,
+            RDF.Node(literal=str(dataset_lodstats.triple_count), datatype=ns_xs.integer.uri)))
+        
+        # void:observation extension stuff
+        rdf_model.append(RDF.Statement(ns_stats.value, ns_rdf.type, ns_qb.MeasureProperty))
+        rdf_model.append(RDF.Statement(ns_stats.subjectsOfType, ns_rdf.type, ns_qb.DimensonProperty))
+        rdf_model.append(RDF.Statement(ns_stats.schema, ns_rdf.type, ns_qb.AttributeProperty))
+        
+        # voidify results from custom stats
+        #for stat in custom_stats.stats_to_do:
+        #    stat.voidify(void_model, dataset)
 
-        template = self._read_template(package_type)
-        template = template[:template.index('.') + 1] + format
-
-        return render(template, loader_class=loader)
+        # serialize to string and return
+        serializer = RDF.Serializer(name="turtle")
+        serializer.set_namespace("xs", "http://www.w3.org/2001/XMLSchema#")
+        serializer.set_namespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+        serializer.set_namespace("rdfs", "http://www.w3.org/2000/01/rdf-schema#")
+        serializer.set_namespace("owl", "http://www.w3.org/2002/07/owl#")
+        serializer.set_namespace("void", "http://rdfs.org/ns/void#")
+        serializer.set_namespace("dcat", "http://www.w3.org/ns/dcat#")
+        serializer.set_namespace("dct", "http://purl.org/dc/terms/")
+        serializer.set_namespace("foaf", "http://xmlns.com/foaf/0.1/")
+        serializer.set_namespace("qb", "http://purl.org/linked-data/cube#")
+        serializer.set_namespace("xstats", "http://example.org/XStats#")
+        #dataset = dataset_uri
+        #dataset_ns = RDF.NS("%s#" % dataset.__unicode__())
+        #serializer.set_namespace("thisdataset", dataset_ns._prefix)
+        return serializer.serialize_model_to_string(rdf_model)
+        
