@@ -1,5 +1,5 @@
-DROP TABLE dataset_lodstats_class_partition_revision;
-DROP TABLE dataset_lodstats_class_partition;
+DROP TABLE dataset_lodstats_partition_revision;
+DROP TABLE dataset_lodstats_partition;
 DROP TABLE dataset_lodstats_revision;
 DROP TABLE dataset_lodstats;
 
@@ -49,10 +49,10 @@ CREATE TABLE dataset_lodstats_revision
     CONSTRAINT dataset_lodstats_revision_pkey PRIMARY KEY (id, revision_id)
 );
 
-CREATE TABLE dataset_lodstats_class_partition
+CREATE TABLE dataset_lodstats_partition
 (
     id TEXT PRIMARY KEY ,
-    dataset_lodstats_id TEXT REFERENCES dataset_lodstats (id) ON UPDATE NO ACTION ON DELETE NO ACTION,
+    dataset_lodstats_id TEXT NOT NULL REFERENCES dataset_lodstats (id) ON UPDATE NO ACTION ON DELETE NO ACTION,
     type TEXT NOT NULL,
     uir TEXT NOT NULL,
     uri_count BIGINT NOT NULL,
@@ -61,10 +61,10 @@ CREATE TABLE dataset_lodstats_class_partition
     revision_id TEXT REFERENCES revision (id) ON UPDATE NO ACTION ON DELETE NO ACTION
 );
 
-CREATE TABLE dataset_lodstats_class_partition_revision
+CREATE TABLE dataset_lodstats_partition_revision
 (
     id TEXT,
-    dataset_lodstats_id TEXT REFERENCES dataset_lodstats (id) ON UPDATE NO ACTION ON DELETE NO ACTION,
+    dataset_lodstats_id TEXT NOT NULL REFERENCES dataset_lodstats (id) ON UPDATE NO ACTION ON DELETE NO ACTION,
     type TEXT NOT NULL,
     uri TEXT NOT NULL,
     uri_count BIGINT NOT NULL,
@@ -78,6 +78,6 @@ CREATE TABLE dataset_lodstats_class_partition_revision
     expired_timestamp TIMESTAMP WITHOUT TIME ZONE,
     "current" BOOLEAN,
     
-    CONSTRAINT dataset_lodstats_class_partition_revision_pkey PRIMARY KEY (id, revision_id)
+    CONSTRAINT dataset_lodstats_partition_revision_pkey PRIMARY KEY (id, revision_id)
 );
 

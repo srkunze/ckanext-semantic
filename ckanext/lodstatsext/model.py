@@ -28,21 +28,21 @@ dataset_lodstats_table = Table(
     Column('vocabulary_count', types.BigInteger),
     )
 
-dataset_lodstats_class_partition_table = Table(
-    'dataset_lodstats_class_partition', meta.metadata,
+dataset_lodstats_partition_table = Table(
+    'dataset_lodstats_partition', meta.metadata,
     Column('id', types.UnicodeText, primary_key=True),
-    Column('dataset_lodstats_id', types.UnicodeText),
-    Column('type', types.UnicodeText),
-    Column('uri', types.UnicodeText),
-    Column('uri_count', types.BigInteger),
+    Column('dataset_lodstats_id', types.UnicodeText, nullable=False),
+    Column('type', types.UnicodeText, nullable=False),
+    Column('uri', types.UnicodeText, nullable=False),
+    Column('uri_count', types.BigInteger, nullable=False),
     )
 
 
 vdm.sqlalchemy.make_table_stateful(dataset_lodstats_table)
 dataset_lodstats_revision_table = core.make_revisioned_table(dataset_lodstats_table)
 
-vdm.sqlalchemy.make_table_stateful(dataset_lodstats_class_partition_table)
-dataset_lodstats_class_partition_revision_table = core.make_revisioned_table(dataset_lodstats_class_partition_table)
+vdm.sqlalchemy.make_table_stateful(dataset_lodstats_partition_table)
+dataset_lodstats_partition_revision_table = core.make_revisioned_table(dataset_lodstats_partition_table)
 
 class DatasetLODStats(vdm.sqlalchemy.RevisionedObjectMixin,
                vdm.sqlalchemy.StatefulObjectMixin,
@@ -50,7 +50,7 @@ class DatasetLODStats(vdm.sqlalchemy.RevisionedObjectMixin,
     def __init__(self):
         self.id = make_uuid()
 
-class DatasetLODStatsClassPartition(vdm.sqlalchemy.RevisionedObjectMixin,
+class DatasetLODStatsPartition(vdm.sqlalchemy.RevisionedObjectMixin,
                vdm.sqlalchemy.StatefulObjectMixin,
                domain_object.DomainObject):
     def __init__(self):

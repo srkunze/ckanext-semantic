@@ -62,20 +62,6 @@ def choose_and_lock_dataset():
     return dataset, dataset_lodstats
                 
 
-"""
-    rev = model.repo.new_revision()
-    try:
-         package_to_do.do_rdfstats()
-    except ckan.exceptions.NoRDFException:
-        package_to_do.rdf_last_updated = datetime.now()
-        
-    rev.message = u'Update VoID/triples'
-    rev.author = u'RDFStats-Bot'
-    model.repo.commit()
-    
-"""
-
-
 def update_dataset_lodstats(dataset, dataset_lodstats):
     supported_formats = {
                             "application/x-ntriples": "nt",
@@ -126,31 +112,29 @@ def update_dataset_lodstats(dataset, dataset_lodstats):
     dataset_lodstats.property_count = len(rdf_stats.stats_results['propertiesall']['distinct'])
     dataset_lodstats.vocabulariy_count = len(rdf_stats.stats_results['vocabularies'])
     
-    return dataset_lodstats
-    """
-    # classes
-    for class_uri,result in rdfdocstats.stats_results['classes']['distinct'].iteritems():
-        c = model.RDFClasses()
+    for class_uri, result in rdfdocstats.stats_results['classes']['distinct'].iteritems():
+        class_partition = model.RDFClasses()
         c.uri = class_uri
         c.count = result
         model.Session.add(c)
         new_rdfstats.classes.append(c)
-    # vocab:
-    for base_uri,result in rdfdocstats.stats_results['vocabularies'].iteritems():
+
+    for base_uri, result in rdfdocstats.stats_results['vocabularies'].iteritems():
         if result > 0:
             v = model.RDFVocabularies()
             v.uri = base_uri
             v.count = result
             model.Session.add(v)
             new_rdfstats.vocabularies.append(v)
-    # props
-    for property_uri,result in rdfdocstats.stats_results['propertiesall']['distinct'].iteritems():
+
+    for property_uri, result in rdfdocstats.stats_results['propertiesall']['distinct'].iteritems():
         p = model.RDFProperties()
         p.uri = property_uri
         p.count = result
         model.Session.add(p)
         new_rdfstats.properties.append(p)
-"""
+          
+    return dataset_lodstats
 
 
 def turn_into_error_dataset_lodstats(dataset_lodstats, error_message):
