@@ -3,8 +3,10 @@ import ckan.logic as logic
 import ckan.model as model
 import ckanext.lodstatsext.lib.lodstatsextlib as lodstatsextlib
 import datetime
+import lodstats.stats as stats
 import logging
 import RDF
+
 
 log = logging.getLogger(__name__)
 
@@ -59,7 +61,7 @@ class PackageController(base.BaseController):
         ns_stats = RDF.NS("http://example.org/XStats#")
         ns_urn_uuid = RDF.NS("")
 
-        #import ipdb; ipdb.set_trace()
+
         url = base.h.url_for(controller='package', action='read', id=dataset.name, qualified=True)
         dataset.uri = RDF.Uri(url)
         
@@ -76,15 +78,52 @@ class PackageController(base.BaseController):
             dataset.uri,
             ns_void.triples,
             RDF.Node(literal=str(dataset_lodstats.triple_count), datatype=ns_xs.integer.uri)))
-        
-        # void:observation extension stuff
+        rdf_model.append(RDF.Statement(
+            dataset.uri,
+            ns_void.classes,
+            RDF.Node(literal=str(dataset_lodstats.class_count), datatype=ns_xs.integer.uri)))
+        rdf_model.append(RDF.Statement(
+            dataset.uri,
+            ns_void.properties,
+            RDF.Node(literal=str(dataset_lodstats.property_count), datatype=ns_xs.integer.uri)))
+        for partition in dataset_lodstats_partitions:
+            if partition.type == "class":
+                partition_node = RDF.Node()
+                rdf_model.append(RDF.Statement(
+                    dataset.uri,
+                    ns_void["classPartition"],
+                    partition_node))
+                rdf_model.append(RDF.Statement(
+                    partition_node,
+                    ns_void["class"],
+                    RDF.Uri(partition.uri)))
+                rdf_model.append(RDF.Statement(
+                    partition_node,
+                    ns_void["entities"],
+                    RDF.Node(literal=str(partition.uri_count), datatype=ns_xs.integer.uri)))
+            elif partition.type == "property":
+                partition_node = RDF.Node()
+                rdf_model.append(RDF.Statement(
+                    dataset.uri,
+                    ns_void["propertyPartition"],
+                    partition_node))
+                rdf_model.append(RDF.Statement(
+                    partition_node,
+                    ns_void["property"],
+                    RDF.Uri(partition.uri)))
+                rdf_model.append(RDF.Statement(
+                    partition_node,
+                    ns_void["triples"],
+                    RDF.Node(literal=str(partition.uri_count), datatype=ns_xs.integer.uri)))
+            elif partition.type == "vocabulary":
+                rdf_model.append(RDF.Statement(
+                    dataset.uri,
+                    ns_void["vocabulary"],
+                    RDF.Uri(partition.uri)))
+
         rdf_model.append(RDF.Statement(ns_stats.value, ns_rdf.type, ns_qb.MeasureProperty))
         rdf_model.append(RDF.Statement(ns_stats.subjectsOfType, ns_rdf.type, ns_qb.DimensonProperty))
         rdf_model.append(RDF.Statement(ns_stats.schema, ns_rdf.type, ns_qb.AttributeProperty))
-        
-        # voidify results from custom stats
-        #for stat in custom_stats.stats_to_do:
-        #    stat.voidify(void_model, dataset)
 
         # serialize to string and return
         serializer = RDF.Serializer(name="turtle")
@@ -98,8 +137,5 @@ class PackageController(base.BaseController):
         serializer.set_namespace("foaf", "http://xmlns.com/foaf/0.1/")
         serializer.set_namespace("qb", "http://purl.org/linked-data/cube#")
         serializer.set_namespace("xstats", "http://example.org/XStats#")
-        #dataset = dataset_uri
-        #dataset_ns = RDF.NS("%s#" % dataset.__unicode__())
-        #serializer.set_namespace("thisdataset", dataset_ns._prefix)
         return serializer.serialize_model_to_string(rdf_model)
         
