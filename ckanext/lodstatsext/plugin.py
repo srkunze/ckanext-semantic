@@ -35,7 +35,7 @@ class LODstatsPlugin(plugins.SingletonPlugin):
         
         forked_pid = os.fork()
         if forked_pid == 0:
-            dataset_similarity_lib.update_vocabulary_specifity()
+            dataset_similarity_lib.get_dataset_similarity()
         os._exit(0)
                     
         
