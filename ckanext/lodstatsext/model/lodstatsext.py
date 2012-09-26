@@ -54,7 +54,6 @@ class DatasetLODStatsPartition(vdm.sqlalchemy.RevisionedObjectMixin,
                vdm.sqlalchemy.StatefulObjectMixin,
                domain_object.DomainObject):
     def __init__(self, type_):
-        #self.id = make_uuid()
         self.type = type_
 
 

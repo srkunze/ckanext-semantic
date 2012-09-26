@@ -14,17 +14,17 @@ from ckan.model import extension
 
 
 vocabulary_specifity_table = Table(
-    'dataset_specifity', meta.metadata,
-    Column('id', types.UnicodeText, primary_key=True, default=make_uuid),
-    Column('dataset_id', types.UnicodeText, nullable=False),
-    Column('in_progress', types.Boolean, default=False),
-    Column('last_evaluated', types.DateTime),
-    Column('error', types.UnicodeText),
-    Column('warning_count', types.BigInteger),
-    Column('last_warning', types.UnicodeText),
-    Column('rdf', types.UnicodeText),
-    Column('triple_count', types.BigInteger),
-    Column('class_count', types.BigInteger),
-    Column('property_count', types.BigInteger),
-    Column('vocabulary_count', types.BigInteger),
+    'vocabulary_specifity', meta.metadata,
+    Column('vocabulary', types.UnicodeText, primary_key=True),
+    Column('specifity', types.Numeric, nullable=False),
+    Column('dataset_count', types.BigInteger, nullable=False),
     )
+    
+    
+class VocabularySpecifity(domain_object.DomainObject):
+    def __init__(self, vocabulary):
+        self.vocabulary = vocabulary
+    
+    
+meta.mapper(VocabularySpecifity, vocabulary_specifity_table)
+

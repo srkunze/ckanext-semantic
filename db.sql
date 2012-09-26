@@ -90,6 +90,8 @@ DROP TABLE vocabulary_specifity;
 CREATE TABLE vocabulary_specifity
 (
     vocabulary TEXT PRIMARY KEY,
-    specifity NUMERIC NOT NULL
+    specifity NUMERIC NOT NULL,
+    dataset_count BIGINT NOT NULL
 );
+
 

@@ -11,45 +11,57 @@ import sqlalchemy
 
 log = logging.getLogger(__name__)
 
+sparql = sparql_wrapper.SPARQLWrapper("http://localhost:8890/sparql")
+sparql.setReturnFormat(sparql_wrapper.JSON)
+
 
 def update_vocabulary_specifity():
-    sparql = sparql_wrapper.SPARQLWrapper("http://localhost:8890/sparql")
     sparql.setQuery("""
                     prefix void: <http://rdfs.org/ns/void#>
-                    SELECT ?vocab (count(?dataset) as ?x)
+                    SELECT ?vocabulary (count(?dataset) as ?dataset_count)
                     WHERE
                     {
                         ?dataset a void:Dataset .
-                        ?dataset void:vocabulary ?vocab .
+                        ?dataset void:vocabulary ?vocabulary .
                     }
-                    group by ?vocab
-                    order by desc(?x)
+                    group by ?vocabulary
+                    order by desc(?dataset_count)
                     """)
-    sparql.setReturnFormat(sparql_wrapper.JSON)
-    results = sparql.query().convert()
+    results1 = sparql.query().convert()
+    
+    sparql.setQuery("""
+                    prefix void: <http://rdfs.org/ns/void#>
+                    SELECT (count(distinct ?dataset) as ?dataset_count)
+                    WHERE
+                    {
+                        ?dataset a void:Dataset .
+                    }
+                    """)
+    results2 = sparql.query().convert()
 
-    for row in results['results']['bindings']:
-        print row["vocab"]["value"], ": ", row["x"]["value"]
-        
-    model.Session.add(dataset_lodstats)
-    model.Session.commit()
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    for row in results1['results']['bindings']:
+        vocabulary_specifity = modelext.VocabularySpecifity(row["vocabulary"]["value"])
+        vocabulary_specifity.specifity = 1 - (float(row["dataset_count"]["value"]) / float(results2['results']['bindings'][0]["dataset_count"]["value"]))
+        vocabulary_specifity.dataset_count = int(row["dataset_count"]["value"])
+        model.Session.merge(vocabulary_specifity)   
+
+    model.Session.commit()        
+
     return
+
+
+def dataset_similarity():
+    sparql.setQuery("""
+                    prefix void: <http://rdfs.org/ns/void#>
+                    SELECT (count(distinct ?dataset) as ?dataset_count)
+                    WHERE
+                    {
+                        ?dataset a void:Dataset .
+                    }
+                    """)   
+    results2 = sparql.query().convert()
+    
+     
+    return
+    
     

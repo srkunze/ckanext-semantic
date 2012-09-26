@@ -33,14 +33,15 @@ class LODstatsPlugin(plugins.SingletonPlugin):
         if forked_pid != 0:
             return app
         
+        forked_pid = os.fork()
+        if forked_pid == 0:
+            dataset_similarity_lib.update_vocabulary_specifity()
+        os._exit(0)
+                    
         
         forked_pid = os.fork()
         if forked_pid == 0:
             lodstatsext_lib.perfom_lodstats_jobs()
-            
-        forked_pid = os.fork()
-        if forked_pid == 0:
-            dataset_similarity_lib.update_vocabulary_specifity()
 
         os._exit(0)
         

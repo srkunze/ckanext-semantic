@@ -16,6 +16,8 @@ def perfom_lodstats_jobs():
     #initialize lodstats table with "NO WORKING"
     ####################################################
     
+    return
+    
     job_count = 0
     desired_job_count = 1
     while True:
