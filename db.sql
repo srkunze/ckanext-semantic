@@ -83,3 +83,13 @@ CREATE TABLE dataset_lodstats_partition_revision
     CONSTRAINT dataset_lodstats_partition_revision_pkey PRIMARY KEY (id, revision_id)
 );
 
+
+
+DROP TABLE vocabulary_specifity;
+
+CREATE TABLE vocabulary_specifity
+(
+    vocabulary TEXT PRIMARY KEY,
+    specifity NUMERIC NOT NULL
+);
+

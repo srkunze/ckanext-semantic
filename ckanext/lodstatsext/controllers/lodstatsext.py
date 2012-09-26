@@ -1,7 +1,7 @@
 import ckan.lib.base as base
 import ckan.logic as logic
 import ckan.model as model
-import ckanext.lodstatsext.lib.lodstatsextlib as lodstatsextlib
+import ckanext.lodstatsext.lib.lodstatsext as libext
 import datetime
 import lodstats.stats as stats
 import logging
@@ -46,7 +46,7 @@ class PackageController(base.BaseController):
             abort(401, _('Unauthorized to read package %s') % id)
             
         dataset = context['package']
-        dataset_lodstats, dataset_lodstats_partitions = lodstatsextlib.get_dataset_lodstats(dataset)
+        dataset_lodstats, dataset_lodstats_partitions = libext.get_dataset_lodstats(dataset)
 
         rdf_model = RDF.Model()
         ns_xs = RDF.NS("http://www.w3.org/2001/XMLSchema#")
@@ -125,7 +125,6 @@ class PackageController(base.BaseController):
         rdf_model.append(RDF.Statement(ns_stats.subjectsOfType, ns_rdf.type, ns_qb.DimensonProperty))
         rdf_model.append(RDF.Statement(ns_stats.schema, ns_rdf.type, ns_qb.AttributeProperty))
 
-        # serialize to string and return
         serializer = RDF.Serializer(name="turtle")
         serializer.set_namespace("xs", "http://www.w3.org/2001/XMLSchema#")
         serializer.set_namespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
@@ -137,5 +136,6 @@ class PackageController(base.BaseController):
         serializer.set_namespace("foaf", "http://xmlns.com/foaf/0.1/")
         serializer.set_namespace("qb", "http://purl.org/linked-data/cube#")
         serializer.set_namespace("xstats", "http://example.org/XStats#")
+
         return serializer.serialize_model_to_string(rdf_model)
         

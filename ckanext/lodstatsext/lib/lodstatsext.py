@@ -1,12 +1,47 @@
-import os
-import datetime
-import lodstats
-import sqlalchemy
 import ckan.model as model
 import ckan.model.meta as meta
-import ckanext.lodstatsext.model as modelext
+import ckanext.lodstatsext.model.lodstatsext as modelext
+import datetime
+import lodstats
+import logging
+import os
+import sqlalchemy
+import time
+
+log = logging.getLogger(__name__)
 
 
+def perfom_lodstats_jobs():
+    ####################################################
+    #initialize lodstats table with "NO WORKING"
+    ####################################################
+    
+    job_count = 0
+    desired_job_count = 1
+    while True:
+        time.sleep(0.1)
+        if desired_job_count > job_count:
+            job_count += 1
+            my_pid = os.fork()
+            if my_pid == 0:
+                if perfom_lodstats_job() == "no update":
+                    os._exit(1)
+                os._exit(0)
+        else:
+            try:
+                x, res = os.waitpid(-1, 0)
+                if res == 256:
+                    time.sleep(60)
+                job_count -= 1
+            except OSError as error:
+                print error
+                job_count = 0
+                
+    ####################################################
+    # find a way to properly terminate that script
+    ####################################################
+    
+    
 def perfom_lodstats_job():
     dataset = choose_dataset()
     if dataset is None:
@@ -40,7 +75,8 @@ def choose_dataset():
         return None
         
     return query.first()
-        
+
+
 def get_and_lock_dataset_lodstats(dataset):
     query = model.Session.query(modelext.DatasetLODStats)
     query = query.filter(modelext.DatasetLODStats.dataset_id == dataset.id)
@@ -56,7 +92,7 @@ def get_and_lock_dataset_lodstats(dataset):
     model.Session.commit()
             
     return dataset_lodstats
-                
+
 
 def update_dataset_lodstats(dataset, dataset_lodstats):
     supported_formats = {
