@@ -65,7 +65,7 @@ def get_and_lock_dataset_lodstats(dataset):
             model.Session.merge(partition)
 
         
-    dataset_lodstats.in_progress = False
+    dataset_lodstats.in_progress = True
     model.Session.merge(dataset_lodstats)
     model.Session.commit()
             

@@ -43,5 +43,6 @@ class LODStatsExtCommand(cli.CkanCommand):
         rdf_model = libext.create_rdf_model(dataset)
         serializer = RDF.Serializer(name="ntriples")
         triples = serializer.serialize_model_to_string(rdf_model)
-        triplestore.modify('INSERT IN GRAPH <' + graph + '> {\n' + triples + '\n} ') 
+        print triplestore.modify('delete from graph <' + graph + '> { ?dataset ?p ?o . ?o ?op ?oo . } where { ?dataset <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rdfs.org/ns/void#Dataset> . ?dataset ?p ?o. } ') 
+        print triplestore.modify('insert in graph <' + graph + '> {\n' + triples + '\n} ') 
 
