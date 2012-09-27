@@ -26,5 +26,8 @@ setup(
 	"""
         [ckan.plugins]
 	    lodstats=ckanext.lodstatsext.plugin:LODstatsPlugin
+	    
+        [paste.paster_command]
+        lodstats=ckanext.lodstatsext.commands:LODStatsExtCommand
 	""",
 )
