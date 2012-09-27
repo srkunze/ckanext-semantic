@@ -1,3 +1,4 @@
+import ckan.lib.helpers as helpers
 import ckan.model as model
 import ckan.model.meta as meta
 import ckanext.lodstatsext.model.lodstatsext as modelext
@@ -6,60 +7,29 @@ import lodstats
 import logging
 import os
 import sqlalchemy
-import time
+import RDF
+
 
 log = logging.getLogger(__name__)
 
 
-def perfom_lodstats_jobs():
-    ####################################################
-    #initialize lodstats table with "NO WORKING"
-    ####################################################
-    
-    return
-    
-    job_count = 0
-    desired_job_count = 1
-    while True:
-        time.sleep(0.1)
-        if desired_job_count > job_count:
-            job_count += 1
-            my_pid = os.fork()
-            if my_pid == 0:
-                if perfom_lodstats_job() == "no update":
-                    os._exit(1)
-                os._exit(0)
-        else:
-            try:
-                x, res = os.waitpid(-1, 0)
-                if res == 256:
-                    time.sleep(60)
-                job_count -= 1
-            except OSError as error:
-                print error
-                job_count = 0
-                
-    ####################################################
-    # find a way to properly terminate that script
-    ####################################################
-    
-    
-def perfom_lodstats_job():
+def create_new_dataset_lodstats_revision():
+    #import ipdb; ipdb.set_trace()
     dataset = choose_dataset()
     if dataset is None:
-        return "no update"
+        return None
 
     revision = model.repo.new_revision()
     revision.message = u'Update VoID triples'
     revision.author = u'LODStats'
     
-    dataset_lodstats = get_dataset_lodstats(dataset)
+    dataset_lodstats = get_and_lock_dataset_lodstats(dataset)
     dataset_lodstats = update_dataset_lodstats(dataset, dataset_lodstats)
-    model.Session.add(dataset_lodstats)
+    model.Session.merge(dataset_lodstats)
 
     model.repo.commit()
     
-    return "updated"
+    return dataset
 
 
 def choose_dataset():
@@ -71,7 +41,7 @@ def choose_dataset():
                             modelext.DatasetLODStats.in_progress == None,
                             sqlalchemy.and_(
                                 modelext.DatasetLODStats.in_progress == False,
-                                modelext.DatasetLODStats.last_evaluated < day_4_weeks_ago)))
+                                modelext.DatasetLODStats.last_evaluated > day_4_weeks_ago)))
 
     if query.count() == 0:
         return None
@@ -82,15 +52,21 @@ def choose_dataset():
 def get_and_lock_dataset_lodstats(dataset):
     query = model.Session.query(modelext.DatasetLODStats)
     query = query.filter(modelext.DatasetLODStats.dataset_id == dataset.id)
-    
+
     if query.count() == 0:
         dataset_lodstats = modelext.DatasetLODStats()
         dataset_lodstats.dataset_id = dataset.id
     else:
         dataset_lodstats = query.one()
+        query = model.Session.query(modelext.DatasetLODStatsPartition)
+        query = query.filter(modelext.DatasetLODStatsPartition.dataset_lodstats_id==dataset_lodstats.id)
+        for partition in query.all():
+            partition.count = 0
+            model.Session.merge(partition)
 
-    dataset_lodstats.in_progress = True
-    model.Session.add(dataset_lodstats)
+        
+    dataset_lodstats.in_progress = False
+    model.Session.merge(dataset_lodstats)
     model.Session.commit()
             
     return dataset_lodstats
@@ -124,7 +100,7 @@ def update_dataset_lodstats(dataset, dataset_lodstats):
 
 
     if rdf_resource is None:
-        return turn_into_error_dataset_lodstats(dataset_lodstats, 'no RDF resources available')
+        return turn_into_error_dataset_lodstats(dataset_lodstats, 'no rdf')
     
 
     try:
@@ -146,27 +122,27 @@ def update_dataset_lodstats(dataset, dataset_lodstats):
     dataset_lodstats.property_count = len(rdf_stats.stats_results['propertiesall']['distinct'])
     dataset_lodstats.vocabulariy_count = len(rdf_stats.stats_results['vocabularies'])
     
-    for class_uri, result in rdf_stats.stats_results['classes']['distinct'].iteritems():
-        partition = modelext.DatasetLODStatsPartition("class")
-        partition.dataset_lodstats_id = dataset_lodstats.id
-        partition.uri = class_uri
-        partition.uri_count = result
-        model.Session.add(partition)
+    partitions = [('class', uri, uri_count) for uri, uri_count in rdf_stats.stats_results['classes']['distinct'].iteritems()]
+    partitions += [('vocabulary', uri, uri_count) for uri, uri_count in rdf_stats.stats_results['vocabularies'].iteritems()]
+    partitions += [('property', uri, uri_count) for uri, uri_count in rdf_stats.stats_results['propertiesall']['distinct'].iteritems()]
 
-    for base_uri, result in rdf_stats.stats_results['vocabularies'].iteritems():
-        if result > 0:
-            partition = modelext.DatasetLODStatsPartition("vocabulary")
-            partition.dataset_lodstats_id = dataset_lodstats.id
-            partition.uri = base_uri
-            partition.uri_count = result
-            model.Session.add(partition)
+    for type_, uri, uri_count in partitions:
+        if uri_count > 0:
+            query = model.Session.query(modelext.DatasetLODStatsPartition)
+            query = query.filter(modelext.DatasetLODStatsPartition.type == type_)
+            query = query.filter(modelext.DatasetLODStatsPartition.dataset_lodstats_id == dataset_lodstats.id)
+            query = query.filter(modelext.DatasetLODStatsPartition.uri == uri)
 
-    for property_uri, result in rdf_stats.stats_results['propertiesall']['distinct'].iteritems():
-        partition = modelext.DatasetLODStatsPartition("property")
-        partition.dataset_lodstats_id = dataset_lodstats.id
-        partition.uri = property_uri
-        partition.uri_count = result
-        model.Session.add(partition)
+            if query.count() == 0:
+                partition = modelext.DatasetLODStatsPartition(type_)
+                partition.dataset_lodstats_id = dataset_lodstats.id
+                partition.uri = uri
+            else:
+                partition = query.one()
+
+            partition.uri_count = uri_count
+            model.Session.merge(partition)
+
 
     return dataset_lodstats
 
@@ -195,4 +171,92 @@ def get_dataset_lodstats(dataset):
     dataset_lodstats_partitions = query.all()
 
     return dataset_lodstats, dataset_lodstats_partitions
+
+    
+def create_rdf_model(dataset):
+    dataset_lodstats, dataset_lodstats_partitions = get_dataset_lodstats(dataset)
+
+    rdf_model = RDF.Model()
+    ns_xs = RDF.NS("http://www.w3.org/2001/XMLSchema#")
+    ns_rdf = RDF.NS("http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+    ns_rdfs = RDF.NS("http://www.w3.org/2000/01/rdf-schema#")
+    ns_owl = RDF.NS("http://www.w3.org/2002/07/owl#")
+    ns_void = RDF.NS("http://rdfs.org/ns/void#")
+    ns_dcat = RDF.NS("http://www.w3.org/ns/dcat#")
+    ns_dct = RDF.NS("http://purl.org/dc/terms/")
+    ns_foaf = RDF.NS("http://xmlns.com/foaf/0.1/")
+    ns_qb = RDF.NS("http://purl.org/linked-data/cube#")
+    ns_stats = RDF.NS("http://example.org/XStats#")
+    ns_urn_uuid = RDF.NS("")
+
+#    url = helpers.url_for(controller='package', action='read', id=dataset.name, qualified=True)
+    url = 'http://localhost:5000/dataset/' + dataset.name
+    dataset.uri = RDF.Uri(url)
+
+    rdf_model.append(RDF.Statement(dataset.uri, ns_owl.sameAs, RDF.Uri("urn:uuid:" + dataset.id)))
+    rdf_model.append(RDF.Statement(dataset.uri, ns_rdf.type, ns_dcat.Dataset))
+    rdf_model.append(RDF.Statement(dataset.uri, ns_rdfs.label, dataset.name))
+    rdf_model.append(RDF.Statement(dataset.uri, ns_dct.identifier, dataset.name))
+    rdf_model.append(RDF.Statement(dataset.uri, ns_dct.title, dataset.title))
+    rdf_model.append(RDF.Statement(dataset.uri, ns_dct.description, dataset.notes))
+    # + license, author, maintainer
+
+    rdf_model.append(RDF.Statement(dataset.uri, ns_rdf.type, ns_void.Dataset))
+    if dataset_lodstats.error is not None:
+        return rdf_model
+        
+    rdf_model.append(RDF.Statement(
+        dataset.uri,
+        ns_void.triples,
+        RDF.Node(literal=str(dataset_lodstats.triple_count), datatype=ns_xs.integer.uri)))
+    rdf_model.append(RDF.Statement(
+        dataset.uri,
+        ns_void.classes,
+        RDF.Node(literal=str(dataset_lodstats.class_count), datatype=ns_xs.integer.uri)))
+    rdf_model.append(RDF.Statement(
+        dataset.uri,
+        ns_void.properties,
+        RDF.Node(literal=str(dataset_lodstats.property_count), datatype=ns_xs.integer.uri)))
+    for partition in dataset_lodstats_partitions:
+        if partition.count == 0:
+            continue
+        if partition.type == "class":
+            partition_node = RDF.Node()
+            rdf_model.append(RDF.Statement(
+                dataset.uri,
+                ns_void["classPartition"],
+                partition_node))
+            rdf_model.append(RDF.Statement(
+                partition_node,
+                ns_void["class"],
+                RDF.Uri(partition.uri)))
+            rdf_model.append(RDF.Statement(
+                partition_node,
+                ns_void["entities"],
+                RDF.Node(literal=str(partition.uri_count), datatype=ns_xs.integer.uri)))
+        elif partition.type == "property":
+            partition_node = RDF.Node()
+            rdf_model.append(RDF.Statement(
+                dataset.uri,
+                ns_void["propertyPartition"],
+                partition_node))
+            rdf_model.append(RDF.Statement(
+                partition_node,
+                ns_void["property"],
+                RDF.Uri(partition.uri)))
+            rdf_model.append(RDF.Statement(
+                partition_node,
+                ns_void["triples"],
+                RDF.Node(literal=str(partition.uri_count), datatype=ns_xs.integer.uri)))
+        elif partition.type == "vocabulary":
+            rdf_model.append(RDF.Statement(
+                dataset.uri,
+                ns_void["vocabulary"],
+                RDF.Uri(partition.uri)))
+
+    rdf_model.append(RDF.Statement(ns_stats.value, ns_rdf.type, ns_qb.MeasureProperty))
+    rdf_model.append(RDF.Statement(ns_stats.subjectsOfType, ns_rdf.type, ns_qb.DimensonProperty))
+    rdf_model.append(RDF.Statement(ns_stats.schema, ns_rdf.type, ns_qb.AttributeProperty))
+
+    return rdf_model
     

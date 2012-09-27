@@ -6,7 +6,7 @@ version = '0.1'
 setup(
 	name='ckanext-lodstats',
 	version=version,
-	description="lodstats integration and personalization based on it",
+	description="lodstats for ckan and personalization based on it",
 	long_description="""\
 	""",
 	classifiers=[], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
@@ -25,8 +25,8 @@ setup(
 	entry_points=\
 	"""
         [ckan.plugins]
-	    lodstats=ckanext.lodstatsext.plugin:LODstatsPlugin
-	    
+        lodstats=ckanext.lodstatsext.plugin:LODstatsPlugin
+
         [paste.paster_command]
         lodstats=ckanext.lodstatsext.commands:LODStatsExtCommand
 	""",

@@ -60,7 +60,7 @@ CREATE TABLE dataset_lodstats_partition
     state TEXT,
     revision_id TEXT REFERENCES revision (id) ON UPDATE NO ACTION ON DELETE NO ACTION,
     
-    CONSTRAINT dataset_lodstats_dataset_id_type_uri_key UNIQUE (dataset_lodstats_id, type, uri)
+    CONSTRAINT dataset_lodstats_partition_dataset_lodstats_id_type_uri_key UNIQUE (dataset_lodstats_id, type, uri)
 );
 
 CREATE TABLE dataset_lodstats_partition_revision
