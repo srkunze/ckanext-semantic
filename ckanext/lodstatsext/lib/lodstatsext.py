@@ -1,11 +1,9 @@
 import ckan.lib.helpers as helpers
 import ckan.model as model
-import ckan.model.meta as meta
 import ckanext.lodstatsext.model.lodstatsext as modelext
 import datetime
 import lodstats
 import logging
-import os
 import sqlalchemy
 import RDF
 
@@ -14,13 +12,12 @@ log = logging.getLogger(__name__)
 
 
 def create_new_dataset_lodstats_revision():
-    #import ipdb; ipdb.set_trace()
     dataset = choose_dataset()
     if dataset is None:
         return None
 
     revision = model.repo.new_revision()
-    revision.message = u'Update VoID triples'
+    revision.message = u'update'
     revision.author = u'LODStats'
     
     dataset_lodstats = get_and_lock_dataset_lodstats(dataset)
@@ -33,7 +30,7 @@ def create_new_dataset_lodstats_revision():
 
 
 def choose_dataset():
-    day_4_weeks_ago = datetime.date.today() - datetime.timedelta(weeks=4)
+    date_4_weeks_ago = datetime.date.today() - datetime.timedelta(weeks=4)
 
     query = model.Session.query(model.Package)  
     query = query.outerjoin(modelext.DatasetLODStats, model.Package.id == modelext.DatasetLODStats.dataset_id)  
@@ -41,7 +38,7 @@ def choose_dataset():
                             modelext.DatasetLODStats.in_progress == None,
                             sqlalchemy.and_(
                                 modelext.DatasetLODStats.in_progress == False,
-                                modelext.DatasetLODStats.last_evaluated > day_4_weeks_ago)))
+                                modelext.DatasetLODStats.last_evaluated < date_4_weeks_ago)))
 
     if query.count() == 0:
         return None

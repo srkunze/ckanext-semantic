@@ -1,8 +1,11 @@
 import ckan.lib.cli as cli
+import ckan.model as model
 import ckanext.lodstatsext.lib.lodstatsext as libext
+import ckanext.lodstatsext.model.lodstatsext as modelext
 import logging
 import RDF
 import virtuoso.virtuoso as virtuoso
+
 
 log = logging.getLogger(__name__)
 
@@ -15,13 +18,23 @@ graph = "http://lodstats.org/"
 
 
 class LODStatsExtCommand(cli.CkanCommand):
-#    summary = __doc__.split('\n')[0]  #wo kommen die denn her?
-#    usage = __doc__
-    summary = "Hello"
-    usage = "Again"
+    '''
+    CKAN Example Extension
+
+    Usage::
+
+    paster example create-example-vocabs -c <path to config file>
+
+    paster example clean -c <path to config file>
+    - Remove all data created by ckanext-example
+
+    The commands should be run from the ckanext-example directory.
+    '''
+    summary = __doc__.split('\n')[0]
+    usage = __doc__
+
 
     def command(self):
-
         if not self.args or self.args[0] in ['--help', '-h', 'help']:
             print ExampleCommand.__doc__
             return
@@ -31,18 +44,38 @@ class LODStatsExtCommand(cli.CkanCommand):
 
         if cmd == 'update_dataset_lodstats':
             self.update_dataset_lodstats()
+        if cmd == 'clean_up':
+            self.clean_up()
         else:
-            log.error('Command "%s" not recognized' % (cmd,))
+            log.error('Command "%s" not recognized' % cmd)
 
     def update_dataset_lodstats(self):
+        """
+        Chooses a dataset, create lodstats and save them into database and triplestore.
+        """
         dataset = libext.create_new_dataset_lodstats_revision()
-        
         if dataset is None:
             return
             
         rdf_model = libext.create_rdf_model(dataset)
         serializer = RDF.Serializer(name="ntriples")
         triples = serializer.serialize_model_to_string(rdf_model)
-        print triplestore.modify('delete from graph <' + graph + '> { ?dataset ?p ?o . ?o ?op ?oo . } where { ?dataset <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rdfs.org/ns/void#Dataset> . ?dataset ?p ?o. } ') 
-        print triplestore.modify('insert in graph <' + graph + '> {\n' + triples + '\n} ') 
+        uri = 'http://localhost:5000/dataset/' + dataset.name
+        triplestore.modify('delete from graph <' + graph + '> { ?dataset ?p ?o . ?o ?op ?oo . } where { ?dataset <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rdfs.org/ns/void#Dataset> . ?dataset ?p ?o. filter(?dataset=<' + uri + '>) } ') 
+        triplestore.modify('insert in graph <' + graph + '> {\n' + triples + '\n} ') 
 
+    def clean_up(self):
+        """
+        To clean up the database in case of a server crash.
+        """
+        revision = model.repo.new_revision()
+        revision.message = u'clean up'
+        revision.author = u'LODStats'
+    
+        for dataset_lodstats in model.Session.query(modelext.DatasetLODStats).all():
+            dataset_lodstats.in_progress = False
+            model.Session.add(dataset_lodstats)
+            model.Session.commit()
+            
+        model.repo.commit()
+    
