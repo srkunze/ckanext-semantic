@@ -16,7 +16,9 @@ from ckan.model import extension
 vocabulary_specifity_table = Table(
     'vocabulary_specifity', meta.metadata,
     Column('vocabulary', types.UnicodeText, primary_key=True),
-    Column('specifity', types.Numeric, nullable=False),
+    Column('specifity_lin', types.Numeric, nullable=False),
+    Column('specifity_cos', types.Numeric, nullable=False),
+    Column('specifity_log', types.Numeric, nullable=False),
     Column('dataset_count', types.BigInteger, nullable=False),
     )
     

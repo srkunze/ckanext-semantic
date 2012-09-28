@@ -184,7 +184,6 @@ def create_rdf_model(dataset):
     ns_foaf = RDF.NS("http://xmlns.com/foaf/0.1/")
     ns_qb = RDF.NS("http://purl.org/linked-data/cube#")
     ns_stats = RDF.NS("http://example.org/XStats#")
-    ns_urn_uuid = RDF.NS("")
 
 #    url = helpers.url_for(controller='package', action='read', id=dataset.name, qualified=True)
     url = 'http://localhost:5000/dataset/' + dataset.name

@@ -1,5 +1,6 @@
 import ckan.lib.cli as cli
 import ckan.model as model
+import ckanext.lodstatsext.lib.dataset_similarity as libext_dataset_similarity
 import ckanext.lodstatsext.lib.lodstatsext as libext
 import ckanext.lodstatsext.model.lodstatsext as modelext
 import logging
@@ -41,18 +42,14 @@ class LODStatsExtCommand(cli.CkanCommand):
 
         cmd = self.args[0]
         self._load_config()
+        getattr(self, cmd)()
 
-        if cmd == 'update_dataset_lodstats':
-            self.update_dataset_lodstats()
-        if cmd == 'clean_up':
-            self.clean_up()
-        else:
-            log.error('Command "%s" not recognized' % cmd)
+        #log.error('Command "%s" not recognized' % cmd)
 
     def update_dataset_lodstats(self):
-        """
+        '''
         Chooses a dataset, create lodstats and save them into database and triplestore.
-        """
+        '''
         dataset = libext.create_new_dataset_lodstats_revision()
         if dataset is None:
             return
@@ -61,13 +58,31 @@ class LODStatsExtCommand(cli.CkanCommand):
         serializer = RDF.Serializer(name="ntriples")
         triples = serializer.serialize_model_to_string(rdf_model)
         uri = 'http://localhost:5000/dataset/' + dataset.name
-        triplestore.modify('delete from graph <' + graph + '> { ?dataset ?p ?o . ?o ?op ?oo . } where { ?dataset <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rdfs.org/ns/void#Dataset> . ?dataset ?p ?o. filter(?dataset=<' + uri + '>) } ') 
-        triplestore.modify('insert in graph <' + graph + '> {\n' + triples + '\n} ') 
+        triplestore.modify('''
+                           delete from graph <''' + graph + '''>
+                           {
+                               ?dataset ?p ?o.
+                               ?o ?op ?oo.
+                           }
+                           where
+                           {
+                               ?dataset <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rdfs.org/ns/void#Dataset>.
+                               ?dataset ?p ?o.
+                               filter(?dataset=<''' + uri + '''>)
+                           }
+                           ''')
+        triplestore.modify('''
+                           insert in graph <''' + graph + '''>
+                           {
+                           ''' + triples + '''
+                           }
+                           ''') 
+
 
     def clean_up(self):
-        """
+        '''
         To clean up the database in case of a server crash.
-        """
+        '''
         revision = model.repo.new_revision()
         revision.message = u'clean up'
         revision.author = u'LODStats'
@@ -79,3 +94,19 @@ class LODStatsExtCommand(cli.CkanCommand):
             
         model.repo.commit()
     
+    def update_vocabulary_specifity(self):
+        '''
+        Retrieves vocabulary specifity.
+        '''
+        libext_dataset_similarity.update_vocabulary_specifity()
+        
+    
+    def get_similar_datasets(self):
+        '''
+        Retrieves vocabulary specifity.
+        '''
+        libext_dataset_similarity.get_similar_datasets(
+            'https://commondatastorage.googleapis.com/ckannet-storage/2012-07-17T084118/hebis-00000001-05051126.rdf.gz',
+            'http://lodstats.org/vocabulary-specifity#linSpecifity',
+            4)
+        
