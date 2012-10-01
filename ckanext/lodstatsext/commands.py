@@ -1,35 +1,24 @@
 import ckan.lib.cli as cli
 import ckan.model as model
-import ckanext.lodstatsext.lib.dataset_similarity as libext_dataset_similarity
-import ckanext.lodstatsext.lib.lodstatsext as libext
-import ckanext.lodstatsext.model.lodstatsext as modelext
+import ckanext.lodstatsext.model.dataset_stats as model_dataset_stats
+import ckanext.lodstatsext.model.vocabulary_stats as model_vocabulary_stats
+import ckanext.lodstatsext.lib.similarity_stats as lib_similarity_stats
+import ckanext.lodstatsext.model.triplestore as triplestore
+import ckanext.lodstatsext.model.prefix as prefix
+import datetime
 import logging
 import RDF
-import virtuoso.virtuoso as virtuoso
+import sqlalchemy
 
 
 log = logging.getLogger(__name__)
-
-
-triplestore = virtuoso.Virtuoso("localhost", "dba", "dba", 8890, "/sparql")
-graph = "http://lodstats.org/"
-#print triplestore.modify('INSERT IN GRAPH <http://lodstats.org/> { <http://x.com#x> <http://x.com#y> "Juan" }')
-#print triplestore.query('select * WHERE { ?s ?p ?o filter (?s = <http://x.com#x>) }', 'json')
-#print triplestore.modify('delete from <http://lodstats.org/> { ?s ?p ?o } where { ?s ?p ?o filter (?s = <http://x.com#x>) }')
 
 
 class LODStatsExtCommand(cli.CkanCommand):
     '''
     CKAN Example Extension
 
-    Usage::
-
-    paster example create-example-vocabs -c <path to config file>
-
-    paster example clean -c <path to config file>
-    - Remove all data created by ckanext-example
-
-    The commands should be run from the ckanext-example directory.
+    Usage:
     '''
     summary = __doc__.split('\n')[0]
     usage = __doc__
@@ -45,68 +34,59 @@ class LODStatsExtCommand(cli.CkanCommand):
         getattr(self, cmd)()
 
         #log.error('Command "%s" not recognized' % cmd)
-
-    def update_dataset_lodstats(self):
-        '''
-        Chooses a dataset, create lodstats and save them into database and triplestore.
-        '''
-        dataset = libext.create_new_dataset_lodstats_revision()
-        if dataset is None:
-            return
-            
-        rdf_model = libext.create_rdf_model(dataset)
-        serializer = RDF.Serializer(name="ntriples")
-        triples = serializer.serialize_model_to_string(rdf_model)
-        uri = 'http://localhost:5000/dataset/' + dataset.name
-        triplestore.modify('''
-                           delete from graph <''' + graph + '''>
-                           {
-                               ?dataset ?p ?o.
-                               ?o ?op ?oo.
-                           }
-                           where
-                           {
-                               ?dataset <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://rdfs.org/ns/void#Dataset>.
-                               ?dataset ?p ?o.
-                               filter(?dataset=<''' + uri + '''>)
-                           }
-                           ''')
-        triplestore.modify('''
-                           insert in graph <''' + graph + '''>
-                           {
-                           ''' + triples + '''
-                           }
-                           ''') 
+        
+        
+    def test(self):
+        pass
+        
+        
+    def update_dataset_stats(self):
+        model_dataset_stats.DatasetStats.update()
 
 
-    def clean_up(self):
-        '''
-        To clean up the database in case of a server crash.
-        '''
-        revision = model.repo.new_revision()
-        revision.message = u'clean up'
-        revision.author = u'LODStats'
-    
-        for dataset_lodstats in model.Session.query(modelext.DatasetLODStats).all():
-            dataset_lodstats.in_progress = False
-            model.Session.add(dataset_lodstats)
-            model.Session.commit()
-            
-        model.repo.commit()
-    
-    def update_vocabulary_specifity(self):
-        '''
-        Retrieves vocabulary specifity.
-        '''
-        libext_dataset_similarity.update_vocabulary_specifity()
+    def update_vocabulary_stats(self):
+        model_vocabulary_stats.VocabularyStats.update()
         
     
-    def get_similar_datasets(self):
-        '''
-        Retrieves vocabulary specifity.
-        '''
-        libext_dataset_similarity.get_similar_datasets(
-            'https://commondatastorage.googleapis.com/ckannet-storage/2012-07-17T084118/hebis-00000001-05051126.rdf.gz',
-            'http://lodstats.org/vocabulary-specifity#linSpecifity',
-            4)
+    def update_dataset_similarities(self):
+        lib_similarity_stats.update_dataset_similarities(
+                    'http://localhost:5000/dataset/everything-about-water',
+                    'http://lodstats.org/similarity#topic')
+
+
+    def push_datasets_to_triplestore(self):
+        serializer = RDF.Serializer(name='ntriples')
         
+        #general data
+        rdf_model = RDF.Model()
+        for dataset in model.Session.query(model.Package).all():
+            dataset.uri = RDF.Uri('http://localhost:5000/dataset/' + dataset.name)
+            rdf_model.append(RDF.Statement(dataset.uri, prefix.owl.sameAs, RDF.Uri("urn:uuid:" + dataset.id)))
+            rdf_model.append(RDF.Statement(dataset.uri, prefix.rdf.type, prefix.dcat.Dataset))
+            rdf_model.append(RDF.Statement(dataset.uri, prefix.rdfs.label, dataset.name))
+            rdf_model.append(RDF.Statement(dataset.uri, prefix.dct.identifier, dataset.name))
+            rdf_model.append(RDF.Statement(dataset.uri, prefix.dct.title, dataset.title))
+            rdf_model.append(RDF.Statement(dataset.uri, prefix.dct.description, dataset.notes))
+            # + license, author, maintainer
+            triples = serializer.serialize_model_to_string(rdf_model)
+            triplestore.ts.modify('''
+                               insert into graph <http://ckan.org/>
+                               {
+                               ''' + triples + '''
+                               }
+                               ''')
+
+        #stats data
+        rdf_model = RDF.Model()
+        for dataset in model.Session.query(model.Package).all():
+            dataset.uri = RDF.Uri('http://localhost:5000/dataset/' + dataset.name)
+            rdf_model.append(RDF.Statement(dataset.uri, prefix.rdf.type, prefix.void.Dataset))
+            rdf_model.append(RDF.Statement(dataset.uri, prefix.dstats.evaluated, 'false'))
+            triples = serializer.serialize_model_to_string(rdf_model)
+            triplestore.ts.modify('''
+                               insert into graph <http://lodstats.org/>
+                               {
+                               ''' + triples + '''
+                               }
+                               ''')
+

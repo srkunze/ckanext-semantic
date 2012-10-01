@@ -1,6 +1,4 @@
 import ckan.model as model
-import ckanext.lodstatsext.lib.dataset_similarity as dataset_similarity_lib
-import ckanext.lodstatsext.lib.lodstatsext as lodstatsext_lib
 import ckan.plugins as plugins
 import logging
 import os
