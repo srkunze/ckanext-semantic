@@ -24,6 +24,8 @@ supported_formats = {
 
 
 class DatasetStats:
+    graph = 'http://lodstats.org/datasets'
+    
     @classmethod
     def update(cls):
         #date_4_weeks_ago = datetime.date.today() - datetime.timedelta(weeks=4)
@@ -31,7 +33,7 @@ class DatasetStats:
                                    prefix void: <http://rdfs.org/ns/void#>
                                    prefix dstats: <http://lodstats.org/dataset#>
                                    select ?dataset
-                                   from <http://lodstats.org/>
+                                   from <''' + DatasetStats.graph + '''>
                                    where
                                    {
                                        ?dataset a void:Dataset.
@@ -89,19 +91,18 @@ class DatasetStats:
         triples = serializer.serialize_model_to_string(self.rdf)
             
         triplestore.ts.modify('''
-                           delete from graph <http://lodstats.org/>
+                           delete from graph <''' + DatasetStats.graph + '''>
                            {
-                               ?dataset ?p ?o.
-                               ?o ?op ?oo.
+                               ?dataset ?predicate ?object.
+                               ?object ?object_predicate ?object_object.
                            }
                            where
                            {
-                               ?dataset a <http://rdfs.org/ns/void#Dataset>.
-                               ?dataset ?p ?o.
+                               ?dataset ?predicate ?object.
                                filter(?dataset=<''' + self.dataset.uri_string + '''>)
                            }
                            
-                           insert into graph <http://lodstats.org/>
+                           insert into graph <''' + DatasetStats.graph + '''>
                            {
                            ''' + triples + '''
                            }

@@ -2,7 +2,7 @@ import ckan.lib.cli as cli
 import ckan.model as model
 import ckanext.lodstatsext.model.dataset_stats as model_dataset_stats
 import ckanext.lodstatsext.model.vocabulary_stats as model_vocabulary_stats
-import ckanext.lodstatsext.lib.similarity_stats as lib_similarity_stats
+import ckanext.lodstatsext.model.similarity_stats as model_similarity_stats
 import ckanext.lodstatsext.model.triplestore as triplestore
 import ckanext.lodstatsext.model.prefix as prefix
 import datetime
@@ -49,15 +49,31 @@ class LODStatsExtCommand(cli.CkanCommand):
         
     
     def update_dataset_similarities(self):
-        lib_similarity_stats.update_dataset_similarities(
-                    'http://localhost:5000/dataset/everything-about-water',
-                    'http://lodstats.org/similarity#topic')
+        model_similarity_stats.SimilarityStats.update_similarities(
+                    'http://lodstats.org/similarity#topic',
+                    'http://localhost:5000/dataset/everything-about-water')
+
+
+    def get_similar_elements(self):
+        for row in model_similarity_stats.SimilarityStats.get_similaries(
+                    'http://lodstats.org/similarity#topic',
+                    'http://os.rkbexplorer.com/models/dump.tgz',
+                    'http://rdfs.org/ns/void#Dataset',
+                    4):
+            print row[1], row[0]
+
+
+    def get_and_cache_similar_elements(self):
+        for row in model_similarity_stats.SimilarityStats.get_and_cache_similarities(
+                    'http://lodstats.org/similarity#topic',
+                    'http://os.rkbexplorer.com/models/dump.tgz',
+                    'http://rdfs.org/ns/void#Dataset',
+                    4):
+            print row[1], row[0]
 
 
     def push_datasets_to_triplestore(self):
         serializer = RDF.Serializer(name='ntriples')
-        
-        #general data
         rdf_model = RDF.Model()
         for dataset in model.Session.query(model.Package).all():
             dataset.uri = RDF.Uri('http://localhost:5000/dataset/' + dataset.name)
@@ -70,13 +86,26 @@ class LODStatsExtCommand(cli.CkanCommand):
             # + license, author, maintainer
             triples = serializer.serialize_model_to_string(rdf_model)
             triplestore.ts.modify('''
-                               insert into graph <http://ckan.org/>
+                                clear graph <http://ckan.org/datasets>
+                                
+                               insert into graph <http://ckan.org/datasets>
                                {
                                ''' + triples + '''
                                }
                                ''')
 
-        #stats data
+
+    def push_users_to_triplestore(self):
+        serializer = RDF.Serializer(name='ntriples')
+        rdf_model = RDF.Model()
+        for user in model.Session.query(model.User).all():
+            user.uri = RDF.Uri('http://localhost:5000/user/' + user.name)
+            rdf_model.append(RDF.Statement(user.uri, prefix.owl.sameAs, RDF.Uri("urn:uuid:" + user.id)))
+            #interst = follow
+            #continue
+
+    def reset_lodstats_datasets(self):
+        serializer = RDF.Serializer(name='ntriples')
         rdf_model = RDF.Model()
         for dataset in model.Session.query(model.Package).all():
             dataset.uri = RDF.Uri('http://localhost:5000/dataset/' + dataset.name)
@@ -84,7 +113,9 @@ class LODStatsExtCommand(cli.CkanCommand):
             rdf_model.append(RDF.Statement(dataset.uri, prefix.dstats.evaluated, 'false'))
             triples = serializer.serialize_model_to_string(rdf_model)
             triplestore.ts.modify('''
-                               insert into graph <http://lodstats.org/>
+                                clear graph <http://lodstats.org/datasets>
+                                
+                               insert into graph <http://lodstats.org/datasets>
                                {
                                ''' + triples + '''
                                }

@@ -5,6 +5,8 @@ import RDF
 
 
 class VocabularyStats:
+    graph = 'http://lodstats.org/vocabularies'
+    
     @classmethod
     def update(cls):
         result = triplestore.ts.query('''
@@ -74,16 +76,9 @@ class VocabularyStats:
         serializer = RDF.Serializer(name="ntriples")
         triples = serializer.serialize_model_to_string(self.rdf)
         triplestore.ts.modify('''
-                           delete from graph <http://lodstats.org/vocabulary/>
-                           {
-                               ?vocabulary ?predicate ?object.
-                           }
-                           where
-                           {
-                               ?vocabulary ?predicate ?object.
-                           }
+                           clear graph <''' + VocabularyStats.graph + '''>
                            
-                           insert in graph <http://lodstats.org/vocabulary/>
+                           insert in graph <''' + VocabularyStats.graph + '''>
                            {
                            ''' + triples + '''
                            }
@@ -92,7 +87,7 @@ class VocabularyStats:
     def load(self):
         return triplestore.ts.query('''
                                    select *
-                                   from <http://lodstats.org/vocabulary/>
+                                   from <''' + VocabularyStats.graph + '''>
                                    where
                                    {
                                        ?vocabulary ?predicate ?object.
