@@ -41,7 +41,7 @@ class LODStatsExtCommand(cli.CkanCommand):
     def test(self):
         print RDF.__file__
         print prefix.xs.x
-        for row in personalization.get_datasets_matching_user_interest('http://localhost:5000/user/meier', ''):
+        for row in personalization.get_datasets_matching_user_interest(h.user_to_uri('meier'), ''):
             print row
         pass
         
@@ -139,7 +139,7 @@ class LODStatsExtCommand(cli.CkanCommand):
         serializer = RDF.Serializer(name='ntriples')
         rdf_model = RDF.Model()
         for dataset in model.Session.query(model.Package).all():
-            dataset.rdf_uri = RDF.Uri('http://localhost:5000/dataset/' + dataset.name)
+            dataset.rdf_uri = RDF.Uri(h.dataset_to_uri(dataset.name))
             rdf_model.append(RDF.Statement(dataset.rdf_uri, prefix.rdf.type, prefix.void.Dataset))
             rdf_model.append(RDF.Statement(dataset.rdf_uri, prefix.dstats.evaluated, 'false'))
         triples = serializer.serialize_model_to_string(rdf_model)
