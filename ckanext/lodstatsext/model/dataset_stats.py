@@ -52,10 +52,9 @@ class DatasetStats:
         dataset_stats.commit()
 
 
-    def __init__(self, dataset_uri_string):
-        self.dataset = model.Session.query(model.Package).filter(('http://localhost:5000/dataset/' + model.Package.name) == dataset_uri_string).one()
-        self.dataset.uri_string = dataset_uri_string
-        self.dataset.uri = RDF.Uri(self.dataset.uri_string)
+    def __init__(self, dataset_uri):
+        self.dataset = h.uri_to_db_object(dataset_uri)
+        self.dataset.uri = dataset_uri
         self.rdf = RDF.Model()
         self.rdf_resource = None
         self.rdf_resource_format = None
@@ -68,21 +67,22 @@ class DatasetStats:
 
 
     def do_stats(self):
-        self.rdf.append(RDF.Statement(self.dataset.uri, prefix.dstats.evaluated, 'true'))
-        self.rdf.append(RDF.Statement(self.dataset.uri, prefix.dstats.lastEvaluated, RDF.Node(literal=datetime.datetime.now().isoformat(), datatype=prefix.xs.dateTime.uri)))
+        dataset_rdf_uri = RDF.Uri(self.dataset.uri)
+        self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.evaluated, 'true'))
+        self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.lastEvaluated, RDF.Node(literal=datetime.datetime.now().isoformat(), datatype=prefix.xs.dateTime.uri)))
 
         if self.rdf_resource is None:
-            self.rdf.append(RDF.Statement(self.dataset.uri, prefix.dstats.error, prefix.dstats.NoRDFResource))
+            self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.error, prefix.dstats.NoRDFResource))
             return
         
         try:
             self.rdf_stats = lodstats.RDFStats(format=self.rdf_resource_format, rdfurl=self.rdf_resource.url)
             self.rdf_stats.parse()
             self.rdf_stats.do_stats()
-            self.rdf_stats.update_model(self.dataset.uri, self.rdf)
+            self.rdf_stats.update_model(dataset_rdf_uri, self.rdf)
         except Exception, errorstr:
-            self.rdf.append(RDF.Statement(self.dataset.uri, prefix.dstats.error, prefix.dstats.LODStatsError))
-            self.rdf.append(RDF.Statement(self.dataset.uri, prefix.dstats.errorString, errorstr))
+            self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.error, prefix.dstats.LODStatsError))
+            self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.errorString, errorstr))
             return
             
             
@@ -99,7 +99,7 @@ class DatasetStats:
                            where
                            {
                                ?dataset ?predicate ?object.
-                               filter(?dataset=<''' + self.dataset.uri_string + '''>)
+                               filter(?dataset=<''' + self.dataset.uri + '''>)
                            }
                            
                            insert into graph <''' + DatasetStats.graph + '''>
