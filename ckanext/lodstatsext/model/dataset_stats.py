@@ -41,6 +41,7 @@ class DatasetStats:
                                    }
                                    ''')
                                    
+        #TODO: when too old, update, too
         relevant_datasets = result['results']['bindings']
         if len(relevant_datasets) == 0:
             print "no dataset requires stats update"

@@ -72,6 +72,8 @@ class SimilarityStats:
         if float(count1) / float(count2) < 0.4:
             SimilarityStats.update_similarities(similarity_uri, element_uri, 'http://rdfs.org/ns/void#Dataset')
             
+        #TODO: when too old, update, too
+            
         return SimilarityStats.get_similaries(similarity_uri, element_uri, similar_element_class_uri, count_limit)
 
 
