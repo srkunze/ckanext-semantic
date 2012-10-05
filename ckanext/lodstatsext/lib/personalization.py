@@ -5,7 +5,7 @@ import random
 import RDF
 
 
-def get_datasets_matching_user_interest(user_uri, match_uri):
+def get_datasets_similar_to_user_interest(user_uri, similarity_uri):
     result = triplestore.ts.query('''
                                 prefix foaf: <http://xmlns.com/foaf/0.1/>
                                 select ?dataset
@@ -19,7 +19,7 @@ def get_datasets_matching_user_interest(user_uri, match_uri):
     
     chosen_dataset = result[random_index]['dataset']['value']
     return similarity_stats.SimilarityStats.get_and_cache_similarities(
-        'http://lodstats.org/similarity#topic',
+        similarity_uri,
         chosen_dataset,
         'http://rdfs.org/ns/void#Dataset',
         4)

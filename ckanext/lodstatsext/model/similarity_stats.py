@@ -16,7 +16,7 @@ class SimilarityStats:
                                        prefix vstats: <http://lodstats.org/vocabulary#>
                                        prefix void: <http://rdfs.org/ns/void#>
                                        
-                                       select ?dataset2 (sum(xs:decimal(?specificity)) as ?similarity)
+                                       select ?dataset2 (sum(?specificity) as ?similarity)
                                        where
                                        {
                                            <''' + element_uri + '''> void:vocabulary ?vocabulary1.
@@ -32,7 +32,7 @@ class SimilarityStats:
             similarity_stats = SimilarityStats(similarity_uri, element_uri)
                                                       
             for row in result['results']['bindings']:
-                similarity_stats.append(element_uri, row['dataset2']['value'], row['similarity']['value'], similarity_uri_string)
+                similarity_stats.append(element_uri, row['dataset2']['value'], row['similarity']['value'], similarity_uri)
             
             similarity_stats.commit()
             
@@ -111,7 +111,7 @@ class SimilarityStats:
         self.rdf.append(RDF.Statement(similarity_node, prefix.rdf.type, prefix.sim.Similarity))
         self.rdf.append(RDF.Statement(similarity_node, prefix.sim.element, RDF.Uri(element1_uri)))
         self.rdf.append(RDF.Statement(similarity_node, prefix.sim.element, RDF.Uri(element2_uri)))
-        self.rdf.append(RDF.Statement(similarity_node, prefix.sim.weight, str(weight)))
+        self.rdf.append(RDF.Statement(similarity_node, prefix.sim.weight, RDF.Node(literal=str(weight), datatype=prefix.xs.decimal.uri)))
         self.rdf.append(RDF.Statement(similarity_node, prefix.sim.method, RDF.Uri(similarity_uri)))
         self.rdf.append(RDF.Statement(similarity_node, prefix.dct.created, RDF.Node(literal=datetime.datetime.now().isoformat(), datatype=prefix.xs.dateTime.uri)))
         
@@ -119,6 +119,7 @@ class SimilarityStats:
     def commit(self):
         serializer = RDF.Serializer(name="ntriples")
         triples = serializer.serialize_model_to_string(self.rdf)
+        print triples
         triplestore.ts.modify('''
                            delete from graph <''' + SimilarityStats.graph + '''>
                            {

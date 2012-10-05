@@ -16,7 +16,7 @@ class VocabularyStats:
                                    {
                                        ?dataset void:vocabulary ?vocabulary.
                                    }
-                                   ''') ## ?dataset a void:Dataset semantically better, but error-prone in case of typos (void:dataset instead of void:Dataset)
+                                   ''')
         dataset_count = float(result['results']['bindings'][0]['dataset_count']['value'])
         
         result = triplestore.ts.query('''

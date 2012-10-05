@@ -39,10 +39,6 @@ class LODStatsExtCommand(cli.CkanCommand):
         
         
     def test(self):
-        print RDF.__file__
-        print prefix.xs.x
-        for row in personalization.get_datasets_matching_user_interest(h.user_to_uri('meier'), ''):
-            print row
         pass
         
         
@@ -61,7 +57,7 @@ class LODStatsExtCommand(cli.CkanCommand):
                     'http://rdfs.org/ns/void#Dataset')
 
 
-    def get_similar_elements(self):
+    def get_dataset_similarities(self):
         for row in model_similarity_stats.SimilarityStats.get_similaries(
                     'http://lodstats.org/similarity#topic',
                     'http://os.rkbexplorer.com/models/dump.tgz',
@@ -70,17 +66,19 @@ class LODStatsExtCommand(cli.CkanCommand):
             print row[1], row[0]
 
 
-    def get_and_cache_similar_elements(self):
+    def get_and_cache_dataset_similarities(self):
         for row in model_similarity_stats.SimilarityStats.get_and_cache_similarities(
                     'http://lodstats.org/similarity#topic',
-                    'http://os.rkbexplorer.com/models/dump.tgz',
+                    'http://localhost:5000/dataset/instance-hub-organizations',
                     'http://rdfs.org/ns/void#Dataset',
                     4):
             print row[1], row[0]
             
     
-    def get_X(self):
-        for row in personalization.get_datasets_matching_user_interest(h.user_to_uri('kunze'), ):
+    def get_datasets_matching_user_interest(self):
+        for row in personalization.get_datasets_similar_to_user_interest(
+                                                        h.user_to_uri('meier'),
+                                                        'http://lodstats.org/similarity#topic'):
             print row
 
 

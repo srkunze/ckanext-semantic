@@ -2,7 +2,7 @@ import ckan.model as model
 
 
 host = 'http://localhost:5000/'
-path_to_dataset = 'dataset'
+path_to_dataset = 'dataset/'
 path_to_user = 'user/'
 
 
