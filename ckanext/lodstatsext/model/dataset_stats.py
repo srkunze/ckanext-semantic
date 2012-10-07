@@ -1,4 +1,5 @@
 import ckan.model as model
+import ckanext.lodstatsext.lib.helpers as h
 import ckanext.lodstatsext.model.prefix as prefix
 import ckanext.lodstatsext.model.triplestore as triplestore
 import datetime
@@ -27,27 +28,29 @@ class DatasetStats:
     graph = 'http://lodstats.org/datasets'
     
     @classmethod
-    def update(cls):
-        #date_4_weeks_ago = datetime.date.today() - datetime.timedelta(weeks=4)
-        result = triplestore.ts.query('''
-                                   prefix void: <http://rdfs.org/ns/void#>
-                                   prefix dstats: <http://lodstats.org/dataset#>
-                                   select ?dataset
-                                   from <''' + DatasetStats.graph + '''>
-                                   where
-                                   {
-                                       ?dataset a void:Dataset.
-                                       ?dataset dstats:evaluated "false".
-                                   }
-                                   ''')
-                                   
-        #TODO: when too old, update, too
-        relevant_datasets = result['results']['bindings']
-        if len(relevant_datasets) == 0:
-            print "no dataset requires stats update"
-            return
-            
-        dataset_uri = relevant_datasets[0]['dataset']['value']
+    def update(cls, dataset_uri=None):
+        if dataset_uri is None:
+            #TODO: when too old, update, too
+            #date_4_weeks_ago = datetime.date.today() - datetime.timedelta(weeks=4)
+            relevant_datasets = triplestore.ts.query('''
+                                       prefix void: <http://rdfs.org/ns/void#>
+                                       prefix dstats: <http://lodstats.org/dataset#>
+                                       select ?dataset
+                                       from <''' + DatasetStats.graph + '''>
+                                       where
+                                       {
+                                           ?dataset a void:Dataset.
+                                           ?dataset dstats:evaluated "false".
+                                       }
+                                       ''')
+
+            if len(relevant_datasets) == 0:
+                print "no dataset requires stats update"
+                return
+                
+            dataset_uri = relevant_datasets[0]['dataset']['value']
+
+
         dataset_stats = DatasetStats(dataset_uri)
         dataset_stats.do_stats()
         dataset_stats.commit()
@@ -75,22 +78,24 @@ class DatasetStats:
         if self.rdf_resource is None:
             self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.error, prefix.dstats.NoRDFResource))
             return
-        
+
         try:
             self.rdf_stats = lodstats.RDFStats(format=self.rdf_resource_format, rdfurl=self.rdf_resource.url)
             self.rdf_stats.parse()
             self.rdf_stats.do_stats()
             self.rdf_stats.update_model(dataset_rdf_uri, self.rdf)
-        except Exception, errorstr:
+        except Exception as errorstr:
             self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.error, prefix.dstats.LODStatsError))
-            self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.errorString, errorstr))
+            if isinstance(errorstr, Exception):
+                self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.errorString, RDF.Node(literal=errorstr.message, datatype=prefix.xs.string.uri)))
+            else:
+                self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.errorString, RDF.Node(literal=errorstr, datatype=prefix.xs.string.uri)))
             return
             
             
     def commit(self):
         serializer = RDF.Serializer(name='ntriples')
         triples = serializer.serialize_model_to_string(self.rdf)
-            
         triplestore.ts.modify('''
                            delete from graph <''' + DatasetStats.graph + '''>
                            {

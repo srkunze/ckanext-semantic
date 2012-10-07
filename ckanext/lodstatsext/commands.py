@@ -2,9 +2,9 @@ import ckan.lib.cli as cli
 import ckan.model as model
 import ckanext.lodstatsext.lib.helpers as h
 import ckanext.lodstatsext.lib.personalization as personalization
-import ckanext.lodstatsext.model.dataset_stats as model_dataset_stats
-import ckanext.lodstatsext.model.vocabulary_stats as model_vocabulary_stats
-import ckanext.lodstatsext.model.similarity_stats as model_similarity_stats
+import ckanext.lodstatsext.model.dataset_stats as mds
+import ckanext.lodstatsext.model.vocabulary_stats as mvs
+import ckanext.lodstatsext.model.similarity_stats as mvs
 import ckanext.lodstatsext.model.triplestore as triplestore
 import ckanext.lodstatsext.model.prefix as prefix
 import datetime
@@ -30,49 +30,75 @@ class LODStatsExtCommand(cli.CkanCommand):
         if not self.args or self.args[0] in ['--help', '-h', 'help']:
             print ExampleCommand.__doc__
             return
+            
 
-        cmd = self.args[0]
         self._load_config()
-        getattr(self, cmd)()
+        getattr(self, self.args[0])(*(self.args[1:]))
 
-        #log.error('Command "%s" not recognized' % cmd)
-        
-        
+
     def test(self):
         pass
         
         
-    def update_dataset_stats(self):
-        model_dataset_stats.DatasetStats.update()
+    def update_dataset_stats(self, dataset_uri=None):
+        mds.DatasetStats.update(dataset_uri)
 
 
     def update_vocabulary_stats(self):
-        model_vocabulary_stats.VocabularyStats.update()
+        mvs.VocabularyStats.update()
         
     
-    def update_dataset_similarities(self):
-        model_similarity_stats.SimilarityStats.update_similarities(
-                    'http://lodstats.org/similarity#topic',
-                    h.dataset_to_uri('everything-about-water'),
-                    'http://rdfs.org/ns/void#Dataset')
+    def update_similarity_stats(self,
+                                similarity_type,
+                                element_uri,
+                                element_type='dataset',
+                                similar_element_type='dataset'):
+        element_class = {'dataset': 'http://rdfs.org/ns/void#Dataset',
+                         'user': 'http://xmlns.com/foaf/0.1/Person'}[element_type]
+        similar_element_class = {'dataset': 'http://rdfs.org/ns/void#Dataset',
+                                 'user': 'http://xmlns.com/foaf/0.1/Person'}[similar_element_type]
+        similarities = mvs.SimilarityStats(mvs.SimilarityStats.type[similarity_type],
+                                           element_class,
+                                           element_uri,
+                                           similar_element_class)
+        similarities.update_and_commit()
 
 
-    def get_dataset_similarities(self):
-        for row in model_similarity_stats.SimilarityStats.get_similaries(
-                    'http://lodstats.org/similarity#topic',
-                    'http://os.rkbexplorer.com/models/dump.tgz',
-                    'http://rdfs.org/ns/void#Dataset',
-                    4):
-            print row[1], row[0]
+    def load_similarity_stats(self,
+                              similarity_type,
+                              element_uri,
+                              element_type='dataset',
+                              similar_element_type='dataset'):
+        element_class = {'dataset': 'http://rdfs.org/ns/void#Dataset',
+                         'user': 'http://xmlns.com/foaf/0.1/Person'}[element_type]
+        similar_element_class = {'dataset': 'http://rdfs.org/ns/void#Dataset',
+                                 'user': 'http://xmlns.com/foaf/0.1/Person'}[similar_element_type]
+        similarities = mvs.SimilarityStats(mvs.SimilarityStats.type[similarity_type],
+                                           element_class,
+                                           element_uri,
+                                           similar_element_class) 
+        similarities.load(5)
+        for row in similarities.rows:
+            print row
 
 
-    def get_and_cache_dataset_similarities(self):
-        for row in model_similarity_stats.SimilarityStats.get_and_cache_similarities(
-                    'http://lodstats.org/similarity#topic',
-                    'http://localhost:5000/dataset/instance-hub-organizations',
-                    'http://rdfs.org/ns/void#Dataset',
-                    4):
-            print row[1], row[0]
+
+    def load_similarity_stats_from_store_only(self,
+                                              similarity_type,
+                                              element_uri,
+                                              element_type='dataset',
+                                              similar_element_type='dataset'):
+        element_class = {'dataset': 'http://rdfs.org/ns/void#Dataset',
+                         'user': 'http://xmlns.com/foaf/0.1/Person'}[element_type]
+        similar_element_class = {'dataset': 'http://rdfs.org/ns/void#Dataset',
+                                 'user': 'http://xmlns.com/foaf/0.1/Person'}[similar_element_type]
+        similarities = mvs.SimilarityStats(mvs.SimilarityStats.type[similarity_type],
+                                           element_class,
+                                           element_uri,
+                                           similar_element_class) 
+        similarities.load(5, from_store_only=True)
+        for row in similarities.rows:
+            print row
             
     
     def get_datasets_matching_user_interest(self):

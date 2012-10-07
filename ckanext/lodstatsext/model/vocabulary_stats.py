@@ -17,7 +17,7 @@ class VocabularyStats:
                                        ?dataset void:vocabulary ?vocabulary.
                                    }
                                    ''')
-        dataset_count = float(result['results']['bindings'][0]['dataset_count']['value'])
+        dataset_count = float(result[0]['dataset_count']['value'])
         
         result = triplestore.ts.query('''
                                    prefix void: <http://rdfs.org/ns/void#>
@@ -32,7 +32,7 @@ class VocabularyStats:
 
         vocabulary_stats = VocabularyStats()
 
-        for row in result['results']['bindings']:
+        for row in result:
             absolute_frequency = float(row['dataset_count']['value'])
             relative_frequency = float(absolute_frequency) / float(dataset_count)
             
@@ -89,7 +89,7 @@ class VocabularyStats:
                                    {
                                        ?vocabulary ?predicate ?object.
                                    }
-                                   ''')['results']['bindings']
+                                   ''')
         
 
     def clear_rdf(self):
