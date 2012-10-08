@@ -3,8 +3,9 @@ import ckan.model as model
 import ckanext.lodstatsext.lib.helpers as h
 import ckanext.lodstatsext.lib.personalization as personalization
 import ckanext.lodstatsext.model.dataset_stats as mds
+import ckanext.lodstatsext.model.similarity_methods as sm
 import ckanext.lodstatsext.model.vocabulary_stats as mvs
-import ckanext.lodstatsext.model.similarity_stats as mvs
+import ckanext.lodstatsext.model.similarity_stats as mss
 import ckanext.lodstatsext.model.triplestore as triplestore
 import ckanext.lodstatsext.model.prefix as prefix
 import datetime
@@ -39,7 +40,6 @@ class LODStatsExtCommand(cli.CkanCommand):
     def test(self):
         pass
         
-        
     def update_dataset_stats(self, dataset_uri=None):
         mds.DatasetStats.update(dataset_uri)
 
@@ -48,59 +48,40 @@ class LODStatsExtCommand(cli.CkanCommand):
         mvs.VocabularyStats.update()
         
     
-    def update_similarity_stats(self,
-                                similarity_type,
-                                element_uri,
-                                element_type='dataset',
-                                similar_element_type='dataset'):
-        element_class = {'dataset': 'http://rdfs.org/ns/void#Dataset',
-                         'user': 'http://xmlns.com/foaf/0.1/Person'}[element_type]
-        similar_element_class = {'dataset': 'http://rdfs.org/ns/void#Dataset',
-                                 'user': 'http://xmlns.com/foaf/0.1/Person'}[similar_element_type]
-        similarities = mvs.SimilarityStats(mvs.SimilarityStats.type[similarity_type],
-                                           element_class,
+    def similarity_stats(self,
+                         method,
+                         similarity_method_name,
+                         element_uri,
+                         element_type='dataset',
+                         similar_element_type='dataset'):
+        similarity_method = {'topic': sm.TopicSimilarity,
+                             'location': sm.LocationSimilarity,
+                             'time': sm.TimeSimilarity,
+                            }[similarity_method_name]
+        element_class_uri = {'dataset': 'http://rdfs.org/ns/void#Dataset',
+                             'user': 'http://xmlns.com/foaf/0.1/Person'}[element_type]
+        similar_element_class_uri = {'dataset': 'http://rdfs.org/ns/void#Dataset',
+                                     'user': 'http://xmlns.com/foaf/0.1/Person'}[similar_element_type]
+                                 
+        similarities = mss.SimilarityStats(similarity_method,
                                            element_uri,
-                                           similar_element_class)
-        similarities.update_and_commit()
+                                           element_class_uri,
+                                           similar_element_class_uri)
 
-
-    def load_similarity_stats(self,
-                              similarity_type,
-                              element_uri,
-                              element_type='dataset',
-                              similar_element_type='dataset'):
-        element_class = {'dataset': 'http://rdfs.org/ns/void#Dataset',
-                         'user': 'http://xmlns.com/foaf/0.1/Person'}[element_type]
-        similar_element_class = {'dataset': 'http://rdfs.org/ns/void#Dataset',
-                                 'user': 'http://xmlns.com/foaf/0.1/Person'}[similar_element_type]
-        similarities = mvs.SimilarityStats(mvs.SimilarityStats.type[similarity_type],
-                                           element_class,
-                                           element_uri,
-                                           similar_element_class) 
-        similarities.load(5)
-        for row in similarities.rows:
-            print row
-
-
-
-    def load_similarity_stats_from_store_only(self,
-                                              similarity_type,
-                                              element_uri,
-                                              element_type='dataset',
-                                              similar_element_type='dataset'):
-        element_class = {'dataset': 'http://rdfs.org/ns/void#Dataset',
-                         'user': 'http://xmlns.com/foaf/0.1/Person'}[element_type]
-        similar_element_class = {'dataset': 'http://rdfs.org/ns/void#Dataset',
-                                 'user': 'http://xmlns.com/foaf/0.1/Person'}[similar_element_type]
-        similarities = mvs.SimilarityStats(mvs.SimilarityStats.type[similarity_type],
-                                           element_class,
-                                           element_uri,
-                                           similar_element_class) 
-        similarities.load(5, from_store_only=True)
-        for row in similarities.rows:
-            print row
+        if method == 'update':
+            similarities.update_and_commit()
             
-    
+        if method == 'load':
+            similarities.load(5)
+            for row in similarities.rows:
+                print row
+                
+        if method == 'load_from_store_only':
+            similarities.load(5, update_when_necessary=True)
+            for row in similarities.rows:
+                print row
+
+
     def get_datasets_matching_user_interest(self):
         for row in personalization.get_datasets_similar_to_user_interest(
                                                         h.user_to_uri('meier'),
