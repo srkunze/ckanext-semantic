@@ -1,4 +1,4 @@
-import dataset_wrapper as dw
+import ckanext.lodstatsext.model.dataset_wrapper as dw
 
 
 class TopicSimilarity:
@@ -6,11 +6,11 @@ class TopicSimilarity:
     dataset = dw.DatasetTopic
 
     @classmethod
-    def get(cls, vocabularies1, vocabularies2):
+    def get(cls, entity, similar_entity):
         similarity_weight = 0
-        for vocabulary1 in vocabularies1.keys():
-            if vocabulary1 in vocabularies2:
-                similarity_weight += vocabularies1[vocabulary1]
+        for vocabulary in entity.keys():
+            if vocabulary in similar_entity:
+                similarity_weight += entity[vocabulary]
                 
         return similarity_weight, None
 
@@ -20,8 +20,8 @@ class LocationSimilarity:
     dataset = dw.DatasetLocation
 
     @classmethod
-    def get(cls, element, similar_element):
-        square_distance = (element['avgLong'] - similar_element['avgLong'])**2 + (element['avgLat'] - similar_element['avgLat'])**2
+    def get(cls, entity, similar_entity):
+        square_distance = (entity['avgLong'] - similar_entity['avgLong'])**2 + (entity['avgLat'] - similar_entity['avgLat'])**2
 
         return None, square_distance
 
@@ -31,15 +31,15 @@ class TimeSimilarity:
     dataset = dw.DatasetTime
 
     @classmethod
-    def get(cls, element, similar_element):
+    def get(cls, entity, similar_entity):
         similarity_weight = None
         similarity_distance = None
         
-        if max(element['minTime'], similar_element['minTime']) < min(element['maxTime'], similar_element['maxTime']):
-            timedelta = min(element['maxTime'], similar_element['maxTime']) - max(element['minTime'], similar_element['minTime'])
+        if max(entity['minTime'], similar_entity['minTime']) < min(entity['maxTime'], similar_entity['maxTime']):
+            timedelta = min(entity['maxTime'], similar_entity['maxTime']) - max(entity['minTime'], similar_entity['minTime'])
             similarity_weight = timedelta.days * 24 * 3600 + timedelta.seconds
         else:
-            timedelta = max(element['minTime'], similar_element['minTime']) - min(element['maxTime'], similar_element['maxTime'])
+            timedelta = max(entity['minTime'], similar_entity['minTime']) - min(entity['maxTime'], similar_entity['maxTime'])
             similarity_distance = timedelta.days * 24 * 3600 + timedelta.seconds
         
         return similarity_weight, similarity_distance

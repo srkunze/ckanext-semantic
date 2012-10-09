@@ -51,41 +51,51 @@ class LODStatsExtCommand(cli.CkanCommand):
     def similarity_stats(self,
                          method,
                          similarity_method_name,
-                         element_uri,
-                         element_type='dataset',
-                         similar_element_type='dataset'):
+                         entity_name,
+                         entity_type='dataset',
+                         similar_entity_type='dataset'):
         similarity_method = {'topic': sm.TopicSimilarity,
                              'location': sm.LocationSimilarity,
                              'time': sm.TimeSimilarity,
                             }[similarity_method_name]
-        element_class_uri = {'dataset': 'http://rdfs.org/ns/void#Dataset',
-                             'user': 'http://xmlns.com/foaf/0.1/Person'}[element_type]
-        similar_element_class_uri = {'dataset': 'http://rdfs.org/ns/void#Dataset',
-                                     'user': 'http://xmlns.com/foaf/0.1/Person'}[similar_element_type]
+                            
+        entity_uri = {'dataset': dataset_to_uri(entity_name),
+                      'user': user_to_uri(entity_name)}[entity_type]
+        entity_class_uri = {'dataset': 'http://rdfs.org/ns/void#Dataset',
+                            'user': 'http://xmlns.com/foaf/0.1/Person'}[entity_type]
+        similar_entity_class_uri = {'dataset': 'http://rdfs.org/ns/void#Dataset',
+                                    'user': 'http://xmlns.com/foaf/0.1/Person'}[similar_entity_type]
+
                                  
         similarities = mss.SimilarityStats(similarity_method,
-                                           element_uri,
-                                           element_class_uri,
-                                           similar_element_class_uri)
+                                           entity_uri,
+                                           entity_class_uri,
+                                           similar_entity_class_uri)
 
         if method == 'update':
             similarities.update_and_commit()
             
         if method == 'load':
-            similarities.load(5)
+            similarities.load(5, update_when_necessary=False)
             for row in similarities.rows:
                 print row
                 
-        if method == 'load_from_store_only':
-            similarities.load(5, update_when_necessary=True)
+        if method == 'load_and_update_when_necessary':
+            similarities.load(5)
             for row in similarities.rows:
                 print row
 
 
-    def get_datasets_matching_user_interest(self):
-        for row in personalization.get_datasets_similar_to_user_interest(
-                                                        h.user_to_uri('meier'),
-                                                        'http://lodstats.org/similarity#topic'):
+    def entities_similar_to_user_interest(self, user_name, similarity_method_name):
+        similarity_method = {'topic': sm.TopicSimilarity,
+                             'location': sm.LocationSimilarity,
+                             'time': sm.TimeSimilarity,
+                            }[similarity_method_name]
+                            
+        for row in personalization.entities_similar_to_user_interest(h.user_to_uri(user_name),
+                                                                     similarity_method,
+                                                                     'http://rdfs.org/ns/void#Dataset',
+                                                                     'http://rdfs.org/ns/void#Dataset'):
             print row
 
 

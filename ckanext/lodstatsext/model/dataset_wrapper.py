@@ -1,21 +1,21 @@
-import ckanext.lodstatsext.model.prefix as prefix
 import ckanext.lodstatsext.model.triplestore as triplestore
 import datetime
 import dateutil.parser
 
-class TopicWrapper:
+
+class EntityTopic:
     pass
        
            
-class LocationWrapper:
+class EntityLocation:
     pass
        
            
-class TimeWrapper:
+class EntityTime:
     pass
        
            
-class DatasetTopic(TopicWrapper):
+class DatasetTopic(EntityTopic):
     @classmethod
     def get(cls, dataset_uri):
         rows = triplestore.ts.query('''
@@ -73,7 +73,7 @@ class DatasetTopic(TopicWrapper):
 
 
 
-class DatasetLocation(LocationWrapper):
+class DatasetLocation(EntityLocation):
     @classmethod
     def get(cls, dataset_uri):
         row = triplestore.ts.query('''
@@ -152,7 +152,7 @@ class DatasetLocation(LocationWrapper):
 
 
 
-class DatasetTime(TimeWrapper):
+class DatasetTime(EntityTime):
     @classmethod
     def get(cls, dataset_uri):
         row = triplestore.ts.query('''
@@ -202,10 +202,10 @@ class DatasetTime(TimeWrapper):
                                       select (count(distinct ?dataset) as ?count)
                                       where 
                                       {
-                                          ?element void:propertyPartition ?dateTimePropertyPartition.
+                                          ?dataset void:propertyPartition ?dateTimePropertyPartition.
                                           ?dateTimePropertyPartition void:minValue ?minDateTime.
                                           ?dateTimePropertyPartition void:maxValue ?maxDateTime.
                                           filter(datatype(?maxDateTime) = xs:dateTime)
                                       }
-                                      group by ?element
+                                      group by ?dataset
                                       ''')[0]['count']['value'])
