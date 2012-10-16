@@ -165,6 +165,7 @@ class DatasetTime(EntityTime):
                                       <''' + dataset_uri + '''> void:propertyPartition ?dateTimePropertyPartition.
                                       ?dateTimePropertyPartition void:minValue ?minDateTime.
                                       ?dateTimePropertyPartition void:maxValue ?maxDateTime.
+                                      filter(datatype(?minDateTime) = xs:dateTime)
                                       filter(datatype(?maxDateTime) = xs:dateTime)
                                   }
                                   group by ?dataset
@@ -184,6 +185,7 @@ class DatasetTime(EntityTime):
                                       ?dataset void:propertyPartition ?dateTimePropertyPartition.
                                       ?dateTimePropertyPartition void:minValue ?minDateTime.
                                       ?dateTimePropertyPartition void:maxValue ?maxDateTime.
+                                      filter(datatype(?minDateTime) = xs:dateTime)
                                       filter(datatype(?maxDateTime) = xs:dateTime)
                                   }
                                   group by ?dataset
@@ -205,6 +207,7 @@ class DatasetTime(EntityTime):
                                           ?dataset void:propertyPartition ?dateTimePropertyPartition.
                                           ?dateTimePropertyPartition void:minValue ?minDateTime.
                                           ?dateTimePropertyPartition void:maxValue ?maxDateTime.
+                                          filter(datatype(?minDateTime) = xs:dateTime)
                                           filter(datatype(?maxDateTime) = xs:dateTime)
                                       }
                                       group by ?dataset
