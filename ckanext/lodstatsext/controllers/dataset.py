@@ -10,7 +10,7 @@ import RDF
 log = logging.getLogger(__name__)
 
 
-class PackageController(base.BaseController):
+class DatasetController(base.BaseController):
     def read_n3(self, id):
         base.response.headers['Content-Type'] = "text/n3; charset=utf-8"
 
@@ -44,7 +44,7 @@ class PackageController(base.BaseController):
         except logic.NotAuthorized:
             abort(401, _('Unauthorized to read package %s') % id)
             
-        context['package']
+        dataset = context['package']
         #TODO: retrieve RDF from Virtuoso
 
         return 0

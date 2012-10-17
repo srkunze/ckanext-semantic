@@ -1,8 +1,8 @@
 import ckanext.lodstatsext.model.prefix as prefix
 import ckanext.lodstatsext.model.store as store
 import ckanext.lodstatsext.model.user as mu
-import ckanext.lodstatsext.model.similarity_stats as mss
-import ckanext.lodstatsext.model.similarity_methods as sm
+import similarity.similarity_stats as sss
+import similarity.methods as methods
 
 class Recommendation:
     def __init__(self, user):
@@ -37,7 +37,7 @@ class Recommendation:
             interests[interest.uri] = 'interest'
             
         for interest in self.user.interests:
-            similarities = mss.SimilarityStats(similarity_method, interest.uri,
+            similarities = sss.SimilarityStats(similarity_method, interest.uri,
                                                interest.class_uri, recommended_entity_class_uri)
             similarities.load(self.count_limit * len(self.user.interests)) # <<< in order to get sufficiently relevant entities
             

@@ -1,11 +1,10 @@
 import ckan.lib.cli as cli
 import ckan.model as model
-import ckanext.lodstatsext.lib.helpers as h
-import ckanext.lodstatsext.lib.personalization as personalization
-import ckanext.lodstatsext.model.update as update
-import ckanext.lodstatsext.model.similarity_methods as sm
-import ckanext.lodstatsext.model.vocabulary_stats as mvs
-import ckanext.lodstatsext.model.similarity_stats as mss
+import lib.helpers as h
+import model.update as update
+import model.similarity.similarity_stats as similarity_stats
+import model.similarity.methods as similarity_methods
+import model.vocabulary_stats as vocabulary_stats
 import datetime
 import logging
 import sqlalchemy
@@ -62,7 +61,7 @@ class LODStatsExtCommand(cli.CkanCommand):
 
 
     def update_vocabulary_stats(self):
-        mvs.VocabularyStats.update()
+        vocabulary_stats.VocabularyStats.update()
         
     
     def similarity_stats(self,
@@ -71,9 +70,9 @@ class LODStatsExtCommand(cli.CkanCommand):
                          entity_name,
                          entity_type='dataset',
                          similar_entity_type='dataset'):
-        similarity_method = {'topic': sm.TopicSimilarity,
-                             'location': sm.LocationSimilarity,
-                             'time': sm.TimeSimilarity,
+        similarity_method = {'topic': similarity_methods.TopicSimilarity,
+                             'location': similarity_methods.LocationSimilarity,
+                             'time': similarity_methods.TimeSimilarity,
                             }[similarity_method_name]
                             
         entity_uri = {'dataset': dataset_to_uri(entity_name),
@@ -84,10 +83,10 @@ class LODStatsExtCommand(cli.CkanCommand):
                                     'user': 'http://xmlns.com/foaf/0.1/Person'}[similar_entity_type]
 
                                  
-        similarities = mss.SimilarityStats(similarity_method,
-                                           entity_uri,
-                                           entity_class_uri,
-                                           similar_entity_class_uri)
+        similarities = similarity_stats.SimilarityStats(similarity_method,
+                                                        entity_uri,
+                                                        entity_class_uri,
+                                                        similar_entity_class_uri)
 
         if method == 'update':
             similarities.update_and_commit()
@@ -101,17 +100,4 @@ class LODStatsExtCommand(cli.CkanCommand):
             similarities.load(5)
             for row in similarities.rows:
                 print row
-
-
-    def entities_similar_to_user_interest(self, user_name, similarity_method_name):
-        similarity_method = {'topic': sm.TopicSimilarity,
-                             'location': sm.LocationSimilarity,
-                             'time': sm.TimeSimilarity,
-                            }[similarity_method_name]
-                            
-        for row in personalization.entities_similar_to_user_interest(h.user_to_uri(user_name),
-                                                                     similarity_method,
-                                                                     'http://rdfs.org/ns/void#Dataset',
-                                                                     'http://rdfs.org/ns/void#Dataset'):
-            print row
 
