@@ -22,14 +22,14 @@ class SubscriptionLocation(EntityLocation):
             self.entities[subscription.id] = subscription_location
 
 
-    def extract_semantic_subscription_location(semantic_subscription):
+    def extract_semantic_subscription_location(subscription):
         subscription.parse_definition()
         location = subscription.definition['location']
 
         return {'avgLat': location['latitude'], 'avgLong': location['longitude']}
 
                                
-    def extract_semantic_sparql_location(semantic_subscription):
+    def extract_sparql_subscription_location(subscription):
         #TODO: find a way to extract location from a SPARQL query
         return None
 

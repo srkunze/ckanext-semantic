@@ -24,7 +24,7 @@ class SubscriptionTime(EntityTime):
             self.entities[subscription.id] = subscription_time
 
 
-    def extract_semantic_subscription_time(semantic_subscription):
+    def extract_semantic_subscription_time(subscription):
         subscription.parse_definition()
         time = subscription.definition['time']
         
@@ -40,7 +40,7 @@ class SubscriptionTime(EntityTime):
         return None
 
 
-    def extract_semantic_sparql_time(semantic_subscription):
+    def extract_sparql_subscription_time(subscription):
         #TODO: find a way to extract time from a SPARQL query
         return None
 

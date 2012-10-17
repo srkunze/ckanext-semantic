@@ -22,13 +22,13 @@ class SubscriptionTopic(EntityTopic):
             self.entities[subscription.id] = subscription_topics
 
 
-    def extract_semantic_subscription_topics(semantic_subscription):
+    def extract_semantic_subscription_topics(subscription):
         subscription.parse_definition()
 
         return subscription.definition['topics']
         
             
-    def extract_semantic_sparql_topics(semantic_subscription):
+    def extract_sparql_subscription_topics(semantic_subscription):
         #TODO: find a way to extract topics from a SPARQL query
         return None
 
