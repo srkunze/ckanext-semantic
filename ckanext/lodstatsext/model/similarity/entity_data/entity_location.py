@@ -1,0 +1,3 @@
+class EntityLocation(EntityData):
+    pass
+

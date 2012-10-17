@@ -1,0 +1,2 @@
+class TimeData(MethodData):
+    pass

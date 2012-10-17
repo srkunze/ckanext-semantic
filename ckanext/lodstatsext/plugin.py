@@ -27,9 +27,8 @@ class LODstatsPlugin(plugins.SingletonPlugin):
 
 
     def before_map(self, map):
-        print "sfkj2"
-        map.redirect('/user/recommendation', 'user/recommendation/topic')
-        map.connect('/user/recommendation/{type_}', controller='ckanext.lodstatsext.controllers.user:UserController', action='recommendation')
+        map.redirect('/user/recommendation', '/user/recommendation/topic')
+        map.connect('/user/recommendation/{similarity_method_name}', controller='ckanext.lodstatsext.controllers.user:UserController', action='recommendation')
         map.connect('/dataset/{id}.n3', controller='ckanext.lodstatsext.controllers.package:PackageController', action='read_n3')
 
         return map

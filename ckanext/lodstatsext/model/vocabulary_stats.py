@@ -1,5 +1,5 @@
 import ckanext.lodstatsext.model.prefix as prefix
-import ckanext.lodstatsext.model.triplestore as triplestore
+import ckanext.lodstatsext.model.store as store
 import math
 import RDF
 
@@ -9,26 +9,26 @@ class VocabularyStats:
     
     @classmethod
     def update(cls):
-        result = triplestore.ts.query('''
-                                   prefix void: <http://rdfs.org/ns/void#>
-                                   select (count(distinct ?dataset) as ?dataset_count)
-                                   where
-                                   {
-                                       ?dataset void:vocabulary ?vocabulary.
-                                   }
-                                   ''')
+        result = store.root.query('''
+                                  prefix void: <http://rdfs.org/ns/void#>
+                                  select (count(distinct ?dataset) as ?dataset_count)
+                                  where
+                                  {
+                                      ?dataset void:vocabulary ?vocabulary.
+                                  }
+                                  ''')
         dataset_count = float(result[0]['dataset_count']['value'])
         
-        result = triplestore.ts.query('''
-                                   prefix void: <http://rdfs.org/ns/void#>
-                                   select ?vocabulary (count(distinct ?dataset) as ?dataset_count)
-                                   where
-                                   {
-                                       ?dataset void:vocabulary ?vocabulary.
-                                   }
-                                   group by ?vocabulary
-                                   order by desc(?dataset_count)
-                                   ''')
+        result = store.root.query('''
+                                  prefix void: <http://rdfs.org/ns/void#>
+                                  select ?vocabulary (count(distinct ?dataset) as ?dataset_count)
+                                  where
+                                  {
+                                      ?dataset void:vocabulary ?vocabulary.
+                                  }
+                                  group by ?vocabulary
+                                  order by desc(?dataset_count)
+                                  ''')
 
         vocabulary_stats = VocabularyStats()
 
@@ -71,25 +71,21 @@ class VocabularyStats:
         
         
     def commit(self):
-        serializer = RDF.Serializer(name="ntriples")
-        triples = serializer.serialize_model_to_string(self.rdf)
-        triplestore.ts.modify('clear graph <' + VocabularyStats.graph + '>')
-        triplestore.ts.modify('''
-                           insert in graph <''' + VocabularyStats.graph + '''>
-                           {
-                           ''' + triples + '''
-                           }
-                           ''')
+        store.root.clear_graph(VocabularyStats.graph)
+        store.root.modify(VocabularyStats.graph,
+                          h.rdf_to_string(triples),
+                          '?vocabulary ?predicate ?object.\n?object ?object_predicate ?object_object.',
+                          '?vocabulary ?predicate ?object.\nfilter(?vocabulary=<' + self.dataset.uri + '>)')
                            
     def load(self):
-        return triplestore.ts.query('''
-                                   select *
-                                   from <''' + VocabularyStats.graph + '''>
-                                   where
-                                   {
-                                       ?vocabulary ?predicate ?object.
-                                   }
-                                   ''')
+        return store.root.query('''
+                                select *
+                                from <''' + VocabularyStats.graph + '''>
+                                where
+                                {
+                                    ?vocabulary ?predicate ?object.
+                                }
+                                ''')
         
 
     def clear_rdf(self):

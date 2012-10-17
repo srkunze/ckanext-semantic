@@ -1,7 +1,7 @@
 import ckan.model as model
 import ckanext.lodstatsext.lib.helpers as h
 import ckanext.lodstatsext.model.prefix as prefix
-import ckanext.lodstatsext.model.triplestore as triplestore
+import ckanext.lodstatsext.model.store as store
 import datetime
 import lodstats
 import RDF
@@ -32,7 +32,7 @@ class DatasetStats:
         if dataset_uri is None:
             #TODO: when too old, update, too
             #date_4_weeks_ago = datetime.date.today() - datetime.timedelta(weeks=4)
-            relevant_datasets = triplestore.ts.query('''
+            relevant_datasets = store.root.query('''
                                        prefix void: <http://rdfs.org/ns/void#>
                                        prefix dstats: <http://lodstats.org/dataset#>
                                        select ?dataset
@@ -57,7 +57,7 @@ class DatasetStats:
 
 
     def __init__(self, dataset_uri):
-        self.dataset = h.uri_to_db_object(dataset_uri)
+        self.dataset = h.uri_to_object(dataset_uri)
         self.dataset.uri = dataset_uri
         self.rdf = RDF.Model()
         self.rdf_resource = None
@@ -94,25 +94,10 @@ class DatasetStats:
             
             
     def commit(self):
-        serializer = RDF.Serializer(name='ntriples')
-        triples = serializer.serialize_model_to_string(self.rdf)
-        triplestore.ts.modify('''
-                           delete from graph <''' + DatasetStats.graph + '''>
-                           {
-                               ?dataset ?predicate ?object.
-                               ?object ?object_predicate ?object_object.
-                           }
-                           where
-                           {
-                               ?dataset ?predicate ?object.
-                               filter(?dataset=<''' + self.dataset.uri + '''>)
-                           }
-                           
-                           insert into graph <''' + DatasetStats.graph + '''>
-                           {
-                           ''' + triples + '''
-                           }
-                           ''')
+        store.root.modify(DatasetStats.graph,
+                          rdf_to_string(triples),
+                          '?dataset ?predicate ?object.\n?object ?object_predicate ?object_object.',
+                          '?dataset ?predicate ?object.\nfilter(?dataset=<' + self.dataset.uri + '>)')
     
     def clear_rdf(self):
         self.rdf = RDF.Model()

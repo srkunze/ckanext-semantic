@@ -1,0 +1,2 @@
+class LocationData(MethodData):
+    pass

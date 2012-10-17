@@ -1,6 +1,5 @@
-import ckanext.lodstatsext.model.dataset_wrapper as dw
 import ckanext.lodstatsext.model.prefix as prefix
-import ckanext.lodstatsext.model.triplestore as triplestore
+import ckanext.lodstatsext.model.store as store
 import datetime
 import dateutil.parser
 import pytz
@@ -22,16 +21,12 @@ class SimilarityStats:
         self.rdf = RDF.Model()
         self.rows = []
         self.graph = graph
-        self.store = triplestore.ts
 
 
     def load(self, count_limit, update_when_necessary=True):
         if update_when_necessary and self.update_necessary():
-            try:
-                self.update_and_commit()
-            except:
-                pass
-            
+            self.update_and_commit()
+                
         self._load(count_limit)
 
 
@@ -47,7 +42,7 @@ class SimilarityStats:
      
 
     def _get_real_count_min_created(self):
-        row = self.store.query('''
+        row = store.root.query('''
                                prefix sim: <http://purl.org/ontology/similarity/>
                                select (count(distinct ?entity1) as ?count) (min(?created) as ?min_created)
                                where
@@ -74,10 +69,10 @@ class SimilarityStats:
     def _load(self, count_limit):
         #FIXME: owl:Thing problem to determine class of entity1
         #FIXME: xs:decimal(-1) necessary for virtuoso 6.1
-        rows = self.store.query('''
+        rows = store.root.query('''
                                 prefix xs: <http://www.w3.org/2001/XMLSchema#>
                                 prefix sim: <http://purl.org/ontology/similarity/>
-                                select ?similar_entity
+                                select ?similar_entity ?similarity_weight ?similarity_distance
                                 where
                                 {
                                     ?similarity a sim:Similarity.
@@ -87,20 +82,22 @@ class SimilarityStats:
                                     ?similar_entity a <''' + self.similar_entity_class_uri + '''>
                                     optional
                                     {
-                                        ?similarity sim:weight ?weight.
+                                        ?similarity sim:weight ?similarity_weight.
                                     }
                                     optional
                                     {
-                                        ?similarity sim:distance ?distance.
+                                        ?similarity sim:distance ?similarity_distance.
                                     }
                                     filter(?entity = <''' + self.entity_uri + '''> and
                                            ?entity != ?similar_entity)
                                 }
-                                order by desc(?weight) ?distance
+                                order by desc(?similarity_weight) ?similarity_distance
                                 limit ''' + str(count_limit) + '''
                                 ''')
         
-        self.rows = [row['similar_entity']['value'] for row in rows]
+        self.rows = [(row['similar_entity']['value'],
+                      row['similarity_weight']['value'],
+                      row['similarity_distance']['value']) for row in rows]
 
        
     def update_and_commit(self):
@@ -109,11 +106,19 @@ class SimilarityStats:
 
 
     def update(self):
-        if self.entity_class_uri == 'http://rdfs.org/ns/void#Dataset':
+        similarity_method = self.similarity_method_class()
+        
+        if self.entity_class_uri == str(prefix.void.Dataset):
             entity_data = self.similarity_method.dataset.get(self.entity_uri)
-            similar_elements = self.similarity_method.dataset.get_all()
+        elif self.entity_class_uri == str(prefix.void.Subscription):
+            entity_data = self.similarity_method.subscription.get(self.entity_uri)
         else:
             raise Exception('entity class <' + self.entity_class_uri + '> not supported')
+
+        if self.similar_entity_class_uri == str(prefix.void.Dataset):
+            similar_elements = self.similarity_method.dataset.get_all()
+        else:
+            raise Exception('similar entity class <' + self.entity_class_uri + '> not supported')
 
         for similar_entity_uri, similar_entity_data in similar_elements.iteritems():
             similarity_weight, similarity_distance = self.similarity_method.get(entity_data, similar_entity_data)
@@ -137,25 +142,14 @@ class SimilarityStats:
         
 
     def commit(self):
-        serializer = RDF.Serializer(name="ntriples")
-        triples = serializer.serialize_model_to_string(self.rdf)
-        self.store.modify('''
-                          delete from graph <''' + self.graph + '''>
-                          {
-                              ?similarity ?predicate ?object.
-                          }
-                          where
-                          {
-                              ?similarity a <http://purl.org/ontology/similarity/Similarity>.
-                              ?similarity <http://purl.org/ontology/similarity/element> <''' + self.entity_uri + '''>.
-                              ?similarity <http://purl.org/ontology/similarity/method> <''' + self.similarity_method.uri + '''>.
-                              ?similarity ?predicate ?object.
-                          }
-                          
-                          insert in graph <''' + self.graph + '''>
-                          {
-                          ''' + triples + '''
-                          }
+        store.root.modify(self.graph,
+                          h.rdf_to_string(triples),
+                          '?similarity ?predicate ?object.',
+                          '''
+                          ?similarity a <http://purl.org/ontology/similarity/Similarity>.
+                          ?similarity <http://purl.org/ontology/similarity/element> <''' + self.entity_uri + '''>.
+                          ?similarity <http://purl.org/ontology/similarity/method> <''' + self.similarity_method.uri + '''>.
+                          ?similarity ?predicate ?object.
                           ''')
 
     def clear_rdf(self):
