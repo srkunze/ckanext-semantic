@@ -26,7 +26,6 @@ class SubscriptionTopic(EntityTopic):
 
 
     def extract_semantic_subscription_topics(self, subscription):
-        subscription.parse_definition()
         if subscription.definition.has_key('topics'):
             return subscription.definition['topics']
 

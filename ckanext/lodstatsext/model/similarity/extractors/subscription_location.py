@@ -26,7 +26,6 @@ class SubscriptionLocation(EntityLocation):
 
 
     def extract_semantic_subscription_location(self, subscription):
-        subscription.parse_definition()
         if subscription.definition.has_key('location'):
             location = subscription.definition['location']
             return {'avgLat': location['latitude'], 'avgLong': location['longitude']}

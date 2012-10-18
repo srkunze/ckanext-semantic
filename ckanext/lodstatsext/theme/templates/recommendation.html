@@ -17,7 +17,7 @@
   <article class="module">
     <div class="module-content">
       <h2 class="page-heading">{{ _('Recommendation') }} <small>{{ c.content_heading }}</small></h2>
-          {% snippet 'snippets/package_list.html', packages=user.recommended_datasets.keys() %}
+          {% snippet 'snippets/package_list.html', packages=user.recommended_datasets %}
     </div>
   </article>
 {% endblock %}
@@ -27,6 +27,10 @@
     <h2 class="module-heading"><i class="icon-"></i> {{ _('Different Recommendations') }}</h2>
       <nav>
         <ul class="unstyled nav nav-simple">
+            <li>{% link_for _('Top9'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', similarity_method_name='top9' %}</li>
+            <li>{% link_for _('Topic'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', similarity_method_name='topic' %}</li>
+            <li>{% link_for _('Location'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', similarity_method_name='location' %}</li>
+            <li>{% link_for _('Time'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', similarity_method_name='time' %}</li>
         </ul>
       </nav>
   </section>

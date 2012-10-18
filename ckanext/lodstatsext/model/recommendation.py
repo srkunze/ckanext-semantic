@@ -39,7 +39,6 @@ class Recommendation:
             
 
         for interest in self.user.interests:
-            print interest
             similarities = sss.SimilarityStats(similarity_method, interest.uri,
                                                interest.class_uri, recommended_entity_class_uri)
             similarities.load(self.count_limit * len(self.user.interests)) # <<< in order to get sufficiently relevant entities

@@ -1,4 +1,5 @@
 from . import EntityTime
+import ckan.model as model
 import ckanext.lodstatsext.lib.helpers as h
 import ckanext.lodstatsext.model.store as store
 import datetime
@@ -28,8 +29,6 @@ class SubscriptionTime(EntityTime):
 
 
     def extract_semantic_subscription_time(self, subscription):
-        subscription.parse_definition()
-        
         if subscription.definition.has_key('time'):
             time = subscription.definition['time']
             if time['type'] == 'span':
