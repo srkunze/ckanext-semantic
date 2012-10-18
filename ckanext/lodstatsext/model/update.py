@@ -26,7 +26,7 @@ def triplestore_user(users):
             rdf_model.append(RDF.Statement(user.rdf_uri, prefix.foaf.interest, followee.rdf_uri))
 
         store.root.modify('http://ckan.org/users',
-                          h.rdf_to_string(triples),
+                          h.rdf_to_string(rdf_model),
                           '?user ?predicate ?object.',
                           '?user ?predicate ?object.\nfilter(?user=<' + user.uri + '>)')
 
@@ -46,7 +46,7 @@ def triplestore_dataset(datasets):
         # + license, author, maintainer
 
         store.root.modify('http://ckan.org/datasets',
-                          h.rdf_to_string(triples),
+                          h.rdf_to_string(rdf_model),
                           '?dataset ?predicate ?object.',
                           '?dataset ?predicate ?object.\nfilter(?dataset=<' + dataset.uri + '>)')
 

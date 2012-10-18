@@ -1,36 +1,118 @@
+import ckanext.lodstatsext.lib.helpers as h
 import ckanext.lodstatsext.model.prefix as prefix
 import ckanext.lodstatsext.model.store as store
 import datetime
 import dateutil.parser
+import extractors
+import methods
+import method_data
 import pytz
 import RDF
 
 
 class SimilarityStats:
     def __init__(self,
-                 similarity_method,
+                 similarity_method_class,
                  entity_uri,
                  entity_class_uri = 'http://rdfs.org/ns/void#Dataset',
                  similar_entity_class_uri = 'http://rdfs.org/ns/void#Dataset',
                  graph='http://lodstats.org/similarities'):
 
-        self.similarity_method = similarity_method
-        self.entity_uri = entity_uri
-        self.entity_class_uri = entity_class_uri
-        self.similar_entity_class_uri = similar_entity_class_uri
+        self._similarity_method = None
+        self._similarity_method_class = None
+        self._entity_class_uri = None
+        self._similar_entity_class_uri = None
+        
         self.rdf = RDF.Model()
         self.rows = []
         self.graph = graph
 
+        self.set_similarity_method(similarity_method_class)
+        self.set_entity(entity_uri, entity_class_uri)
+        self.set_similar_entity_class(similar_entity_class_uri)
+
+
+    def set_entity(self, entity_uri, entity_class_uri):
+        self._entity_uri = entity_uri
+
+        if self._entity_class_uri == entity_class_uri:
+            return
+        
+        self._entity_class_uri = entity_class_uri
+        self._set_similarity_method_data()
+        
+        if self._similar_entity_class_uri == entity_class_uri:
+            self._entity_extractor = self._similar_entity_extractor
+            return
+            
+        self._entity_extractor = self._get_extractor(self._entity_class_uri)
+
+    
+    def set_similar_entity_class(self, similar_entity_class_uri):
+        if self._similar_entity_class_uri == similar_entity_class_uri:
+            return
+
+        self._similar_entity_class_uri = similar_entity_class_uri
+        self._set_similarity_method_data()
+
+        if self._entity_class_uri == similar_entity_class_uri:
+            self._similar_entity_extractor = self._entity_extractor
+            return
+
+        self._similar_entity_extractor = self._get_extractor(self._similar_entity_class_uri)
+        
+        
+    def _get_extractor(self, class_uri):
+        if class_uri == str(prefix.void.Dataset):
+            if isinstance(self._similarity_method, methods.TopicSimilarity):
+                return extractors.DatasetTopic()
+            elif isinstance(self._similarity_method, methods.LocationSimilarity):
+                return extractors.DatasetLocation()
+            elif isinstance(self._similarity_method, methods.TimeSimilarity):
+                return extractors.DatasetTime()
+                
+        if class_uri == str(prefix.ckan.Subscription):
+            if isinstance(self._similarity_method, methods.TopicSimilarity):
+                return extractors.SubscriptionTopic()
+            elif isinstance(self._similarity_method, methods.LocationSimilarity):
+                return extractors.SubscriptionLocation()
+            elif isinstance(self._similarity_method, methods.TimeSimilarity):
+                return extractors.SubscriptionTime()
+        
+        raise Exception('combination of entity class <' + class_uri + '> and similarity method <' + type(self._similarity_method).__name__ + '> not supported') 
+
+
+    def set_similarity_method(self, similarity_method_class):
+        self._similarity_method = similarity_method_class()
+        self._similarity_method_class = similarity_method_class
+        
+        self._set_similarity_method_data()
+        
+
+    def _set_similarity_method_data(self):
+        if self._similarity_method is None:
+            return
+            
+        self._similarity_method.set_method_data(self._get_method_data())
+
+
+    def _get_method_data(self):
+        if self._similarity_method_class == methods.TopicSimilarity:
+            if str(prefix.ckan.Subscription) in [self._entity_class_uri, self._similar_entity_class_uri]:
+                return method_data.EqualWeightedTopic()
+            return method_data.SpecificityWeightedTopic(str(prefix.vstats.cosSpecificity))
+            
+        return None
+
 
     def load(self, count_limit, update_when_necessary=True):
-        if update_when_necessary and self.update_necessary():
-            self.update_and_commit()
+        if update_when_necessary and self._update_necessary():
+            self._update_and_commit()
                 
         self._load(count_limit)
 
 
-    def update_necessary(self):          
+    def _update_necessary(self):          
         real, min_created = self._get_real_count_min_created()
         possible = self._possible_count()
         
@@ -48,11 +130,11 @@ class SimilarityStats:
                                where
                                {
                                    ?similarity a sim:Similarity.
-                                   ?similarity sim:method <''' + self.similarity_method.uri + '''>.
+                                   ?similarity sim:method <''' + self._similarity_method.uri + '''>.
                                    ?similarity sim:element ?entity1.
                                    ?similarity sim:element ?entity2.
                                    ?similarity <http://purl.org/dc/terms/created> ?created.
-                                   filter(?entity2=<''' + self.entity_uri + '''> and ?entity1!=?entity2)
+                                   filter(?entity2=<''' + self._entity_uri + '''> and ?entity1!=?entity2)
                                }
                                ''')[0]
         if row.has_key('min_created'):
@@ -61,9 +143,10 @@ class SimilarityStats:
             min_created = datetime.datetime.now(pytz.utc)
             
         return int(row['count']['value']), min_created
-        
+
+
     def _possible_count(self):
-        return self.similarity_method.dataset.count()
+        return self._similar_entity_extractor.count()
 
     
     def _load(self, count_limit):
@@ -76,10 +159,10 @@ class SimilarityStats:
                                 where
                                 {
                                     ?similarity a sim:Similarity.
-                                    ?similarity sim:method <''' + self.similarity_method.uri + '''>.
-                                    ?similarity sim:element ?entity.
+                                    ?similarity sim:method <''' + self._similarity_method.uri + '''>.
+                                    ?similarity sim:element <''' + self._entity_uri + '''>.
                                     ?similarity sim:element ?similar_entity.
-                                    ?similar_entity a <''' + self.similar_entity_class_uri + '''>
+                                    ?similar_entity a <''' + self._similar_entity_class_uri + '''>
                                     optional
                                     {
                                         ?similarity sim:weight ?similarity_weight.
@@ -88,50 +171,47 @@ class SimilarityStats:
                                     {
                                         ?similarity sim:distance ?similarity_distance.
                                     }
-                                    filter(?entity = <''' + self.entity_uri + '''> and
-                                           ?entity != ?similar_entity)
+                                    filter(<''' + self._entity_uri + '''> != ?similar_entity)
                                 }
                                 order by desc(?similarity_weight) ?similarity_distance
                                 limit ''' + str(count_limit) + '''
                                 ''')
         
         self.rows = [(row['similar_entity']['value'],
-                      row['similarity_weight']['value'],
-                      row['similarity_distance']['value']) for row in rows]
+                      row['similarity_weight']['value'] if row.has_key('similarity_weight') else None,
+                      row['similarity_distance']['value'] if row.has_key('similarity_distance') else None) for row in rows]
 
        
-    def update_and_commit(self):
-        self.update()
-        self.commit()
+    def _update_and_commit(self):
+        self._update()
+        self._commit()
 
 
-    def update(self):
-        similarity_method = self.similarity_method_class()
+    def _update(self):
+        results = {}
         
-        if self.entity_class_uri == str(prefix.void.Dataset):
-            entity_data = self.similarity_method.dataset.get(self.entity_uri)
-        elif self.entity_class_uri == str(prefix.void.Subscription):
-            entity_data = self.similarity_method.subscription.get(self.entity_uri)
-        else:
-            raise Exception('entity class <' + self.entity_class_uri + '> not supported')
+        try:
+            entity = self._entity_extractor.get(self._entity_uri)
+        except:
+            return
+        self._similarity_method.set_entity(entity)
 
-        if self.similar_entity_class_uri == str(prefix.void.Dataset):
-            similar_elements = self.similarity_method.dataset.get_all()
-        else:
-            raise Exception('similar entity class <' + self.entity_class_uri + '> not supported')
+        similar_entities = self._similar_entity_extractor.get_all()
+        for similar_entity_uri, similar_entity_data in similar_entities.iteritems():
+            results[similar_entity_uri] = self._similarity_method.process_similar_entity(similar_entity_data)
 
-        for similar_entity_uri, similar_entity_data in similar_elements.iteritems():
-            similarity_weight, similarity_distance = self.similarity_method.get(entity_data, similar_entity_data)
-            self.append(similar_entity_uri, similarity_weight, similarity_distance)
-             
-            
-    def append(self, similar_entity_uri, similarity_weight=None, similarity_distance=None):
+        for similar_entity_uri, result in results.iteritems():
+            similarity_weight, similarity_distance  = self._similarity_method.post_process_result(*result)
+            self._append(similar_entity_uri, similarity_weight, similarity_distance)
+
+   
+    def _append(self, similar_entity_uri, similarity_weight=None, similarity_distance=None):
         similarity_node = RDF.Node()
         self.rdf.append(RDF.Statement(similarity_node, prefix.rdf.type, prefix.sim.Similarity))
         self.rdf.append(RDF.Statement(similarity_node, prefix.dct.created, RDF.Node(literal=datetime.datetime.now().isoformat(), datatype=prefix.xs.dateTime.uri)))
-        self.rdf.append(RDF.Statement(similarity_node, prefix.sim.method, RDF.Uri(self.similarity_method.uri)))
+        self.rdf.append(RDF.Statement(similarity_node, prefix.sim.method, RDF.Uri(self._similarity_method.uri)))
 
-        self.rdf.append(RDF.Statement(similarity_node, prefix.sim.element, RDF.Uri(self.entity_uri)))
+        self.rdf.append(RDF.Statement(similarity_node, prefix.sim.element, RDF.Uri(self._entity_uri)))
         self.rdf.append(RDF.Statement(similarity_node, prefix.sim.element, RDF.Uri(similar_entity_uri)))
 
         if similarity_weight is not None:
@@ -141,17 +221,14 @@ class SimilarityStats:
 
         
 
-    def commit(self):
+    def _commit(self):
         store.root.modify(self.graph,
-                          h.rdf_to_string(triples),
+                          h.rdf_to_string(self.rdf),
                           '?similarity ?predicate ?object.',
                           '''
                           ?similarity a <http://purl.org/ontology/similarity/Similarity>.
-                          ?similarity <http://purl.org/ontology/similarity/element> <''' + self.entity_uri + '''>.
-                          ?similarity <http://purl.org/ontology/similarity/method> <''' + self.similarity_method.uri + '''>.
+                          ?similarity <http://purl.org/ontology/similarity/element> <''' + self._entity_uri + '''>.
+                          ?similarity <http://purl.org/ontology/similarity/method> <''' + self._similarity_method.uri + '''>.
                           ?similarity ?predicate ?object.
                           ''')
-
-    def clear_rdf(self):
-        self.rdf = RDF.Model()
 

@@ -1,3 +1,4 @@
+import ckanext.lodstatsext.lib.helpers as h
 import ckanext.lodstatsext.model.prefix as prefix
 import ckanext.lodstatsext.model.store as store
 import ckanext.lodstatsext.model.user as mu
@@ -17,11 +18,11 @@ class Recommendation:
 
     def datasets(self, similarity_method_name):
         if similarity_method_name == 'topic':
-            similarity_method = sm.TopicSimilarity
+            similarity_method = methods.TopicSimilarity
         if similarity_method_name == 'location':
-            similarity_method = sm.LocationSimilarity
+            similarity_method = methods.LocationSimilarity
         if similarity_method_name == 'time':
-            similarity_method = sm.TimeSimilarity
+            similarity_method = methods.TimeSimilarity
             
         self._entities_by_class(str(prefix.void.Dataset.uri), similarity_method)
         return self.entities
@@ -34,9 +35,11 @@ class Recommendation:
         
         self.user.load_interests()
         for interest in self.user.interests:
-            interests[interest.uri] = 'interest'
+            interests.add(interest.uri)
             
+
         for interest in self.user.interests:
+            print interest
             similarities = sss.SimilarityStats(similarity_method, interest.uri,
                                                interest.class_uri, recommended_entity_class_uri)
             similarities.load(self.count_limit * len(self.user.interests)) # <<< in order to get sufficiently relevant entities

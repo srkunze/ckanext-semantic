@@ -1,3 +1,4 @@
+from . import EntityLocation
 import ckanext.lodstatsext.model.store as store
 
           
@@ -27,5 +28,5 @@ class DatasetLocation(EntityLocation):
                                'minLat': float(row['minLat']['value']),
                                'minLong': float(row['minLong']['value']),
                                'maxLat': float(row['maxLat']['value']),
-                               'maxLong': float(row['maxLong']['value'])} for row in rows])
+                               'maxLong': float(row['maxLong']['value'])}) for row in rows])
 

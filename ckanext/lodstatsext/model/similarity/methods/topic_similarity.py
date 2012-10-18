@@ -1,15 +1,25 @@
+from . import SimilarityMethod
+
+
 class TopicSimilarity(SimilarityMethod):
     uri = 'http://xmlns.com/foaf/0.1/topic'
 
-    def __init__(self, topic_data):
-        self.topic_data = topic_data
-
-
-    def get(self, entity, similar_entity):
-        similarity_weight = 0
-        for topic in entity:
+    def set_entity(self, entity):
+        super(TopicSimilarity, self).set_entity(entity)
+        self.max_similarity_weight = 0.0
+        
+        
+    def process_similar_entity(self, similar_entity):
+        similarity_weight = 0.0
+        for topic in self.entity:
             if topic in similar_entity:
-                similarity_weight += self.topic_data.topic_weight(topic)
-                
+                similarity_weight += self.data.topic_weight(topic)
+        
+        if similarity_weight > self.max_similarity_weight:
+            self.max_similarity_weight = similarity_weight
+        
         return similarity_weight, None
 
+
+    def post_process_result(self, similarity_weight, similarity_distance):
+        return similarity_weight / self.max_similarity_weight, similarity_distance

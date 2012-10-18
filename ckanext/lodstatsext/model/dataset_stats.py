@@ -95,7 +95,7 @@ class DatasetStats:
             
     def commit(self):
         store.root.modify(DatasetStats.graph,
-                          rdf_to_string(triples),
+                          rdf_to_string(self.rdf),
                           '?dataset ?predicate ?object.\n?object ?object_predicate ?object_object.',
                           '?dataset ?predicate ?object.\nfilter(?dataset=<' + self.dataset.uri + '>)')
     

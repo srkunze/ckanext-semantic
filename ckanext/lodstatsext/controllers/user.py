@@ -1,9 +1,9 @@
 import ckan.lib.base as base
 import ckan.logic as logic
 import ckan.model as model
-import ckanext.lodstatsext.model.similarity_methods as similarity_methods
 import ckanext.lodstatsext.lib.helpers as h
-import ckanext.lodstatsext.lib.recommendation as r
+import ckanext.lodstatsext.model.similarity.methods as similarity_methods
+import ckanext.lodstatsext.model.recommendation as r
 import datetime
 import lodstats.stats as stats
 import logging

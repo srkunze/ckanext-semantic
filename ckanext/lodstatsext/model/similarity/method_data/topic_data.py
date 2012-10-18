@@ -1,3 +1,4 @@
+from . import MethodData
 import ckanext.lodstatsext.model.store as store
 
 
@@ -15,7 +16,7 @@ class SpecificityWeightedTopic(TopicData):
                                     ?vocabulary <''' + specificity_uri + '''> ?specificity.
                                 }
                                 ''')
-        self.specificity = dict([(row['vocabulary']['value'], row['specificity']['value']) for row in rows])
+        self.specificity = dict([(row['vocabulary']['value'], float(row['specificity']['value'])) for row in rows])
             
         
     def topic_weight(self, topic_uri):

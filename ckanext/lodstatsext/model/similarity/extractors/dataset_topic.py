@@ -1,3 +1,4 @@
+from . import EntityTopic
 import ckanext.lodstatsext.model.store as store
 
           

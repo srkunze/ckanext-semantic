@@ -11,14 +11,15 @@ class User:
 
     def load_interests(self):
         query = model.Session.query(model.Package)
-        query = query.join(model.UserFollowingUser, model.Package.id == model.UserFollowingUser.object_id)
-        query = query.filter(model.UserFollowingUser.follower_id == self.user.id)
+        query = query.join(model.UserFollowingDataset, model.Package.id == model.UserFollowingDataset.object_id)
+        query = query.filter(model.UserFollowingDataset.follower_id == self.user.id)
         datasets = query.all()
         
         for dataset in datasets:
             dataset.uri = h.dataset_to_uri(dataset.name)
             dataset.class_uri = str(prefix.void.Dataset.uri)
-        
+
+
         query = model.Session.query(model.Subscription)
         query = query.filter(model.Subscription.owner_id == self.user.id)
         subscriptions = query.all()

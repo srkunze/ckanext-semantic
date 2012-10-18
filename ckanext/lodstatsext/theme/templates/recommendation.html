@@ -17,7 +17,7 @@
   <article class="module">
     <div class="module-content">
       <h2 class="page-heading">{{ _('Recommendation') }} <small>{{ c.content_heading }}</small></h2>
-          {% snippet 'snippets/package_list.html', packages=user.recommended_datasets %}
+          {% snippet 'snippets/package_list.html', packages=user.recommended_datasets.keys() %}
     </div>
   </article>
 {% endblock %}

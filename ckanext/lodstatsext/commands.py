@@ -70,13 +70,14 @@ class LODStatsExtCommand(cli.CkanCommand):
                          entity_name,
                          entity_type='dataset',
                          similar_entity_type='dataset'):
+                         
         similarity_method = {'topic': similarity_methods.TopicSimilarity,
                              'location': similarity_methods.LocationSimilarity,
                              'time': similarity_methods.TimeSimilarity,
                             }[similarity_method_name]
-                            
-        entity_uri = {'dataset': dataset_to_uri(entity_name),
-                      'user': user_to_uri(entity_name)}[entity_type]
+
+        entity_uri = {'dataset': h.dataset_to_uri(entity_name),
+                      'user': h.user_to_uri(entity_name)}[entity_type]
         entity_class_uri = {'dataset': 'http://rdfs.org/ns/void#Dataset',
                             'user': 'http://xmlns.com/foaf/0.1/Person'}[entity_type]
         similar_entity_class_uri = {'dataset': 'http://rdfs.org/ns/void#Dataset',
@@ -91,12 +92,12 @@ class LODStatsExtCommand(cli.CkanCommand):
         if method == 'update':
             similarities.update_and_commit()
             
-        if method == 'load':
+        if method == 'load1':
             similarities.load(5, update_when_necessary=False)
             for row in similarities.rows:
                 print row
                 
-        if method == 'load_and_update_when_necessary':
+        if method == 'load2':
             similarities.load(5)
             for row in similarities.rows:
                 print row

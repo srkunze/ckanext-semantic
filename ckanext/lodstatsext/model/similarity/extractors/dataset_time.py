@@ -1,3 +1,4 @@
+from . import EntityTime
 import ckanext.lodstatsext.model.store as store
 import datetime
 import dateutil.parser

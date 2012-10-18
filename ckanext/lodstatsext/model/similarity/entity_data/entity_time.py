@@ -1,3 +1,0 @@
-class EntityTime(EntityData):
-    pass
-
