@@ -4,3 +4,4 @@
 
 build/*
 ckanext_lodstats.egg-info/*
+dist/*
