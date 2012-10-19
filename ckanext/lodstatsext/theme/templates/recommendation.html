@@ -20,13 +20,13 @@
       <div class="module-content">
         <h2 class="page-heading">
           {% if recommendation_type == 'topic' %}
-              Datasets that match your interests topic-wise
+              {% link_for _('Datasets that match your interests topic-wise'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', type_='topic' %}
           {% endif %}
           {% if recommendation_type == 'location' %}
-              Datasets that are from a location you might be interested in
+              {% link_for _('Datasets that are from a location you might be interested in'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', type_='location' %}
           {% endif %}
           {% if recommendation_type == 'time' %}
-              Datasets that are from a time you could be interested in
+              {% link_for _('Datasets that are from a time you could be interested in'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', type_='time' %}
           {% endif %}
         </h2>
         {% snippet 'snippets/recommended_dataset_list.html', datasets=recommendation[recommendation_type], recommendation_type=recommendation_type %}
@@ -40,7 +40,7 @@
     <h2 class="module-heading"><i class="icon-"></i> {{ _('Recommendation Types') }}</h2>
       <nav>
         <ul class="unstyled nav nav-simple">
-            <li>{% link_for _('Top 3'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read' %}</li>
+            <li>{% link_for _('Top Mix'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read' %}</li>
             <li>{% link_for _('Topics you like'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', type_='topic' %}</li>
             <li>{% link_for _('Interesting regions'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', type_='location' %}</li>
             <li>{% link_for _('The times you prefer'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', type_='time' %}</li>
