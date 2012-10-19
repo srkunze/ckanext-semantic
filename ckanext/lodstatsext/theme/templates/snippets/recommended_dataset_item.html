@@ -49,22 +49,23 @@ Example:
     </ul>
   {% endif %}
   
-  {% if package.reasons %}
+  {% if package.dataset_reasons_count > 0 or package.subscription_reasons_count > 0 %}
     <ul class="dataset-resources unstyled">
+      This dataset and 
+      {{ package.dataset_reasons_count }} datasets you follow and
+      {{ package.subscription_reasons_count }} subscriptions you have
+      
       {% if recommendation_type == 'topic' %}
-         Same topics as
+         share the same topics
       {% endif %}
+      
       {% if recommendation_type == 'location' %}
-         Near by
+         are about the same region
       {% endif %}
+      
       {% if recommendation_type == 'time' %}
-         Same time as
+         are about the same time
       {% endif %}
-        {% for reason in package.reasons %}
-        <li>
-           <a href="{{ reason.uri }}" class="label">{{ reason.name }}</a>
-        </li>
-      {% endfor %}
     </ul>
   {% endif %}
 </li>

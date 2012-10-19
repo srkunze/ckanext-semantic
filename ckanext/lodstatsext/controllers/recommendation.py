@@ -49,8 +49,11 @@ class RecommendationController(base.BaseController):
             recommendation.load()
             for dataset, reasons in recommendation.entities.iteritems():
                 dataset_dict = model_dictize.package_dictize(dataset, context)
-                dataset_dict['reasons'] = reasons
-                
+                dataset_dict['dataset_reasons'] = [reason for reason in reasons if reason.class_uri == 'http://rdfs.org/ns/void#Dataset']
+                dataset_dict['dataset_reasons_count'] = len(dataset_dict['dataset_reasons'])
+                dataset_dict['subscription_reasons'] = [reason for reason in reasons if reason.class_uri == 'http://ckan.org/ontology#Subscription']
+                dataset_dict['subscription_reasons_count'] = len(dataset_dict['subscription_reasons'])
+
                 if base.c.recommendation.has_key(type_):
                     base.c.recommendation[type_].append(dataset_dict)
                 else:
