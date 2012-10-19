@@ -30,5 +30,9 @@ def subscription_to_uri(user_name, subscription_name):
     return host + path_to_user + user_name + '/' + path_to_subscription + subscription_name        
 
 
+def user_id_to_object(user_id):
+    return model.Session.query(model.User).get(user_id)
+
+
 def rdf_to_string(rdf):
     return serializer.serialize_model_to_string(rdf)
