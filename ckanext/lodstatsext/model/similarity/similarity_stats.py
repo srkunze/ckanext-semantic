@@ -73,7 +73,7 @@ class SimilarityStats:
             extractor_class = self._get_valid_extractor_class(entity_class_uri)
 
             return extractor_class()
-        except:
+        except KeyError:
             pass
 
         return None
@@ -205,10 +205,10 @@ class SimilarityStats:
 
     def _update(self):
         results = {}
-        
+
         try:
             entity = self._entity_extractor.get(self._entity_uri)
-        except:
+        except KeyError:
             return
         self._similarity_method.set_entity(entity)
 
