@@ -22,7 +22,7 @@ class SubscriptionTopic(EntityTopic):
             subscription_topics = self.extract_sparql_subscription_topics(subscription)
         
         if subscription_topics is not None:
-            self.entities[h.subscription_to_uri(subscription.owner, subscription.name)] = subscription_topics
+            self.entities[h.subscription_to_uri(subscription.owner_id, subscription.name)] = subscription_topics
 
 
     def extract_semantic_subscription_topics(self, subscription):

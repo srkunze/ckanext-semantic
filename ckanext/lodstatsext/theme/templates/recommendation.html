@@ -16,7 +16,7 @@
 {% block primary_content %}
   <article class="module">
     <div class="module-content">
-      <h2 class="page-heading">{{ _('Recommendation') }} <small>{{ c.content_heading }}</small></h2>
+      <h2 class="page-heading">{{ _('Recommendations') }} <small>{{ c.content_heading }}</small></h2>
           {% snippet 'snippets/package_list.html', packages=user.recommended_datasets %}
     </div>
   </article>
@@ -24,13 +24,13 @@
 
 {% block secondary_content %}
   <section class="module module-shallow module-narrow module-my-datasets">
-    <h2 class="module-heading"><i class="icon-"></i> {{ _('Different Recommendations') }}</h2>
+    <h2 class="module-heading"><i class="icon-"></i> {{ _('Recommendation Types') }}</h2>
       <nav>
         <ul class="unstyled nav nav-simple">
-            <li>{% link_for _('Top9'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', similarity_method_name='top9' %}</li>
-            <li>{% link_for _('Topic'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', similarity_method_name='topic' %}</li>
-            <li>{% link_for _('Location'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', similarity_method_name='location' %}</li>
-            <li>{% link_for _('Time'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', similarity_method_name='time' %}</li>
+            <li>{% link_for _('Top 3'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read' %}</li>
+            <li>{% link_for _('Topics you like'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', similarity_method='topic' %}</li>
+            <li>{% link_for _('Interesting regions'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', similarity_method='location' %}</li>
+            <li>{% link_for _('The times you prefer'), controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read', similarity_method='time' %}</li>
         </ul>
       </nav>
   </section>

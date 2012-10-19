@@ -29,9 +29,9 @@ class LODstatsPlugin(plugins.SingletonPlugin):
     def before_map(self, map):
         map.redirect('/user/recommendation/', '/user/recommendation')
         map.connect('/user/recommendation', controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read')
-        map.connect('/user/recommendation/{similarity_method_name}', controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read')
-        map.connect('/user/recommendation/{similarity_method_name}', controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read')
-        map.connect('/user/recommendation/{similarity_method_name}', controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read')
+        map.connect('/user/recommendation/{similarity_method}', controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read')
+        map.connect('/user/recommendation/{similarity_method}', controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read')
+        map.connect('/user/recommendation/{similarity_method}', controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read')
         map.connect('/dataset/{id}.n3', controller='ckanext.lodstatsext.controllers.dataset:DatasetController', action='read_n3')
 
         return map

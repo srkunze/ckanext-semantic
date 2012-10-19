@@ -32,7 +32,8 @@ class RecommendationController(base.BaseController):
         base.c.is_myself = user_dict['name'] == base.c.user
         
         if similarity_method == None:
-            similarity_methods = ['topic', 'location', 'time']
+            similarity_methods = ['topic']
+#           similarity_methods = ['topic', 'location', 'time']
         else:
             similarity_methods = [similarity_method]
             
@@ -48,7 +49,7 @@ class RecommendationController(base.BaseController):
         recommended = r.Recommendation(base.c.userobj)
         for method_name in similarity_methods:
             recommended.set_count_limit(5)
-            base.c.user_dict['recommended_datasets'] = recommended.datasets(similarity_method_name)
+            base.c.user_dict['recommended_datasets'] = recommended.datasets(method_name)
             
             base.c.user_dict['recommended_datasets'] = [model_dictize.package_dictize(x, context) for x in base.c.user_dict['recommended_datasets'].keys()]
         
