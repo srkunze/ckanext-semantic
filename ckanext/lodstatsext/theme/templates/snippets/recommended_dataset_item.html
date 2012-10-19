@@ -56,12 +56,15 @@ Example:
       {% elif package.dataset_reasons_count > 1 %}
           <b>{{ package.dataset_reasons_count }} datasets</b> you follow
       {% endif %}
-
-
+      
+      {% if package.subscription_reasons_count > 0 and package.subscription_reasons_count > 0 %}
+          and
+      {% endif %}
+      
       {% if package.subscription_reasons_count == 1 %}
-          and <b>{{ package.subscription_reasons_count }} subscription</b> you have
+          <b>{{ package.subscription_reasons_count }} subscription</b> you have
       {% elif package.subscription_reasons_count > 1 %}
-          and <b>{{ package.subscription_reasons_count }} subscriptions</b> you have
+          <b>{{ package.subscription_reasons_count }} subscriptions</b> you have
       {% endif %}
 
 
