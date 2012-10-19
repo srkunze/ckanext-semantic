@@ -7,7 +7,6 @@ import similarity.methods as methods
 class Recommendation:
     def __init__(self, user):
         self._user = mu.User(user)
-        self._similarity_method_class = None
         self._recommended_entity_class_uri = None
         self._count_limit = None
         self._similarity_stats = similarity.SimilarityStats()
@@ -24,14 +23,22 @@ class Recommendation:
 
 
     def set_type(self, recommendation_type):
+        min_similarity_weight = 0.0
+        max_similarity_distance = float('inf')
+        
         if recommendation_type == 'topic':
-            self._similarity_method_class = methods.TopicSimilarity
+            similarity_method_class = methods.TopicSimilarity
+            min_similarity_weight = 0.5
         if recommendation_type == 'location':
-            self._similarity_method_class = methods.LocationSimilarity
+            similarity_method_class = methods.LocationSimilarity
+            max_similarity_distance = 50
         if recommendation_type == 'time':
-            self._similarity_method_class = methods.TimeSimilarity
+            similarity_method_class = methods.TimeSimilarity
+            max_similarity_distance = 365
 
-        self._similarity_stats.set_similarity_method(self._similarity_method_class)
+        self._similarity_stats.set_similarity_method(similarity_method_class)
+        self._similarity_stats.min_similarity_weight = min_similarity_weight
+        self._similarity_stats.max_similarity_distance = max_similarity_distance
 
             
     def load(self):
@@ -46,9 +53,9 @@ class Recommendation:
 
         for interest in self._user.interests:
             self._similarity_stats.set_entity(interest.uri, interest.class_uri)
-            
-            # in order to get sufficiently relevant entities
-            self._similarity_stats.load(2 * self._count_limit * len(self._user.interests))
+            self._similarity_stats.count_limit = 2 * self._count_limit * len(self._user.interests)
+
+            self._similarity_stats.load()
             
             for similar_entity, similarity_weight, similarity_distance in self._similarity_stats.rows:
                 if similar_entity in not_in_database or similar_entity in interests:

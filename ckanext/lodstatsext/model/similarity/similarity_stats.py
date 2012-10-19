@@ -25,6 +25,10 @@ class SimilarityStats:
         self._similar_entity_class_uri = None
         self._similar_entity_extractor = None
         
+        self.count_limit = 10
+        self.min_similarity_weight = 0.0
+        self.max_similarity_distance = float('inf')
+        
         self.rdf = RDF.Model()
         self.rows = []
         self.graph = graph
@@ -116,16 +120,17 @@ class SimilarityStats:
         return SimilarityStats.extractor_class[self._similarity_method_class].values()
 
 
-    def load(self, count_limit, update_when_necessary=True):
+    def load(self, update_when_necessary=True):
         if self._entity_extractor is None:
             raise Exception('entity class <' + self._entity_class_uri + '> not supported')
         if self._similar_entity_extractor is None:
             raise Exception('similar entity class <' + self._similar_entity_class_uri + '> not supported')
 
         if update_when_necessary and self._update_necessary():
-            self._update_and_commit()
+            print "update necessary"
+            self.update_and_commit()
                 
-        self._load(count_limit)
+        self._load()
 
 
     def _update_necessary(self):          
@@ -165,9 +170,14 @@ class SimilarityStats:
         return self._similar_entity_extractor.count()
 
     
-    def _load(self, count_limit):
+    def _load(self):
+        #FIXME: xs:decimal doesn't support infinity
+        if self.max_similarity_distance < float('inf'):
+            distance_query_string = 'filter(?similarity_distance <= ' + str(self.max_similarity_distance) + ')'
+        else:
+            distance_query_string = ''
+            
         #FIXME: owl:Thing problem to determine class of entity1
-        #FIXME: xs:decimal(-1) necessary for virtuoso 6.1
         rows = store.root.query('''
                                 prefix xs: <http://www.w3.org/2001/XMLSchema#>
                                 prefix sim: <http://purl.org/ontology/similarity/>
@@ -188,9 +198,11 @@ class SimilarityStats:
                                         ?similarity sim:distance ?similarity_distance.
                                     }
                                     filter(<''' + self._entity_uri + '''> != ?similar_entity)
+                                    filter(?similarity_weight >= ''' + str(self.min_similarity_weight) + ''')
+                                    ''' + distance_query_string + '''
                                 }
                                 order by desc(?similarity_weight) ?similarity_distance
-                                limit ''' + str(count_limit) + '''
+                                limit ''' + str(self.count_limit) + '''
                                 ''')
         
         self.rows = [(row['similar_entity']['value'],
@@ -198,7 +210,7 @@ class SimilarityStats:
                       row['similarity_distance']['value'] if row.has_key('similarity_distance') else None) for row in rows]
 
        
-    def _update_and_commit(self):
+    def update_and_commit(self):
         self._update()
         self._commit()
 
@@ -218,7 +230,9 @@ class SimilarityStats:
 
         for similar_entity_uri, result in results.iteritems():
             similarity_weight, similarity_distance  = self._similarity_method.post_process_result(*result)
-            self._append(similar_entity_uri, similarity_weight, similarity_distance)
+            if similarity_weight is not None and similarity_weight > self.min_similarity_weight or \
+               similarity_distance is not None and similarity_distance < self.max_similarity_distance:
+                self._append(similar_entity_uri, similarity_weight, similarity_distance)
 
    
     def _append(self, similar_entity_uri, similarity_weight=None, similarity_distance=None):
