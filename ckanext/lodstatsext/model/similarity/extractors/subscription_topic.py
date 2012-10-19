@@ -6,7 +6,6 @@ import ckanext.lodstatsext.lib.helpers as h
 class SubscriptionTopic(EntityTopic):
     def __init__(self):
         query = model.Session.query(model.Subscription)
-        #query = query.filter(model.Subscription.owner_id == self.user.id)
         subscriptions = query.all()
         self.entities = {}
         
@@ -22,7 +21,7 @@ class SubscriptionTopic(EntityTopic):
             subscription_topics = self.extract_sparql_subscription_topics(subscription)
         
         if subscription_topics is not None:
-            self.entities[h.subscription_to_uri(subscription.owner_id, subscription.name)] = subscription_topics
+            self.entities[h.subscription_to_uri(h.user_id_to_object(subscription.owner_id).name, subscription.name)] = subscription_topics
 
 
     def extract_semantic_subscription_topics(self, subscription):

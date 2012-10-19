@@ -6,7 +6,6 @@ import ckanext.lodstatsext.lib.helpers as h
 class SubscriptionLocation(EntityLocation):
     def __init__(self):
         query = model.Session.query(model.Subscription)
-        #query = query.filter(model.Subscription.owner_id == self.user.id)
         subscriptions = query.all()
         self.entities = {}
         
@@ -22,7 +21,7 @@ class SubscriptionLocation(EntityLocation):
             subscription_location = self.extract_sparql_subscription_location(subscription)
         
         if subscription_location is not None:
-            self.entities[h.subscription_to_uri(subscription.owner_id, subscription.name)] = subscription_location
+            self.entities[h.subscription_to_uri(h.user_id_to_object(subscription.owner_id).name, subscription.name)] = subscription_location
 
 
     def extract_semantic_subscription_location(self, subscription):

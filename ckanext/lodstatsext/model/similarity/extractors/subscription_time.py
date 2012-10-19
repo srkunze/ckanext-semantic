@@ -9,7 +9,6 @@ import dateutil.parser
 class SubscriptionTime(EntityTime):
     def __init__(self):
         query = model.Session.query(model.Subscription)
-        #query = query.filter(model.Subscription.owner_id == self.user.id)
         subscriptions = query.all()
         self.entities = {}
         
@@ -25,7 +24,7 @@ class SubscriptionTime(EntityTime):
             subscription_time = self.extract_sparql_subscription_time(subscription)
         
         if subscription_time is not None:
-            self.entities[h.subscription_to_uri(subscription.owner_id, subscription.name)] = subscription_time
+            self.entities[h.subscription_to_uri(h.user_id_to_object(subscription.owner_id).name, subscription.name)] = subscription_time
 
 
     def extract_semantic_subscription_time(self, subscription):
