@@ -68,6 +68,8 @@ class LODStatsExtCommand(cli.CkanCommand):
     def similarity_stats(self,
                          method,
                          similarity_method_name,
+                         min_weight,
+                         max_distance,
                          entity_name,
                          user_name,
                          entity_type='dataset',
@@ -90,17 +92,20 @@ class LODStatsExtCommand(cli.CkanCommand):
         similarities.set_entity(entity_uri, entity_class_uri)
         similarities.set_similar_entity_class(similar_entity_class_uri)
         similarities.set_similarity_method(similarity_method_class)
+        similarities.count_limit = 5
+        similarities.min_similarity_distance = min_weight
+        similarities.max_similarity_weight = max_distance
 
         if method == 'update':
             similarities.update_and_commit()
             
         if method == 'load1':
-            similarities.load(5, update_when_necessary=False)
+            similarities.load()
             for row in similarities.rows:
                 print row
                 
         if method == 'load2':
-            similarities.load(5)
+            similarities.load(update_when_necessary=False)
             for row in similarities.rows:
                 print row
 
