@@ -51,20 +51,28 @@ Example:
   
   {% if package.dataset_reasons_count > 0 or package.subscription_reasons_count > 0 %}
     <ul class="dataset-resources unstyled">
-      This dataset and 
-      {{ package.dataset_reasons_count }} datasets you follow and
-      {{ package.subscription_reasons_count }} subscriptions you have
-      
+      {% if package.dataset_reasons_count == 1 %}
+          <b>{{ package.dataset_reasons_count }} dataset</b> you follow
+      {% elif package.dataset_reasons_count > 1 %}
+          <b>{{ package.dataset_reasons_count }} datasets</b> you follow
+      {% endif %}
+
+
+      {% if package.subscription_reasons_count == 1 %}
+          and <b>{{ package.subscription_reasons_count }} subscription</b> you have
+      {% elif package.subscription_reasons_count > 1 %}
+          and <b>{{ package.subscription_reasons_count }} subscriptions</b> you have
+      {% endif %}
+
+
       {% if recommendation_type == 'topic' %}
-         share the same topics
+         share their topics with this dataset.
       {% endif %}
-      
       {% if recommendation_type == 'location' %}
-         are about the same region
+         are about the same region as this dataset.
       {% endif %}
-      
       {% if recommendation_type == 'time' %}
-         are about the same time
+         are about the same time as this dataset.
       {% endif %}
     </ul>
   {% endif %}
