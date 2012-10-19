@@ -45,7 +45,6 @@ class Recommendation:
             
 
         for interest in self._user.interests:
-            import ipdb; ipdb.set_trace()
             self._similarity_stats.set_entity(interest.uri, interest.class_uri)
             
             # in order to get sufficiently relevant entities
