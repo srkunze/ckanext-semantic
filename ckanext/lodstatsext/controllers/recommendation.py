@@ -38,7 +38,7 @@ class RecommendationController(base.BaseController):
          
         if type_ == None:
            types = ['topic', 'location', 'time']
-           recommendation.set_count_limit(3)
+           recommendation.set_count_limit(2)
         else:
             types = [type_]
             recommendation.set_count_limit(10)

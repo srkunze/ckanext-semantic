@@ -48,7 +48,7 @@ class Recommendation:
             self._similarity_stats.set_entity(interest.uri, interest.class_uri)
             
             # in order to get sufficiently relevant entities
-            self._similarity_stats.load(self._count_limit * len(self._user.interests))
+            self._similarity_stats.load(2 * self._count_limit * len(self._user.interests))
             
             for similar_entity, similarity_weight, similarity_distance in self._similarity_stats.rows:
                 if similar_entity in not_in_database or similar_entity in interests:
@@ -63,3 +63,6 @@ class Recommendation:
                     self.entities[entity_object].append(interest)
                 else:
                     self.entities[entity_object] = [interest]
+
+        self.entities = dict(sorted(self.entities.iteritems(), key=lambda entity: len(entity[1]), reverse=True)[:self._count_limit])
+
