@@ -2,6 +2,7 @@ import ckan.lib.cli as cli
 import ckan.model as model
 import lib.helpers as h
 import model.update as update
+import ckanext.lodstatsext.model.prefix as prefix
 import model.similarity.similarity_stats as similarity_stats
 import model.similarity.methods as similarity_methods
 import model.vocabulary_stats as vocabulary_stats
@@ -68,26 +69,27 @@ class LODStatsExtCommand(cli.CkanCommand):
                          method,
                          similarity_method_name,
                          entity_name,
+                         user_name,
                          entity_type='dataset',
                          similar_entity_type='dataset'):
                          
-        similarity_method = {'topic': similarity_methods.TopicSimilarity,
-                             'location': similarity_methods.LocationSimilarity,
-                             'time': similarity_methods.TimeSimilarity,
-                            }[similarity_method_name]
+        similarity_method_class = {'topic': similarity_methods.TopicSimilarity,
+                                   'location': similarity_methods.LocationSimilarity,
+                                   'time': similarity_methods.TimeSimilarity,
+                                  }[similarity_method_name]
 
         entity_uri = {'dataset': h.dataset_to_uri(entity_name),
-                      'user': h.user_to_uri(entity_name)}[entity_type]
-        entity_class_uri = {'dataset': 'http://rdfs.org/ns/void#Dataset',
-                            'user': 'http://xmlns.com/foaf/0.1/Person'}[entity_type]
-        similar_entity_class_uri = {'dataset': 'http://rdfs.org/ns/void#Dataset',
-                                    'user': 'http://xmlns.com/foaf/0.1/Person'}[similar_entity_type]
+                      'subscription': h.subscription_to_uri(user_name, entity_name)}[entity_type]
+        entity_class_uri = {'dataset': str(prefix.void.Dataset.uri),
+                            'subscription': str(prefix.ckan.Subscription.uri)}[entity_type]
+        similar_entity_class_uri = {'dataset': str(prefix.void.Dataset.uri),
+                                    'subscription': str(prefix.ckan.Subscription.uri)}[similar_entity_type]
 
-                                 
-        similarities = similarity_stats.SimilarityStats(similarity_method,
-                                                        entity_uri,
-                                                        entity_class_uri,
-                                                        similar_entity_class_uri)
+         
+        similarities = similarity_stats.SimilarityStats()
+        similarities.set_entity(entity_uri, entity_class_uri)
+        similarities.set_similar_entity_class(similar_entity_class_uri)
+        similarities.set_similarity_method(similarity_method_class)
 
         if method == 'update':
             similarities.update_and_commit()
