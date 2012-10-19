@@ -1,49 +1,57 @@
 import ckanext.lodstatsext.lib.helpers as h
-import ckanext.lodstatsext.model.prefix as prefix
 import ckanext.lodstatsext.model.store as store
 import ckanext.lodstatsext.model.user as mu
-import similarity.similarity_stats as sss
+import similarity
 import similarity.methods as methods
 
 class Recommendation:
     def __init__(self, user):
-        self.user = mu.User(user)
-        self.count_limit = 5
-        self.entities = []
+        self._user = mu.User(user)
+        self._similarity_method_class = None
+        self._recommended_entity_class_uri = None
+        self._count_limit = None
+        self._similarity_stats = similarity.SimilarityStats()
+        self.entities = {}
+        
+    def set_recommended_entity_class(self, recommended_entity_class_uri):
+        self._recommended_entity_class_uri = recommended_entity_class_uri
+
+        self._similarity_stats.set_similar_entity_class(self._recommended_entity_class_uri)
         
         
     def set_count_limit(self, count_limit):
-        self.count_limit = count_limit
+        self._count_limit = count_limit
 
 
-    def datasets(self, similarity_method_name):
-        if similarity_method_name == 'topic':
-            similarity_method = methods.TopicSimilarity
-        if similarity_method_name == 'location':
-            similarity_method = methods.LocationSimilarity
-        if similarity_method_name == 'time':
-            similarity_method = methods.TimeSimilarity
+    def set_type(self, recommendation_type):
+        if recommendation_type == 'topic':
+            self._similarity_method_class = methods.TopicSimilarity
+        if recommendation_type == 'location':
+            self._similarity_method_class = methods.LocationSimilarity
+        if recommendation_type == 'time':
+            self._similarity_method_class = methods.TimeSimilarity
+
+        self._similarity_stats.set_similarity_method(self._similarity_method_class)
+
             
-        self._entities_by_class(str(prefix.void.Dataset.uri), similarity_method)
-        return self.entities
-
-        
-    def _entities_by_class(self, recommended_entity_class_uri, similarity_method):
+    def load(self):
         self.entities = {}
         not_in_database = set()
         interests = set()
         
-        self.user.load_interests()
-        for interest in self.user.interests:
+        self._user.load_interests()
+        for interest in self._user.interests:
             interests.add(interest.uri)
             
 
-        for interest in self.user.interests:
-            similarities = sss.SimilarityStats(similarity_method, interest.uri,
-                                               interest.class_uri, recommended_entity_class_uri)
-            similarities.load(self.count_limit * len(self.user.interests)) # <<< in order to get sufficiently relevant entities
+        for interest in self._user.interests:
+            import ipdb; ipdb.set_trace()
+            self._similarity_stats.set_entity(interest.uri, interest.class_uri)
             
-            for similar_entity, similarity_weight, similarity_distance in similarities.rows:
+            # in order to get sufficiently relevant entities
+            self._similarity_stats.load(self._count_limit * len(self._user.interests))
+            
+            for similar_entity, similarity_weight, similarity_distance in self._similarity_stats.rows:
                 if similar_entity in not_in_database or similar_entity in interests:
                     continue
 

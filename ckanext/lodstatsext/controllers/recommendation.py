@@ -3,6 +3,7 @@ import ckan.logic as logic
 import ckan.model as model
 import ckan.lib.dictization.model_dictize as model_dictize
 import ckanext.lodstatsext.lib.helpers as h
+import ckanext.lodstatsext.model.prefix as prefix
 import ckanext.lodstatsext.model.similarity.methods as similarity_methods
 import ckanext.lodstatsext.model.recommendation as r
 import datetime
@@ -15,7 +16,7 @@ log = logging.getLogger(__name__)
 
 
 class RecommendationController(base.BaseController):
-    def read(self, similarity_method=None):
+    def read(self, type_=None):
         context = {'model': model,
                    'session': model.Session,
                    'user': base.c.user or base.c.author}
@@ -31,26 +32,29 @@ class RecommendationController(base.BaseController):
         base.c.user_dict = user_dict
         base.c.is_myself = user_dict['name'] == base.c.user
         
-        if similarity_method == None:
-            similarity_methods = ['topic']
-#           similarity_methods = ['topic', 'location', 'time']
+            
+        recommendation = r.Recommendation(base.c.userobj)
+        recommendation.set_recommended_entity_class(str(prefix.void.Dataset.uri))
+         
+        if type_ == None:
+           types = ['topic', 'location', 'time']
+           recommendation.set_count_limit(3)
         else:
-            similarity_methods = [similarity_method]
-            
-        if similarity_method == None:
-            base.c.content_heading = 'Datasets that match your interests'
-        elif similarity_method == 'topic':
-            base.c.content_heading = 'Datasets matching your interests topic-wise'
-        elif similarity_method == 'location':
-            base.c.content_heading = 'Datasets that are from a location you might be interested in'
-        elif similarity_method == 'time':
-            base.c.content_heading = 'Datasets that are from a time you could be interested in'
-        
-        recommended = r.Recommendation(base.c.userobj)
-        for method_name in similarity_methods:
-            recommended.set_count_limit(5)
-            base.c.user_dict['recommended_datasets'] = recommended.datasets(method_name)
-            
-            base.c.user_dict['recommended_datasets'] = [model_dictize.package_dictize(x, context) for x in base.c.user_dict['recommended_datasets'].keys()]
-        
+            types = [type_]
+            recommendation.set_count_limit(10)
+
+        base.c.recommendation = {}
+        for type_ in types:
+            recommendation.set_type(type_)
+            recommendation.load()
+            for dataset, reasons in recommendation.entities.iteritems():
+                dataset_dict = model_dictize.package_dictize(dataset, context)
+                dataset_dict['reasons'] = reasons
+                
+                if base.c.recommendation.has_key(type_):
+                    base.c.recommendation[type_].append(dataset_dict)
+                else:
+                    base.c.recommendation[type_] = [dataset_dict]
+
+       
         return base.render('recommendation.html')

@@ -11,25 +11,23 @@ import RDF
 
 
 class SimilarityStats:
-    def __init__(self,
-                 similarity_method_class,
-                 entity_uri,
-                 entity_class_uri = 'http://rdfs.org/ns/void#Dataset',
-                 similar_entity_class_uri = 'http://rdfs.org/ns/void#Dataset',
-                 graph='http://lodstats.org/similarities'):
+    extractor_class = {methods.TopicSimilarity:{str(prefix.void.Dataset): extractors.DatasetTopic, str(prefix.ckan.Subscription): extractors.SubscriptionTopic},
+                       methods.LocationSimilarity:{str(prefix.void.Dataset): extractors.DatasetLocation, str(prefix.ckan.Subscription): extractors.SubscriptionLocation},
+                       methods.TimeSimilarity:{str(prefix.void.Dataset): extractors.DatasetTime, str(prefix.ckan.Subscription): extractors.SubscriptionTime}}
 
+
+    def __init__(self, graph='http://lodstats.org/similarities'):
         self._similarity_method = None
         self._similarity_method_class = None
+        self._entity_uri = None
         self._entity_class_uri = None
+        self._entity_extractor = None
         self._similar_entity_class_uri = None
+        self._similar_entity_extractor = None
         
         self.rdf = RDF.Model()
         self.rows = []
         self.graph = graph
-
-        self.set_similarity_method(similarity_method_class)
-        self.set_entity(entity_uri, entity_class_uri)
-        self.set_similar_entity_class(similar_entity_class_uri)
 
 
     def set_entity(self, entity_uri, entity_class_uri):
@@ -41,13 +39,17 @@ class SimilarityStats:
         self._entity_class_uri = entity_class_uri
         self._set_similarity_method_data()
         
-        if self._similar_entity_class_uri == entity_class_uri:
+        if self._similar_entity_class_uri == self._entity_class_uri:
             self._entity_extractor = self._similar_entity_extractor
             return
-            
+        
+        self._set_entity_extractor()
+        
+
+    def _set_entity_extractor(self):
         self._entity_extractor = self._get_extractor(self._entity_class_uri)
 
-    
+
     def set_similar_entity_class(self, similar_entity_class_uri):
         if self._similar_entity_class_uri == similar_entity_class_uri:
             return
@@ -55,38 +57,39 @@ class SimilarityStats:
         self._similar_entity_class_uri = similar_entity_class_uri
         self._set_similarity_method_data()
 
-        if self._entity_class_uri == similar_entity_class_uri:
+        if self._entity_class_uri == self._similar_entity_class_uri:
             self._similar_entity_extractor = self._entity_extractor
             return
 
+        self._set_similar_entity_extractor()
+        
+        
+    def _set_similar_entity_extractor(self):
         self._similar_entity_extractor = self._get_extractor(self._similar_entity_class_uri)
-        
-        
-    def _get_extractor(self, class_uri):
-        if class_uri == str(prefix.void.Dataset):
-            if isinstance(self._similarity_method, methods.TopicSimilarity):
-                return extractors.DatasetTopic()
-            elif isinstance(self._similarity_method, methods.LocationSimilarity):
-                return extractors.DatasetLocation()
-            elif isinstance(self._similarity_method, methods.TimeSimilarity):
-                return extractors.DatasetTime()
-                
-        if class_uri == str(prefix.ckan.Subscription):
-            if isinstance(self._similarity_method, methods.TopicSimilarity):
-                return extractors.SubscriptionTopic()
-            elif isinstance(self._similarity_method, methods.LocationSimilarity):
-                return extractors.SubscriptionLocation()
-            elif isinstance(self._similarity_method, methods.TimeSimilarity):
-                return extractors.SubscriptionTime()
-        
-        raise Exception('combination of entity class <' + class_uri + '> and similarity method <' + type(self._similarity_method).__name__ + '> not supported') 
 
+
+    def _get_extractor(self, entity_class_uri):
+        try:
+            extractor_class = self._get_valid_extractor_class(entity_class_uri)
+
+            return extractor_class()
+        except:
+            pass
+
+        return None
+        
 
     def set_similarity_method(self, similarity_method_class):
         self._similarity_method = similarity_method_class()
         self._similarity_method_class = similarity_method_class
         
         self._set_similarity_method_data()
+        
+        valid_extractor_classes = self._get_valid_extractor_classes()
+        if self._entity_extractor.__class__ not in valid_extractor_classes:
+            self._set_entity_extractor()
+        if self._similar_entity_extractor.__class__ not in valid_extractor_classes:
+            self._set_similar_entity_extractor()
         
 
     def _set_similarity_method_data(self):
@@ -103,9 +106,22 @@ class SimilarityStats:
             return method_data.SpecificityWeightedTopic(str(prefix.vstats.cosSpecificity))
             
         return None
+        
+        
+    def _get_valid_extractor_class(self, entity_class_uri):
+        return SimilarityStats.extractor_class[self._similarity_method_class][entity_class_uri]
+        
+        
+    def _get_valid_extractor_classes(self):
+        return SimilarityStats.extractor_class[self._similarity_method_class].values()
 
 
     def load(self, count_limit, update_when_necessary=True):
+        if self._entity_extractor is None:
+            raise Exception('entity class <' + self._entity_class_uri + '> not supported')
+        if self._similar_entity_extractor is None:
+            raise Exception('similar entity class <' + self._similar_entity_class_uri + '> not supported')
+
         if update_when_necessary and self._update_necessary():
             self._update_and_commit()
                 
