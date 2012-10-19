@@ -1,13 +1,13 @@
 {#
-Displays a single of dataset.
+Displays a single of dataset with recommendation reasons.
 
-package           - A package to display.
-similarity_method - The name of similarity
-item_class        - The class name to use on the list item.
-hide_resources    - If true hides the resources (default: false).
-banner            - If true displays a popular banner (default: false).
-truncate          - The length to trucate the description to (default: 180)
-truncate_title    - The length to truncate the title to (default: 80).
+package             - A package to display.
+recommendation_type - The name of similarity
+item_class          - The class name to use on the list item.
+hide_resources      - If true hides the resources (default: false).
+banner              - If true displays a popular banner (default: false).
+truncate            - The length to trucate the description to (default: 180)
+truncate_title      - The length to truncate the title to (default: 80).
 
 Example:
 
@@ -57,7 +57,7 @@ Example:
           <b>{{ package.dataset_reasons_count }} datasets</b> you follow
       {% endif %}
       
-      {% if package.subscription_reasons_count > 0 and package.subscription_reasons_count > 0 %}
+      {% if package.dataset_reasons_count > 0 and package.subscription_reasons_count > 0 %}
           and
       {% endif %}
       
@@ -69,13 +69,28 @@ Example:
 
 
       {% if recommendation_type == 'topic' %}
-         share their topics with this dataset.
+         {% if package.multiple_reasons %}
+             share their
+         {% else %}
+             shares its
+         {% endif %}
+         topics with this dataset.
       {% endif %}
       {% if recommendation_type == 'location' %}
-         are about the same region as this dataset is.
+         {% if package.multiple_reasons %}
+             are
+         {% else %}
+             is
+         {% endif %}
+         about the same region as this dataset is.
       {% endif %}
       {% if recommendation_type == 'time' %}
-         are about the same time as this dataset is.
+         {% if package.multiple_reasons %}
+             are
+         {% else %}
+             is
+         {% endif %}
+         about the same time as this dataset is.
       {% endif %}
     </ul>
   {% endif %}

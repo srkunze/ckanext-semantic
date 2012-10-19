@@ -53,6 +53,7 @@ class RecommendationController(base.BaseController):
                 dataset_dict['dataset_reasons_count'] = len(dataset_dict['dataset_reasons'])
                 dataset_dict['subscription_reasons'] = [reason for reason in reasons if reason.class_uri == 'http://ckan.org/ontology#Subscription']
                 dataset_dict['subscription_reasons_count'] = len(dataset_dict['subscription_reasons'])
+                dataset_dict['multiple_reasons'] = dataset_dict['dataset_reasons_count'] + dataset_dict['subscription_reasons_count'] > 1
 
                 if base.c.recommendation.has_key(type_):
                     base.c.recommendation[type_].append(dataset_dict)
