@@ -1,3 +1,4 @@
+import ckan.model as model
 import ckanext.lodstatsext.lib.helpers as h
 import ckanext.lodstatsext.model.prefix as prefix
 import ckanext.lodstatsext.model.store as store
@@ -9,8 +10,10 @@ import method_data
 import pytz
 import RDF
 
+from . import SimilarityConfiguration
 
-class SimilarityStats:
+
+class SimilarityStats(object):
     extractor_class = {methods.TopicSimilarity:{str(prefix.void.Dataset): extractors.DatasetTopic, str(prefix.ckan.Subscription): extractors.SubscriptionTopic},
                        methods.LocationSimilarity:{str(prefix.void.Dataset): extractors.DatasetLocation, str(prefix.ckan.Subscription): extractors.SubscriptionLocation},
                        methods.TimeSimilarity:{str(prefix.void.Dataset): extractors.DatasetTime, str(prefix.ckan.Subscription): extractors.SubscriptionTime}}
@@ -29,7 +32,7 @@ class SimilarityStats:
         self.min_similarity_weight = 0.0
         self.max_similarity_distance = float('inf')
         
-        self.rdf = RDF.Model()
+        self._clear_rdf()
         self.rows = []
         self.graph = graph
 
@@ -126,50 +129,70 @@ class SimilarityStats:
         if self._similar_entity_extractor is None:
             raise Exception('similar entity class <' + self._similar_entity_class_uri + '> not supported')
 
+        self._increase_request_counter()
+
         if update_when_necessary and self._update_necessary():
-            print "update necessary"
             self.update_and_commit()
                 
         self._load()
-
-
-    def _update_necessary(self):          
-        real, min_created = self._get_real_count_min_created()
-        possible = self._possible_count()
         
-        #TODO: configurable
-        too_old = (datetime.datetime.now(pytz.utc) - min_created).days > 7
-        too_less = float(real) / float(possible) < 0.4
         
-        return too_old or too_less
-     
+    def _increase_request_counter(self):
+        configuration = self._get_configuration()
+            
+        configuration.request_count += 1
+        
+        model.Session.merge(configuration)
+        model.Session.commit()
 
-    def _get_real_count_min_created(self):
+
+    def _update_necessary(self):
+        relevant_count = 50
+        valid_age = 7
+        
+        configuration = self._get_configuration()
+        
+        if configuration.created is None:
+            similarity_count, oldest_created = self.get_similarity_count_and_oldest_created()
+            
+            brand_new = similarity_count == 0
+            oft_requested = configuration.request_count > relevant_count
+            too_less = 2 * self.count_limit > similarity_count
+                
+            return brand_new or oft_requested or too_less
+
+
+        entity_changed = self._entity_extractor.changed_since(self._entity_uri, configuration.created)
+        too_old = (datetime.datetime.now() - configuration.created).days > valid_age
+        oft_requested = configuration.request_count > relevant_count
+
+        return entity_changed or too_old and oft_requested
+        
+      
+    def get_similarity_count_and_oldest_created(self):
         row = store.root.query('''
                                prefix sim: <http://purl.org/ontology/similarity/>
-                               select (count(distinct ?entity1) as ?count) (min(?created) as ?min_created)
+                               select (count(?similarity) as ?similarity_count) (min(?created) as ?oldest_created)
                                where
                                {
                                    ?similarity a sim:Similarity.
                                    ?similarity sim:method <''' + self._similarity_method.uri + '''>.
-                                   ?similarity sim:element ?entity1.
-                                   ?similarity sim:element ?entity2.
+                                   ?similarity sim:element <''' + self._entity_uri + '''>.
                                    ?similarity <http://purl.org/dc/terms/created> ?created.
-                                   filter(?entity2=<''' + self._entity_uri + '''> and ?entity1!=?entity2)
                                }
                                ''')[0]
-        if row.has_key('min_created'):
-            min_created = dateutil.parser.parse(row['min_created']['value'])
-        else:
-            min_created = datetime.datetime.now(pytz.utc)
-            
-        return int(row['count']['value']), min_created
+
+        similarity_count = None
+        oldest_created = None
+
+        if row.has_key('similarity_count'):
+            similarity_count = int(row['similarity_count']['value'])
+        if row.has_key('oldest_created'):
+            oldest_created = dateutil.parser.parse(row['oldest_created']['value'])
+        
+        return similarity_count, oldest_created
 
 
-    def _possible_count(self):
-        return self._similar_entity_extractor.count()
-
-    
     def _load(self):
         #FIXME: xs:decimal doesn't support infinity
         if self.max_similarity_distance < float('inf'):
@@ -217,7 +240,7 @@ class SimilarityStats:
 
     def _update(self):
         results = {}
-
+        
         try:
             entity = self._entity_extractor.get(self._entity_uri)
         except KeyError:
@@ -234,7 +257,7 @@ class SimilarityStats:
                similarity_distance is not None and similarity_distance < self.max_similarity_distance:
                 self._append(similar_entity_uri, similarity_weight, similarity_distance)
 
-   
+
     def _append(self, similar_entity_uri, similarity_weight=None, similarity_distance=None):
         similarity_node = RDF.Node()
         self.rdf.append(RDF.Statement(similarity_node, prefix.rdf.type, prefix.sim.Similarity))
@@ -249,16 +272,40 @@ class SimilarityStats:
         if similarity_distance is not None:
             self.rdf.append(RDF.Statement(similarity_node, prefix.sim.distance, RDF.Node(literal=str(similarity_distance), datatype=prefix.xs.decimal.uri)))
 
-        
 
     def _commit(self):
-        store.root.modify(self.graph,
-                          h.rdf_to_string(self.rdf),
-                          '?similarity ?predicate ?object.',
-                          '''
+        store.root.modify(graph=self.graph,
+                          insert_construct=h.rdf_to_string(self.rdf),
+                          delete_construct='?similarity ?predicate ?object.',
+                          delete_where='''
                           ?similarity a <http://purl.org/ontology/similarity/Similarity>.
                           ?similarity <http://purl.org/ontology/similarity/element> <''' + self._entity_uri + '''>.
                           ?similarity <http://purl.org/ontology/similarity/method> <''' + self._similarity_method.uri + '''>.
                           ?similarity ?predicate ?object.
                           ''')
+        self.update_timestamp()
+        self._clear_rdf()
+        
+        
+    def update_timestamp(self):
+        configuration = self._get_configuration()
+            
+        configuration.created = datetime.datetime.now()
+        configuration.request_count = 1
+        
+        model.Session.merge(configuration)
+        model.Session.commit()
+        
+        
+    def _get_configuration(self):
+        configuration = model.Session.query(SimilarityConfiguration).get((self._entity_uri, self._similarity_method.uri))
+
+        if configuration is None:
+            return SimilarityConfiguration(self._entity_uri, self._similarity_method.uri)
+            
+        return configuration
+
+
+    def _clear_rdf(self):
+        self.rdf = RDF.Model()
 

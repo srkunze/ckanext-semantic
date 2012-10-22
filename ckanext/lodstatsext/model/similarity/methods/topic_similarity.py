@@ -22,4 +22,7 @@ class TopicSimilarity(SimilarityMethod):
 
 
     def post_process_result(self, similarity_weight, similarity_distance):
+        if self.max_similarity_weight == 0.0:
+            return similarity_weight, similarity_distance
+            
         return similarity_weight / self.max_similarity_weight, similarity_distance

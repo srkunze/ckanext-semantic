@@ -1,4 +1,5 @@
 from . import EntityTime
+from . import SubscriptionExtractor
 import ckan.model as model
 import ckanext.lodstatsext.lib.helpers as h
 import ckanext.lodstatsext.model.store as store
@@ -6,7 +7,7 @@ import datetime
 import dateutil.parser
 
 
-class SubscriptionTime(EntityTime):
+class SubscriptionTime(EntityTime, SubscriptionExtractor):
     def __init__(self):
         query = model.Session.query(model.Subscription)
         subscriptions = query.all()

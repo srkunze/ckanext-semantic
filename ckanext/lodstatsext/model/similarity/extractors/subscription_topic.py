@@ -1,9 +1,10 @@
 from . import EntityTopic
+from . import SubscriptionExtractor
 import ckan.model as model
 import ckanext.lodstatsext.lib.helpers as h
 
      
-class SubscriptionTopic(EntityTopic):
+class SubscriptionTopic(EntityTopic, SubscriptionExtractor):
     def __init__(self):
         query = model.Session.query(model.Subscription)
         subscriptions = query.all()

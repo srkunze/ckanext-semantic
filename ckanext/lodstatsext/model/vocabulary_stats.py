@@ -72,10 +72,10 @@ class VocabularyStats:
         
     def commit(self):
         store.root.clear_graph(VocabularyStats.graph)
-        store.root.modify(VocabularyStats.graph,
-                          h.rdf_to_string(self.rdf),
-                          '?vocabulary ?predicate ?object.\n?object ?object_predicate ?object_object.',
-                          '?vocabulary ?predicate ?object.\nfilter(?vocabulary=<' + self.dataset.uri + '>)')
+        store.root.modify(graph=VocabularyStats.graph,
+                          insert_construct=h.rdf_to_string(self.rdf),
+                          delete_construct='?vocabulary ?predicate ?object.\n?object ?object_predicate ?object_object.',
+                          delete_where='?vocabulary ?predicate ?object.\nfilter(?vocabulary=<' + self.dataset.uri + '>)')
                            
     def load(self):
         return store.root.query('''

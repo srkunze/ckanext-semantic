@@ -31,6 +31,9 @@ rdfs.str = rdfs._prefix
 sim = RDF.NS('http://purl.org/ontology/similarity/')
 sim.str = sim._prefix
 
+sstats = RDF.NS('http://lodstats.org/similarity#')
+sstats.str = sstats._prefix
+
 void = RDF.NS('http://rdfs.org/ns/void#')
 void.str = void._prefix
 

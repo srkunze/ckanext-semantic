@@ -1,8 +1,9 @@
 from . import EntityTopic
+from . import DatasetExtractor
 import ckanext.lodstatsext.model.store as store
 
           
-class DatasetTopic(EntityTopic):
+class DatasetTopic(EntityTopic, DatasetExtractor):
     def __init__(self):
         rows = store.root.query('''
                                 prefix void: <http://rdfs.org/ns/void#>

@@ -1,10 +1,11 @@
 from . import EntityTime
+from . import DatasetExtractor
 import ckanext.lodstatsext.model.store as store
 import datetime
 import dateutil.parser
 
 
-class DatasetTime(EntityTime):
+class DatasetTime(EntityTime, DatasetExtractor):
     def __init__(self):
         rows = store.root.query('''
                                 prefix void: <http://rdfs.org/ns/void#>

@@ -94,10 +94,10 @@ class DatasetStats:
             
             
     def commit(self):
-        store.root.modify(DatasetStats.graph,
-                          rdf_to_string(self.rdf),
-                          '?dataset ?predicate ?object.\n?object ?object_predicate ?object_object.',
-                          '?dataset ?predicate ?object.\nfilter(?dataset=<' + self.dataset.uri + '>)')
+        store.root.modify(graph=DatasetStats.graph,
+                          insert_construct=rdf_to_string(self.rdf),
+                          delete_construct='?dataset ?predicate ?object.\n?object ?object_predicate ?object_object.',
+                          delete_where='?dataset ?predicate ?object.\nfilter(?dataset=<' + self.dataset.uri + '>)')
     
     def clear_rdf(self):
         self.rdf = RDF.Model()

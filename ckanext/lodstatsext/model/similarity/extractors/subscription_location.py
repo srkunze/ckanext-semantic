@@ -1,9 +1,10 @@
 from . import EntityLocation
+from . import SubscriptionExtractor
 import ckan.model as model
 import ckanext.lodstatsext.lib.helpers as h
 
      
-class SubscriptionLocation(EntityLocation):
+class SubscriptionLocation(EntityLocation, SubscriptionExtractor):
     def __init__(self):
         query = model.Session.query(model.Subscription)
         subscriptions = query.all()

@@ -1,8 +1,9 @@
 from . import EntityLocation
+from . import DatasetExtractor
 import ckanext.lodstatsext.model.store as store
 
           
-class DatasetLocation(EntityLocation):
+class DatasetLocation(EntityLocation, DatasetExtractor):
     def __init__(self):
         rows = store.root.query('''
                                 prefix void: <http://rdfs.org/ns/void#>
