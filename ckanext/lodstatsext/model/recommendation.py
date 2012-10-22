@@ -49,6 +49,7 @@ class Recommendation:
         self._user.load_interests()
         for interest in self._user.interests:
             interests.add(interest.uri)
+            #TODO: add subscription items
             
 
         for interest in self._user.interests:
