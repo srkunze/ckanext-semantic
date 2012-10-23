@@ -4,7 +4,7 @@ import ckanext.lodstatsext.model.store as store
 
           
 class DatasetTopic(EntityTopic, DatasetExtractor):
-    def __init__(self):
+    def _extract(self):
         rows = store.root.query('''
                                 prefix void: <http://rdfs.org/ns/void#>
 
@@ -21,7 +21,8 @@ class DatasetTopic(EntityTopic, DatasetExtractor):
             vocabulary_uri = row['vocabulary']['value']
             
             if self.entities.has_key(dataset_uri):
-                self.entities[dataset_uri].append(vocabulary_uri)
+                self.entities[dataset_uri]['vocabularies'].append(vocabulary_uri)
             else:
-                self.entities[dataset_uri] = [vocabulary_uri]
+                self.entities[dataset_uri] = {'vocabularies': [vocabulary_uri]}
 
+        self._extracted = True

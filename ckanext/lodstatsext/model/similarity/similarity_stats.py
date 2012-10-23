@@ -29,8 +29,8 @@ class SimilarityStats(object):
         self._similar_entity_extractor = None
         
         self.count_limit = 10
-        self.min_similarity_weight = 0.0
-        self.max_similarity_distance = float('inf')
+        self.min_similarity_weight = None
+        self.max_similarity_distance = None
         
         self._clear_rdf()
         self.rows = []
@@ -129,15 +129,16 @@ class SimilarityStats(object):
         if self._similar_entity_extractor is None:
             raise Exception('similar entity class <' + self._similar_entity_class_uri + '> not supported')
 
-        self._increase_request_counter()
+        self._increase_request_count()
 
         if update_when_necessary and self._update_necessary():
-            self.update_and_commit()
+            print "similarity update for", self._entity_uri, self._similarity_method.uri
+            self.update()
                 
         self._load()
         
         
-    def _increase_request_counter(self):
+    def _increase_request_count(self):
         configuration = self._get_configuration()
             
         configuration.request_count += 1
@@ -194,12 +195,15 @@ class SimilarityStats(object):
 
 
     def _load(self):
-        #FIXME: xs:decimal doesn't support infinity
-        if self.max_similarity_distance < float('inf'):
+        weight_query_string = ''
+        if self.min_similarity_weight is not None:
+            weight_query_string = 'filter(?similarity_weight >= ' + str(self.min_similarity_weight) + ')'
+
+        #HINT: xs:decimal doesn't support infinity
+        distance_query_string = ''
+        if self.max_similarity_distance is not None:
             distance_query_string = 'filter(?similarity_distance <= ' + str(self.max_similarity_distance) + ')'
-        else:
-            distance_query_string = ''
-            
+        
         #FIXME: owl:Thing problem to determine class of entity1
         rows = store.root.query('''
                                 prefix xs: <http://www.w3.org/2001/XMLSchema#>
@@ -221,7 +225,7 @@ class SimilarityStats(object):
                                         ?similarity sim:distance ?similarity_distance.
                                     }
                                     filter(<''' + self._entity_uri + '''> != ?similar_entity)
-                                    filter(?similarity_weight >= ''' + str(self.min_similarity_weight) + ''')
+                                    ''' + weight_query_string + '''
                                     ''' + distance_query_string + '''
                                 }
                                 order by desc(?similarity_weight) ?similarity_distance
@@ -233,32 +237,40 @@ class SimilarityStats(object):
                       row['similarity_distance']['value'] if row.has_key('similarity_distance') else None) for row in rows]
 
        
-    def update_and_commit(self):
-        self._update()
-        self._commit()
-
-
-    def _update(self):
+    def update(self):
         results = {}
-        
-        try:
-            entity = self._entity_extractor.get(self._entity_uri)
-        except KeyError:
-            return
-        self._similarity_method.set_entity(entity)
 
-        similar_entities = self._similar_entity_extractor.get_all()
+        try:
+            self._entity_extractor.set_entity(self._entity_uri)
+            entity_data = self._entity_extractor.get_entity_data()
+        except KeyError:
+            self._update_timestamp()
+            return
+        self._similarity_method.set_entity(entity_data)
+
+        configuration = self._get_configuration()
+        similar_entities = self._similar_entity_extractor.get_similar_entities(configuration.created)
+        
         for similar_entity_uri, similar_entity_data in similar_entities.iteritems():
             results[similar_entity_uri] = self._similarity_method.process_similar_entity(similar_entity_data)
 
         for similar_entity_uri, result in results.iteritems():
-            similarity_weight, similarity_distance  = self._similarity_method.post_process_result(*result)
-            if similarity_weight is not None and similarity_weight > self.min_similarity_weight or \
-               similarity_distance is not None and similarity_distance < self.max_similarity_distance:
-                self._append(similar_entity_uri, similarity_weight, similarity_distance)
+            similarity_weight, similarity_distance = self._similarity_method.post_process_result(*result)
+            
+            #TODO: filtering similarities by min and max should be reflected in configuration
+            if similarity_weight is not None and self.min_similarity_weight is not None and similarity_weight < self.min_similarity_weight or \
+               similarity_distance is not None and self.max_similarity_distance is not None and similarity_distance > self.max_similarity_distance:
+               #continue
+               pass
+            
+            # no nice way of updating a similarity with only one element
+            if self._entity_uri != similar_entity_uri:
+               self._commit(similar_entity_uri, similarity_weight, similarity_distance)
+        
+        self._update_timestamp()
 
 
-    def _append(self, similar_entity_uri, similarity_weight=None, similarity_distance=None):
+    def _commit(self, similar_entity_uri, similarity_weight=None, similarity_distance=None):
         similarity_node = RDF.Node()
         self.rdf.append(RDF.Statement(similarity_node, prefix.rdf.type, prefix.sim.Similarity))
         self.rdf.append(RDF.Statement(similarity_node, prefix.dct.created, RDF.Node(literal=datetime.datetime.now().isoformat(), datatype=prefix.xs.dateTime.uri)))
@@ -272,22 +284,20 @@ class SimilarityStats(object):
         if similarity_distance is not None:
             self.rdf.append(RDF.Statement(similarity_node, prefix.sim.distance, RDF.Node(literal=str(similarity_distance), datatype=prefix.xs.decimal.uri)))
 
-
-    def _commit(self):
         store.root.modify(graph=self.graph,
                           insert_construct=h.rdf_to_string(self.rdf),
                           delete_construct='?similarity ?predicate ?object.',
                           delete_where='''
-                          ?similarity a <http://purl.org/ontology/similarity/Similarity>.
                           ?similarity <http://purl.org/ontology/similarity/element> <''' + self._entity_uri + '''>.
+                          ?similarity <http://purl.org/ontology/similarity/element> <''' + similar_entity_uri + '''>.
                           ?similarity <http://purl.org/ontology/similarity/method> <''' + self._similarity_method.uri + '''>.
                           ?similarity ?predicate ?object.
                           ''')
-        self.update_timestamp()
+        
         self._clear_rdf()
         
         
-    def update_timestamp(self):
+    def _update_timestamp(self):
         configuration = self._get_configuration()
             
         configuration.created = datetime.datetime.now()

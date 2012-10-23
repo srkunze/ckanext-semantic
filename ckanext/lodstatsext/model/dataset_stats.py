@@ -40,7 +40,8 @@ class DatasetStats:
                                        where
                                        {
                                            ?dataset a void:Dataset.
-                                           ?dataset dstats:evaluated "false".
+                                           ?dataset dstats:evaluated ?evaluated.
+                                           filter(!bound(?evaluated))
                                        }
                                        ''')
 
@@ -72,8 +73,7 @@ class DatasetStats:
 
     def do_stats(self):
         dataset_rdf_uri = RDF.Uri(self.dataset.uri)
-        self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.evaluated, 'true'))
-        self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.lastEvaluated, RDF.Node(literal=datetime.datetime.now().isoformat(), datatype=prefix.xs.dateTime.uri)))
+        self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.evaluated, RDF.Node(literal=datetime.datetime.now().isoformat(), datatype=prefix.xs.dateTime.uri)))
 
         if self.rdf_resource is None:
             self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.error, prefix.dstats.NoRDFResource))
@@ -95,7 +95,7 @@ class DatasetStats:
             
     def commit(self):
         store.root.modify(graph=DatasetStats.graph,
-                          insert_construct=rdf_to_string(self.rdf),
+                          insert_construct=h.rdf_to_string(self.rdf),
                           delete_construct='?dataset ?predicate ?object.\n?object ?object_predicate ?object_object.',
                           delete_where='?dataset ?predicate ?object.\nfilter(?dataset=<' + self.dataset.uri + '>)')
     

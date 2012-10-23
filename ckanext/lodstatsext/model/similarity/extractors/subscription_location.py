@@ -6,12 +6,18 @@ import ckanext.lodstatsext.lib.helpers as h
      
 class SubscriptionLocation(EntityLocation, SubscriptionExtractor):
     def __init__(self):
+        super(SubscriptionLocation, self).__init__()
+
+        
+    def _extract(self):
         query = model.Session.query(model.Subscription)
         subscriptions = query.all()
         self.entities = {}
         
         for subscription in subscriptions:
             self.extract_subscription_location(subscription)
+        
+        self._extracted = True
 
 
     def extract_subscription_location(self, subscription):
@@ -28,7 +34,7 @@ class SubscriptionLocation(EntityLocation, SubscriptionExtractor):
     def extract_semantic_subscription_location(self, subscription):
         if subscription.definition.has_key('location'):
             location = subscription.definition['location']
-            return {'avgLat': location['latitude'], 'avgLong': location['longitude']}
+            return {'avgLat': float(location['latitude']), 'avgLong': float(location['longitude'])}
             
         return None
 

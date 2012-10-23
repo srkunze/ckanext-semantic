@@ -4,6 +4,7 @@ import ckanext.lodstatsext.model.user as mu
 import similarity
 import similarity.methods as methods
 
+
 class Recommendation:
     def __init__(self, user):
         self._user = mu.User(user)
@@ -23,15 +24,15 @@ class Recommendation:
 
 
     def set_type(self, recommendation_type):
-        min_similarity_weight = 0.0
-        max_similarity_distance = float('inf')
+        min_similarity_weight = None
+        max_similarity_distance = None
         
         if recommendation_type == 'topic':
             similarity_method_class = methods.TopicSimilarity
             min_similarity_weight = 0.1
         if recommendation_type == 'location':
             similarity_method_class = methods.LocationSimilarity
-            max_similarity_distance = 100
+            max_similarity_distance = 10000
         if recommendation_type == 'time':
             similarity_method_class = methods.TimeSimilarity
             max_similarity_distance = 365
@@ -51,7 +52,6 @@ class Recommendation:
             interests.add(interest.uri)
             #TODO: add subscription items
             
-
         for interest in self._user.interests:
             self._similarity_stats.set_entity(interest.uri, interest.class_uri)
             self._similarity_stats.count_limit = 2 * self._count_limit * len(self._user.interests)

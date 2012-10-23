@@ -2,5 +2,6 @@ from . import EntityExtractor
 
 
 class EntityTime(EntityExtractor):
-    pass
+    def __init__(self):
+        super(EntityTime, self).__init__()
 

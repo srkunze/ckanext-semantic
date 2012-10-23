@@ -2,5 +2,6 @@ from . import EntityExtractor
 
 
 class EntityLocation(EntityExtractor):
-    pass
+    def __init__(self):
+        super(EntityLocation, self).__init__()
 

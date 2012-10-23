@@ -1,14 +1,26 @@
 class EntityExtractor(object):
-    def get(self, entity_uri):
-        return self.entities[entity_uri]
+    def __init__(self):
+        super(EntityExtractor, self).__init__()
+        self._entity_uri = None
+        self._extracted = False
         
         
-    def get_all(self):
-        return self.entities
+    def set_entity(self, entity_uri):
+        self._entity_uri = entity_uri
 
 
-    def count(self):
-        return len(self.entities)
+    def get_entity_data(self):
+        if not self._extracted:
+            self._extract()
+            
+        return self.entities[self._entity_uri]
+        
+        
+    def get_similar_entities(self, oldest_update):
+        if not self._extracted:
+            self._extract()
+        
+        return dict([(entity_uri, entity_data) for entity_uri, entity_data in self.entities.iteritems() if self._entity_uri == entity_uri or self.changed_since(entity_uri, oldest_update)])
 
 
 from entity_topic import EntityTopic

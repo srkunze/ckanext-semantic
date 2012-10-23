@@ -5,6 +5,10 @@ import ckanext.lodstatsext.model.store as store
           
 class DatasetLocation(EntityLocation, DatasetExtractor):
     def __init__(self):
+        super(DatasetLocation, self).__init__()
+        
+        
+    def _extract(self):
         rows = store.root.query('''
                                 prefix void: <http://rdfs.org/ns/void#>
 
@@ -30,4 +34,6 @@ class DatasetLocation(EntityLocation, DatasetExtractor):
                                'minLong': float(row['minLong']['value']),
                                'maxLat': float(row['maxLat']['value']),
                                'maxLong': float(row['maxLong']['value'])}) for row in rows])
+                               
+        self._extracted = True
 

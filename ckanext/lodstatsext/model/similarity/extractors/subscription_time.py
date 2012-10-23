@@ -9,12 +9,18 @@ import dateutil.parser
 
 class SubscriptionTime(EntityTime, SubscriptionExtractor):
     def __init__(self):
+        super(SubscriptionTime, self).__init__()
+
+
+    def _extract(self):
         query = model.Session.query(model.Subscription)
         subscriptions = query.all()
         self.entities = {}
         
         for subscription in subscriptions:
             self.extract_subscription_time(subscription)
+            
+        self._extracted = True
 
 
     def extract_subscription_time(self, subscription):

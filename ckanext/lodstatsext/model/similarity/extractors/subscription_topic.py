@@ -6,12 +6,18 @@ import ckanext.lodstatsext.lib.helpers as h
      
 class SubscriptionTopic(EntityTopic, SubscriptionExtractor):
     def __init__(self):
+        super(SubscriptionTopic, self).__init__()
+
+
+    def _extract(self):
         query = model.Session.query(model.Subscription)
         subscriptions = query.all()
         self.entities = {}
         
         for subscription in subscriptions:
             self.extract_subscription_topics(subscription)
+        
+        self._extracted = True
 
 
     def extract_subscription_topics(self, subscription):
@@ -27,7 +33,7 @@ class SubscriptionTopic(EntityTopic, SubscriptionExtractor):
 
     def extract_semantic_subscription_topics(self, subscription):
         if subscription.definition.has_key('topics'):
-            return subscription.definition['topics']
+            return {'vocabularies': subscription.definition['topics']}
 
         return None
         

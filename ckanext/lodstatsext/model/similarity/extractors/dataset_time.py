@@ -6,7 +6,7 @@ import dateutil.parser
 
 
 class DatasetTime(EntityTime, DatasetExtractor):
-    def __init__(self):
+    def _extract(self):
         rows = store.root.query('''
                                 prefix void: <http://rdfs.org/ns/void#>
                                 prefix xs: <http://www.w3.org/2001/XMLSchema#>
@@ -26,3 +26,5 @@ class DatasetTime(EntityTime, DatasetExtractor):
         self.entities =  dict([(row['dataset']['value'],
                                 {'minTime': dateutil.parser.parse(row['minDateTime']['value']),
                                  'maxTime': dateutil.parser.parse(row['maxDateTime']['value'])}) for row in rows])
+        
+        self._extracted = True

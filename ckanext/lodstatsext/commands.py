@@ -38,13 +38,7 @@ class LODStatsExtCommand(cli.CkanCommand):
         pass
         
 
-    def update(self, class_='user', name=None):
-        if class_ == 'user':
-            query = model.Session.query(model.User)
-            if name is not None:
-                query = query.filter(model.User.name == name)
-            update.triplestore_user(query.all())
-            
+    def update(self, class_='dataset', name=None):
         if class_ == 'dataset':
             query = model.Session.query(model.Package)
             if name is not None:
@@ -68,11 +62,11 @@ class LODStatsExtCommand(cli.CkanCommand):
     def similarity_stats(self,
                          method,
                          similarity_method_name,
-                         min_weight,
-                         max_distance,
                          entity_name,
                          user_name,
                          entity_type='dataset',
+                         min_weight=None,
+                         max_distance=None,
                          similar_entity_type='dataset'):
                          
         similarity_method_class = {'topic': similarity_methods.TopicSimilarity,
@@ -97,7 +91,7 @@ class LODStatsExtCommand(cli.CkanCommand):
         similarities.max_similarity_weight = max_distance
 
         if method == 'update':
-            similarities.update_and_commit()
+            similarities.update()
             
         if method == 'load1':
             similarities.load()
