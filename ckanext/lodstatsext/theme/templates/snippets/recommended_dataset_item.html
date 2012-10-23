@@ -52,22 +52,38 @@ Example:
   {% if package.dataset_reasons_count > 0 or package.subscription_reasons_count > 0 %}
     <ul class="dataset-resources unstyled">
       {% if package.dataset_reasons_count == 1 %}
-          <b>{{ package.dataset_reasons_count }} dataset</b> you follow
+          <a href="#dataset-reasons-{{ package.name }}" data-module="popover-list">{{ package.dataset_reasons_count }} dataset</a> you follow
       {% elif package.dataset_reasons_count > 1 %}
-          <b>{{ package.dataset_reasons_count }} datasets</b> you follow
+          <a href="#dataset-reasons-{{ package.name }}" data-module="popover-list">{{ package.dataset_reasons_count }} datasets</a> you follow
       {% endif %}
+      
+      <p id="dataset-reasons-{{ package.name }}" class="js-hide" title="similar datasets you follow">
+        {% for reason in package.dataset_reasons %}
+          <a href="{{ reason.uri }}">{{ _(reason.name) }}</a>
+          <br />
+        {% endfor %}
+      </p>
+      
       
       {% if package.dataset_reasons_count > 0 and package.subscription_reasons_count > 0 %}
           and
       {% endif %}
       
+      
       {% if package.subscription_reasons_count == 1 %}
-          <b>{{ package.subscription_reasons_count }} subscription</b> you have
+          <a href="#subscription-reasons-{{ package.name }}" data-module="popover-list">{{ package.subscription_reasons_count }} subscription</a> you have
       {% elif package.subscription_reasons_count > 1 %}
-          <b>{{ package.subscription_reasons_count }} subscriptions</b> you have
+          <a href="#subscription-reasons-{{ package.name }}" data-module="popover-list">{{ package.subscription_reasons_count }} subscriptions</a> you have
       {% endif %}
 
-
+      <p id="subscription-reasons-{{ package.name }}" class="js-hide" title="your similar subscriptions">
+        {% for reason in package.subscription_reasons %}
+          <a href="{{ reason.uri }}">{{ _(reason.name) }}</a>
+          <br />
+        {% endfor %}
+      </p>
+      
+      
       {% if recommendation_type == 'topic' %}
          {% if package.multiple_reasons %}
              share their
