@@ -32,7 +32,7 @@ class Recommendation:
             min_similarity_weight = 0.1
         if recommendation_type == 'location':
             similarity_method_class = methods.LocationSimilarity
-            max_similarity_distance = 50
+            max_similarity_distance = 3
         if recommendation_type == 'time':
             similarity_method_class = methods.TimeSimilarity
             max_similarity_distance = 365

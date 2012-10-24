@@ -112,6 +112,12 @@ class SimilarityStats(object):
                 return method_data.EqualWeightedTopic()
             return method_data.SpecificityWeightedTopic(str(prefix.vstats.cosSpecificity))
             
+        elif self._similarity_method_class == methods.LocationSimilarity:
+            if str(prefix.ckan.Subscription) == self._entity_class_uri:
+                return method_data.NormalizeToEntity()
+            if str(prefix.ckan.Subscription) == self._similar_entity_class_uri:
+                return method_data.NormalizeToSimilarEntity()
+            
         return None
         
         
@@ -248,8 +254,15 @@ class SimilarityStats(object):
             return
         self._similarity_method.set_entity(entity_data)
 
+
+        #TODO: remove code duplication in function _update_necessary
+        #TODO: remove unclean code method invocation
         configuration = self._get_configuration()
-        similar_entities = self._similar_entity_extractor.get_similar_entities(configuration.created)
+        if self._entity_extractor.changed_since(self._entity_uri, configuration.created):
+            similar_entities = self._similar_entity_extractor.get_similar_entities(None)
+        else:
+            similar_entities = self._similar_entity_extractor.get_similar_entities(configuration.created)
+            
         
         for similar_entity_uri, similar_entity_data in similar_entities.iteritems():
             results[similar_entity_uri] = self._similarity_method.process_similar_entity(similar_entity_data)

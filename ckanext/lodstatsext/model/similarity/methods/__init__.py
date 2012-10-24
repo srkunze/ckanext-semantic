@@ -1,12 +1,17 @@
 class SimilarityMethod(object):
-    def set_method_data(self, data):
-        self.data = data
-        
-        
+    def __init__(self):
+        self._entity = None
+        self._data = None
+
+
     def set_entity(self, entity):
         self._entity = entity
 
 
+    def set_method_data(self, data):
+        self._data = data
+        
+        
     def post_process_result(self, similarity_weight, similarity_distance):
         return similarity_weight, similarity_distance
 
