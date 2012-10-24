@@ -4,7 +4,7 @@ class SimilarityMethod(object):
         
         
     def set_entity(self, entity):
-        self.entity = entity
+        self._entity = entity
 
 
     def post_process_result(self, similarity_weight, similarity_distance):

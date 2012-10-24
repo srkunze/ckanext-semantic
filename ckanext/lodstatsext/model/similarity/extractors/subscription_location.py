@@ -2,6 +2,7 @@ from . import EntityLocation
 from . import SubscriptionExtractor
 import ckan.model as model
 import ckanext.lodstatsext.lib.helpers as h
+import math
 
      
 class SubscriptionLocation(EntityLocation, SubscriptionExtractor):
@@ -34,7 +35,9 @@ class SubscriptionLocation(EntityLocation, SubscriptionExtractor):
     def extract_semantic_subscription_location(self, subscription):
         if subscription.definition.has_key('location'):
             location = subscription.definition['location']
-            return {'avgLat': float(location['latitude']), 'avgLong': float(location['longitude'])}
+            return {'latitude': math.radians(float(location['latitude'])),
+                    'longitude': math.radians(float(location['longitude'])),
+                    'radius': float(location['radius'])}
             
         return None
 

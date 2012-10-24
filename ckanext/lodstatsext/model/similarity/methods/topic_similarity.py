@@ -11,7 +11,7 @@ class TopicSimilarity(SimilarityMethod):
         
     def process_similar_entity(self, similar_entity):
         similarity_weight = 0.0
-        for topic in self.entity['vocabularies']:
+        for topic in self._entity['vocabularies']:
             if topic in similar_entity['vocabularies']:
                 similarity_weight += self.data.topic_weight(topic)
         
