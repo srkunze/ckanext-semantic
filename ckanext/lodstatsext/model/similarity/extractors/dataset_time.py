@@ -22,9 +22,16 @@ class DatasetTime(EntityTime, DatasetExtractor):
                                 }
                                 group by ?dataset
                                 ''')
-        
-        self.entities =  dict([(row['dataset']['value'],
-                                {'minTime': dateutil.parser.parse(row['minDateTime']['value']),
-                                 'maxTime': dateutil.parser.parse(row['maxDateTime']['value'])}) for row in rows])
+                                
+        self.entities = {}
+        for row in rows:
+            minTime = dateutil.parser.parse(row['minDateTime']['value'])
+            maxTime = dateutil.parser.parse(row['maxDateTime']['value'])
+
+            minTime = minTime.replace(tzinfo=None) - minTime.utcoffset()
+            maxTime = maxTime.replace(tzinfo=None) - maxTime.utcoffset()
+
+            self.entities[row['dataset']['value']] = {'minTime': minTime, 'maxTime': maxTime}
         
         self._extracted = True
+
