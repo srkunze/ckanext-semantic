@@ -112,7 +112,7 @@ class SimilarityStats(object):
                 return method_data.EqualWeightedTopic()
             return method_data.SpecificityWeightedTopic(str(prefix.vstats.cosSpecificity))
             
-        elif self._similarity_method_class == methods.LocationSimilarity:
+        elif self._similarity_method_class in [methods.LocationSimilarity, methods.TimeSimilarity]:
             if str(prefix.ckan.Subscription) == self._entity_class_uri:
                 return method_data.NormalizeToEntity()
             if str(prefix.ckan.Subscription) == self._similar_entity_class_uri:
