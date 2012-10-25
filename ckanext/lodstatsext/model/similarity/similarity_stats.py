@@ -201,14 +201,18 @@ class SimilarityStats(object):
 
 
     def _load(self):
-        weight_query_string = ''
-        if self.min_similarity_weight is not None:
-            weight_query_string = 'filter(?similarity_weight >= ' + str(self.min_similarity_weight) + ')'
+        if self.min_similarity_weight is not None or self.max_similarity_distance is not None:
+            filter_string = 'filter('
+            if self.min_similarity_weight is not None:
+                filter_string += '?similarity_weight >= ' + str(self.min_similarity_weight)
+            
+            if self.min_similarity_weight is not None and self.max_similarity_distance is not None:
+                filter_string += ' or '
 
-        #HINT: xs:decimal doesn't support infinity
-        distance_query_string = ''
-        if self.max_similarity_distance is not None:
-            distance_query_string = 'filter(?similarity_distance <= ' + str(self.max_similarity_distance) + ')'
+            #HINT: xs:decimal doesn't support infinity
+            if self.max_similarity_distance is not None:
+                filter_string += '?similarity_distance <= ' + str(self.max_similarity_distance)
+            filter_string += ')'
         
         #FIXME: owl:Thing problem to determine class of entity1
         rows = store.root.query('''
@@ -231,8 +235,7 @@ class SimilarityStats(object):
                                         ?similarity sim:distance ?similarity_distance.
                                     }
                                     filter(<''' + self._entity_uri + '''> != ?similar_entity)
-                                    ''' + weight_query_string + '''
-                                    ''' + distance_query_string + '''
+                                    ''' + filter_string + '''
                                 }
                                 order by desc(?similarity_weight) ?similarity_distance
                                 limit ''' + str(self.count_limit) + '''

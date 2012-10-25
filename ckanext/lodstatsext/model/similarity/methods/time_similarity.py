@@ -1,5 +1,4 @@
 from . import SimilarityMethod
-import ckanext.lodstatsext.lib.time as h
 
 
 class TimeSimilarity(SimilarityMethod):
@@ -9,20 +8,23 @@ class TimeSimilarity(SimilarityMethod):
         similarity_weight = None
         similarity_distance = None
         
-        entity_timedelta = self._entity['maxTime'] - self._entity['minTime']
-        similar_entity_timedelta = similar_entity['maxTime'] - similar_entity['minTime']
-        max_timedelta = max(entity_timedelta, similar_entity_timedelta)
+        entity_timedelta = TimeSimilarity.at_least_1_day(self._entity['max_time'] - self._entity['min_time'])
+        similar_entity_timedelta = TimeSimilarity.at_least_1_day(similar_entity['max_time'] - similar_entity['min_time'])
         
-        max_min_time = max(self._entity['minTime'], similar_entity['minTime'])
-        min_max_time = min(self._entity['maxTime'], similar_entity['maxTime'])
+        max_min_time = max(self._entity['min_time'], similar_entity['min_time'])
+        min_max_time = min(self._entity['max_time'], similar_entity['max_time'])
         
-        timedelta = min_max_time - max_min_time
+        print max_min_time, min_max_time
         
-        if max_min_time > min_max_time:
-            similarity_distance = h.seconds(-timedelta) / self._normalizer(entity_timedelta, similar_entity_timedelta)
+        timedelta = TimeSimilarity.at_least_1_day(max_min_time - min_max_time)
+        print max_min_time - min_max_time
+        print timedelta
+        
+        if timedelta > 0:
+            similarity_distance = timedelta / self._normalizer(entity_timedelta, similar_entity_timedelta)
         else:
-            similarity_weight = h.seconds(timedelta) / h.seconds(max_timedelta)
-        
+            similarity_weight = -timedelta / max(entity_timedelta, similar_entity_timedelta)
+
         return similarity_weight, similarity_distance
 
 
@@ -30,5 +32,13 @@ class TimeSimilarity(SimilarityMethod):
         if self._data is None:
             return 1.0
 
-        return h.seconds(self._data.normalizer(entity_timedelta, similar_entity_timedelta)) / 2
+        return float(max(1, self._data.normalizer(entity_timedelta, similar_entity_timedelta) / 2))
+
+
+    @classmethod
+    def at_least_1_day(cls, timedelta):
+        if timedelta.days <= 0:
+            return float(min(-1, timedelta.days))
+            
+        return float(max(1, timedelta.days))
 

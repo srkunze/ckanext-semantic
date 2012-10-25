@@ -2,6 +2,7 @@ from . import EntityTime
 from . import SubscriptionExtractor
 import ckan.model as model
 import ckanext.lodstatsext.lib.helpers as h
+import ckanext.lodstatsext.lib.time as ht
 import ckanext.lodstatsext.model.store as store
 import datetime
 import dateutil.parser
@@ -38,13 +39,14 @@ class SubscriptionTime(EntityTime, SubscriptionExtractor):
         if subscription.definition.has_key('time'):
             time = subscription.definition['time']
             if time['type'] == 'span':
-                return {'minTime': dateutil.parser.parse(time['min']), 'maxTime': dateutil.parser.parse(time['max'])}
+                return {'min_time': ht.to_naive_utc(ht.min_datetime(time['min'])),
+                        'max_time': ht.to_naive_utc(ht.max_datetime(time['max']))}
+                
             elif time['type'] == 'point':
-                point = dateutil.parser.parse(semantic['time']['point'])
+                point = ht.to_naive_utc(ht.min_datetime(semantic['time']['point']))
                 variance = datetime.timedelta(days=int(semantic['time']['variance']))
-                min_ = point - variance
-                max_ = point + variance
-                return {'minTime': min_, 'maxTime': max_}
+
+                return {'min_time': point - variance, 'max_time': point + variance}
 
         return None
 

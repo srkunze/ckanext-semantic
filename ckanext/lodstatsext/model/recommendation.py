@@ -24,8 +24,8 @@ class Recommendation:
 
 
     def set_type(self, recommendation_type):
-        min_similarity_weight = None
-        max_similarity_distance = None
+        min_similarity_weight = 0.0
+        max_similarity_distance = 0.0
         
         if recommendation_type == 'topic':
             similarity_method_class = methods.TopicSimilarity
@@ -35,7 +35,7 @@ class Recommendation:
             max_similarity_distance = 3
         if recommendation_type == 'time':
             similarity_method_class = methods.TimeSimilarity
-            max_similarity_distance = 365
+            max_similarity_distance = 0.5
 
         self._similarity_stats.set_similarity_method(similarity_method_class)
         self._similarity_stats.min_similarity_weight = min_similarity_weight
