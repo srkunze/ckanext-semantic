@@ -1,6 +1,7 @@
 import ckan.model as model
 import RDF
 import re
+import urllib
 
 host = 'http://localhost:5000/'
 path_to_dataset = 'dataset/'
@@ -18,7 +19,7 @@ def user_to_uri(user_name):
 
           
 def subscription_to_uri(user_name, subscription_name):
-    return host + path_to_user + user_name + '/' + path_to_subscription + subscription_name        
+    return host + path_to_user + user_name + '/' + path_to_subscription + urllib.quote(subscription_name)
 
 
 def user_id_to_object(user_id):
@@ -41,7 +42,7 @@ def uri_to_object(uri_string):
     match = re.search(host + path_to_user + '(.*)/' + path_to_subscription + '(.*)', uri_string)
     if match is not None:
         query = model.Session.query(model.Subscription)
-        query = query.filter(model.Subscription.name == match.group(2))
+        query = query.filter(model.Subscription.name == urllib.unquote(match.group(2)))
         query = query.filter(model.Subscription.owner_id == user_name_to_object(match.group(1)).id)
         return query.one()
 

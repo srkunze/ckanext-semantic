@@ -22,7 +22,7 @@ class SubscriptionLocation(EntityLocation, SubscriptionExtractor):
 
 
     def extract_subscription_location(self, subscription):
-        subscription_location = []
+        subscription_location = None
         if subscription.definition_type == 'semantic':
             subscription_location = self.extract_semantic_subscription_location(subscription)
         elif subscription.definition_type == 'sparql':

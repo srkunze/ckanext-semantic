@@ -12,7 +12,7 @@
     <ul class="nav nav-simple">
       {% for similar in pkg.similar %}
         <li class="nav-item">
-          {% link_for _( similar.title), controller='package', action='read', id=similar.name %}
+          {% link_for _( similar.title ), controller='package', action='read', id=similar.name %}
         </li>
       {% endfor %}
     </ul>

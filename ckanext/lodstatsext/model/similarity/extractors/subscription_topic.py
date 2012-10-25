@@ -21,14 +21,15 @@ class SubscriptionTopic(EntityTopic, SubscriptionExtractor):
 
 
     def extract_subscription_topics(self, subscription):
-        subscription_topics = []
+        subscription_topics = None
         if subscription.definition_type == 'semantic':
             subscription_topics = self.extract_semantic_subscription_topics(subscription)
         elif subscription.definition_type == 'sparql':
             subscription_topics = self.extract_sparql_subscription_topics(subscription)
         
         if subscription_topics is not None:
-            self.entities[h.subscription_to_uri(h.user_id_to_object(subscription.owner_id).name, subscription.name)] = subscription_topics
+            key = h.subscription_to_uri(h.user_id_to_object(subscription.owner_id).name, subscription.name)
+            self.entities[key] = {'vocabularies': subscription_topics}
 
 
     def extract_semantic_subscription_topics(self, subscription):
