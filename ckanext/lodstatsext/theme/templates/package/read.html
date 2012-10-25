@@ -1,0 +1,20 @@
+{% ckan_extends %}
+
+{% block secondary_content %}
+
+  {{ super() }}
+
+  <section class="module module-narrow ">
+    <h2 class="module-heading">
+      <i class="icon-copy"></i>
+      Similar Datasets
+    </h2>
+    <ul class="nav nav-simple">
+      {% for similar in pkg.similar %}
+        <li class="nav-item">
+          {% link_for _( similar.title), controller='package', action='read', id=similar.name %}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}
