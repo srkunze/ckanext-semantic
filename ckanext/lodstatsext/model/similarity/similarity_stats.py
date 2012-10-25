@@ -201,8 +201,9 @@ class SimilarityStats(object):
 
 
     def _load(self):
+        filter_string = ''
         if self.min_similarity_weight is not None or self.max_similarity_distance is not None:
-            filter_string = 'filter('
+            filter_string += 'filter('
             if self.min_similarity_weight is not None:
                 filter_string += '?similarity_weight >= ' + str(self.min_similarity_weight)
             
