@@ -15,31 +15,32 @@ class SubscriptionTopic(EntityTopic, SubscriptionExtractor):
         self.entities = {}
         
         for subscription in subscriptions:
-            self.extract_subscription_topics(subscription)
+            self.extract_subscription_topic(subscription)
         
         self._extracted = True
 
 
-    def extract_subscription_topics(self, subscription):
-        subscription_topics = None
-        if subscription.definition_type == 'semantic':
-            subscription_topics = self.extract_semantic_subscription_topics(subscription)
-        elif subscription.definition_type == 'sparql':
-            subscription_topics = self.extract_sparql_subscription_topics(subscription)
+    def extract_subscription_topic(self, subscription):
+        topic = None
+        type_ = subscription.definition['type']
+        if type_ == 'search':
+            topic = self.extract_search_subscription_topic(subscription)
+        elif type_ == 'sparql':
+            topic = self.extract_sparql_subscription_topic(subscription)
         
-        if subscription_topics is not None:
+        if topic is not None:
             key = h.subscription_to_uri(h.user_id_to_object(subscription.owner_id).name, subscription.name)
-            self.entities[key] = {'vocabularies': subscription_topics}
+            self.entities[key] = topic
 
-
-    def extract_semantic_subscription_topics(self, subscription):
-        if subscription.definition.has_key('topics'):
-            return {'vocabularies': subscription.definition['topics']}
+    def extract_search_subscription_topic(self, subscription):
+        if 'topic' in subscription.definition['filters']:
+            topic = subscription.definition['filters']['topic']
+            return {'vocabularies': topic}
 
         return None
         
             
-    def extract_sparql_subscription_topics(self, semantic_subscription):
-        #TODO: find a way to extract topics from a SPARQL query
+    def extract_sparql_subscription_topic(self, subscription):
+        #TODO: find a way to extract the topic from a SPARQL query
         return None
 

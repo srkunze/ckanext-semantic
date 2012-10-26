@@ -23,18 +23,19 @@ class SubscriptionLocation(EntityLocation, SubscriptionExtractor):
 
     def extract_subscription_location(self, subscription):
         subscription_location = None
-        if subscription.definition_type == 'semantic':
-            subscription_location = self.extract_semantic_subscription_location(subscription)
-        elif subscription.definition_type == 'sparql':
+        type_ = subscription.definition['type']
+        if type_ == 'search':
+            subscription_location = self.extract_search_subscription_location(subscription)
+        elif type_ == 'sparql':
             subscription_location = self.extract_sparql_subscription_location(subscription)
         
         if subscription_location is not None:
             self.entities[h.subscription_to_uri(h.user_id_to_object(subscription.owner_id).name, subscription.name)] = subscription_location
 
 
-    def extract_semantic_subscription_location(self, subscription):
-        if subscription.definition.has_key('location'):
-            location = subscription.definition['location']
+    def extract_search_subscription_location(self, subscription):
+        if 'location' in subscription.definition['filters']:
+            location = subscription.definition['filters']['location']
             return {'latitude': math.radians(float(location['latitude'])),
                     'longitude': math.radians(float(location['longitude'])),
                     'radius': float(location['radius'])}

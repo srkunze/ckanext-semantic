@@ -26,25 +26,26 @@ class SubscriptionTime(EntityTime, SubscriptionExtractor):
 
     def extract_subscription_time(self, subscription):
         subscription_time = None
-        if subscription.definition_type == 'semantic':
-            subscription_time = self.extract_semantic_subscription_time(subscription)
-        elif subscription.definition_type == 'sparql':
+        type_ = subscription.definition['type']
+        if type_ == 'search':
+            subscription_time = self.extract_search_subscription_time(subscription)
+        elif type_ == 'sparql':
             subscription_time = self.extract_sparql_subscription_time(subscription)
         
         if subscription_time is not None:
             self.entities[h.subscription_to_uri(h.user_id_to_object(subscription.owner_id).name, subscription.name)] = subscription_time
 
 
-    def extract_semantic_subscription_time(self, subscription):
-        if subscription.definition.has_key('time'):
-            time = subscription.definition['time']
+    def extract_search_subscription_time(self, subscription):
+        if 'time' in subscription.definition['filters']:
+            time = subscription.definition['filters']['time']
             if time['type'] == 'span':
                 return {'min_time': ht.to_naive_utc(ht.min_datetime(time['min'])),
                         'max_time': ht.to_naive_utc(ht.max_datetime(time['max']))}
                 
             elif time['type'] == 'point':
-                point = ht.to_naive_utc(ht.min_datetime(semantic['time']['point']))
-                variance = datetime.timedelta(days=int(semantic['time']['variance']))
+                point = ht.to_naive_utc(ht.min_datetime(time['point']))
+                variance = datetime.timedelta(days=int(time['variance']))
 
                 return {'min_time': point - variance, 'max_time': point + variance}
 

@@ -5,10 +5,10 @@
   {{ super() }}
 
   <section class="module module-narrow">
-    <h2 class="module-heading"><i class="icon-medium icon-filter"></i> Topics</h2>
+    <h2 class="module-heading"><i class="icon-medium icon-filter"></i> Topic</h2>
     <div class="module-content">
       <form method="get">
-        <input id="topic_input" type="text" class="input" name="topics" style="height:14px; width:115px" value="http://purl.org/ontology/bibo/" placeholder="http://purl.org/ontology/bibo/" />
+        <input id="topic_input" type="text" class="input" name="topic" style="height:14px; width:115px" value="http://purl.org/ontology/bibo/" placeholder="http://purl.org/ontology/bibo/" />
           {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params %}
         <button type="submit" class="btn" style="height:34px; margin-top:-10px">Add</button>
       </form>
@@ -18,10 +18,10 @@
       {% set name_value = name_value_pair.split('=') %}
       {% set name = name_value[0] %}
       {% set value = h.unquote(name_value[1]) %}
-      {% if name in ['topics'] %}
+      {% if name in ['topic'] %}
         <form method="get" style="margin:0">
           <button type="submit" style="background:white; border-left: 0; border-right: 0; border-top: 1px dotted; border-bottom: 0; height:27px; text-align:left; width:220px; padding-left:15px" >{{ value }}&nbsp; &nbsp; X</button>
-          {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except_name='topics', except_value=value%}
+          {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except_name='topic', except_value=value%}
         </form>
       {% endif %}
     {% endfor %}

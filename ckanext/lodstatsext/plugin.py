@@ -36,11 +36,11 @@ class LODstatsPlugin(plugins.SingletonPlugin):
         map.connect('/vocabulary', controller='ckanext.lodstatsext.controllers.vocabulary:VocabularyController', action='read')
 
         
-        map.redirect('/user/recommendation/', '/user/recommendation')
-        map.connect('/user/recommendation', controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read')
-        map.connect('/user/recommendation/{type_}', controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read')
-        map.connect('/user/recommendation/{type_}', controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read')
-        map.connect('/user/recommendation/{type_}', controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read')
+        map.redirect('/recommendation/', '/recommendation')
+        map.connect('/recommendation', controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read')
+        map.connect('/recommendation/{type_}', controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read')
+        map.connect('/recommendation/{type_}', controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read')
+        map.connect('/recommendation/{type_}', controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read')
 
         map.connect('/dataset/{id}.n3', controller='ckanext.lodstatsext.controllers.dataset:DatasetController', action='read_n3')
 
