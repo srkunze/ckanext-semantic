@@ -25,15 +25,16 @@ class SubscriptionTime(EntityTime, SubscriptionExtractor):
 
 
     def extract_subscription_time(self, subscription):
-        subscription_time = None
+        time = None
         type_ = subscription.definition['type']
         if type_ == 'search':
-            subscription_time = self.extract_search_subscription_time(subscription)
+            time = self.extract_search_subscription_time(subscription)
         elif type_ == 'sparql':
-            subscription_time = self.extract_sparql_subscription_time(subscription)
+            time = self.extract_sparql_subscription_time(subscription)
         
-        if subscription_time is not None:
-            self.entities[h.subscription_to_uri(h.user_id_to_object(subscription.owner_id).name, subscription.name)] = subscription_time
+        if time is not None:
+            key = h.subscription_to_uri(h.user_id_to_object(subscription.owner_id).name, subscription.name)
+            self.entities[key] = time
 
 
     def extract_search_subscription_time(self, subscription):

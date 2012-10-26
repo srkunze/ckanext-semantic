@@ -22,15 +22,16 @@ class SubscriptionLocation(EntityLocation, SubscriptionExtractor):
 
 
     def extract_subscription_location(self, subscription):
-        subscription_location = None
+        location = None
         type_ = subscription.definition['type']
         if type_ == 'search':
-            subscription_location = self.extract_search_subscription_location(subscription)
+            location = self.extract_search_subscription_location(subscription)
         elif type_ == 'sparql':
-            subscription_location = self.extract_sparql_subscription_location(subscription)
+            location = self.extract_sparql_subscription_location(subscription)
         
-        if subscription_location is not None:
-            self.entities[h.subscription_to_uri(h.user_id_to_object(subscription.owner_id).name, subscription.name)] = subscription_location
+        if location is not None:
+            key = h.subscription_to_uri(h.user_id_to_object(subscription.owner_id).name, subscription.name)
+            self.entities[key] = location
 
 
     def extract_search_subscription_location(self, subscription):
