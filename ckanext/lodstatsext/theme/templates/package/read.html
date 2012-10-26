@@ -4,11 +4,8 @@
 
   {{ super() }}
 
-  <section class="module module-narrow ">
-    <h2 class="module-heading">
-      <i class="icon-copy"></i>
-      Similar Datasets
-    </h2>
+  <section class="module module-narrow">
+    <h2 class="module-heading"><i class="icon-medium icon-copy"></i> Similar Datasets</h2>
     <ul class="nav nav-simple">
       {% for similar in pkg.similar %}
         <li class="nav-item">
@@ -18,3 +15,4 @@
     </ul>
   </section>
 {% endblock %}
+
