@@ -5,30 +5,33 @@
   {{ super() }}
 
   <section class="module module-narrow">
-    <h2 class="module-heading">
-      <i class="icon-copy"></i>
-      Topics
-    </h2>
+    <h2 class="module-heading"><i class="icon-medium icon-filter"></i> Topics</h2>
     <div class="module-content">
-        <input type="text" class="input" style="float:left" placeholder="http://purl.org/ontology/bibo/" />
-        <input type="hidden" class="input_uri" />
-
-
-
-        <button class="add" style="height:28px">Add</button>
-        <div id="list" style="clear:both">
-            <py:if test="c.subscription.definition.has_key('topics')">
-            <div py:for="topic in c.subscription.definition['topics']" class="topic">
-                <button class="delete" style="float:left;height:34px">X</button>
-                <pre class="name" style="width:300px; margin-left:30px">${topic}</pre>
-            </div>
-            </py:if>
-            <div style="display:none" class="topic_template">
-                <button class="delete" style="float:left;height:34px">X</button>
-                <pre class="name" style="width:300px; margin-left:30px">http://purl.org/ontology/bibo/</pre>
-            </div>
-        </div>
+      <form method="get">
+        <input id="topic_input" type="text" class="input" name="topics" style="height:14px; width:115px" value="http://purl.org/ontology/bibo/" placeholder="http://purl.org/ontology/bibo/" />
+          {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params %}
+        <button type="submit" class="btn" style="height:34px; margin-top:-10px">Add</button>
+      </form>
     </div>
+        
+    {% for name_value_pair in c.search_url_params.split('&') %}
+      {% set name_value = name_value_pair.split('=') %}
+      {% set name = name_value[0] %}
+      {% set value = h.unquote(name_value[1]) %}
+      {% if name in ['topics'] %}
+        <form method="get" style="margin:0">
+          <button type="submit" style="background:white; border-left: 0; border-right: 0; border-top: 1px dotted; border-bottom: 0; height:27px; text-align:left; width:220px; padding-left:15px" >{{ value }}&nbsp; &nbsp; X</button>
+          {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except_name='topics', except_value=value%}
+        </form>
+      {% endif %}
+    {% endfor %}
   </section>
 {% endblock %}
 
+{#
+{% block scripts %}
+  {{ super() }}
+  
+  <script src='scripts/subscription/semantic.js'></script>
+{% endblock %}
+#}
