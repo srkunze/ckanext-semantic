@@ -1,6 +1,7 @@
 import ckan.model as model
 import ckan.plugins as plugins
 import logging
+import logic.action as action
 import lib.helpers as h
 import model.similarity.similarity_stats as similarity_stats
 import model.prefix as prefix
@@ -16,6 +17,7 @@ class LODstatsPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer, inherit=True)
     plugins.implements(plugins.IRoutes, inherit=True)
     plugins.implements(plugins.IPackageController, inherit=True)
+    plugins.implements(plugins.IActions, inherit=True)
     
     
     def update_config(self, config):
@@ -67,4 +69,8 @@ class LODstatsPlugin(plugins.SingletonPlugin):
         
         
         return pkg_dict
+
+
+    def get_actions(self):
+        return {'subscription_sparql_dataset': action.get.subscription_sparql_dataset}
 
