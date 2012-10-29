@@ -58,8 +58,12 @@ order by ?dataset
 
             results['head']['vars'] = list(vars_)                
         else:
-            results = logic.get_action('sparql_dataset')({}, {'query': query, 'objects': True})
-
+            results = logic.get_action('sparql_dataset')({}, {'query': query})
+    
+        for result in results['results']['bindings']:
+            for header_name in results['head']['vars']:
+                if result[header_name]['type'] == 'uri':
+                    result[header_name]['object'] = h.uri_to_object(result[header_name]['value'])
 
         if isinstance(results, str):
             base.c.query_error = results

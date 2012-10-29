@@ -97,6 +97,16 @@
           <button id="delete_subscription" class="btn">Unsubscribe</button>
           <input type="hidden" name="return_url" value="" class="return_url" />
         </form>
+
+        <p>
+            The background colors of the rows have different meaning.
+            <br />
+            <b class="sparql-result status-added">New Row</b>
+            <br />
+            <b class="sparql-result status-changed">Changed Row</b>
+            <br />
+            <b class="sparql-result status-removed">Removed Row</b>
+        </p>
       {% else %}
         <form id="subscription-form" method="post" action="{{ h.url_for(controller='subscription', action='create') }}">
           <p>
