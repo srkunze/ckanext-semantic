@@ -76,6 +76,8 @@ class SemanticPlugin(plugins.SingletonPlugin):
         
         
     def after_search(self, search_results, search_params):
+        if 'filters' not in search_params:
+            return search_results
         filters = search_params['filters']
     
         prefix_query_string = 'prefix void: <http://rdfs.org/ns/void#>\nprefix xs: <http://www.w3.org/2001/XMLSchema#>'
