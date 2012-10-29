@@ -3,5 +3,5 @@
 *.swo
 
 build/*
-ckanext_semantic.egg-info//*
+ckanext_semantic.egg-info/*
 dist/*
