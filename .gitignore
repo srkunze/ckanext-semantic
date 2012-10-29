@@ -3,5 +3,5 @@
 *.swo
 
 build/*
-ckanext_lodstats.egg-info/*
+ckanext_semantic.egg-info//*
 dist/*
