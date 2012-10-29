@@ -4,9 +4,9 @@ import sys, os
 version = '0.1'
 
 setup(
-	name='ckanext-lodstats',
+	name='ckanext-semantic',
 	version=version,
-	description="lodstats for ckan and personalization based on it",
+	description="semantic extension that uses lodstats and add personalization features based on it",
 	long_description="""\
 	""",
 	classifiers=[], # Get strings from http://pypi.python.org/pypi?%3Aaction=list_classifiers
@@ -16,7 +16,7 @@ setup(
 	url='',
 	license='',
 	packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
-	namespace_packages=['ckanext', 'ckanext.lodstatsext'],
+	namespace_packages=['ckanext', 'ckanext.semantic'],
 	include_package_data=True,
 	zip_safe=False,
 	install_requires=[
@@ -25,9 +25,9 @@ setup(
 	entry_points=\
 	"""
         [ckan.plugins]
-        lodstats=ckanext.lodstatsext.plugin:LODstatsPlugin
+        semantic=ckanext.semantic.plugin:LODstatsPlugin
 
         [paste.paster_command]
-        lodstats=ckanext.lodstatsext.commands:LODStatsExtCommand
+        semantic=ckanext.semantic.commands:LODStatsExtCommand
 	""",
 )
