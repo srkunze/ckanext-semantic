@@ -22,8 +22,8 @@ class SPARQLController(base.BaseController):
             query='''select * 
 where
 {
-   ?dataset a void:Dataset.
-   ?dataset void:vocabulary <http://purl.org/ontology/bibo/>.
+    ?dataset a void:Dataset.
+    ?dataset void:vocabulary <http://purl.org/ontology/bibo/>.
 }
 order by ?dataset
 '''
@@ -60,16 +60,16 @@ order by ?dataset
         else:
             results = logic.get_action('sparql_dataset')({}, {'query': query})
     
-        for result in results['results']['bindings']:
-            for header_name in results['head']['vars']:
-                if result[header_name]['type'] == 'uri':
-                    result[header_name]['object'] = h.uri_to_object(result[header_name]['value'])
-
         if isinstance(results, str):
             base.c.query_error = results
             base.c.subscriptable = False
             base.c.results = None
         else:
+            for result in results['results']['bindings']:
+                for header_name in results['head']['vars']:
+                    if result[header_name]['type'] == 'uri':
+                        result[header_name]['object'] = h.uri_to_object(result[header_name]['value'])
+
             base.c.query_error = None
             base.c.subscriptable = True
             base.c.results = results
