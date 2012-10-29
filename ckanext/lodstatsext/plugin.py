@@ -175,5 +175,7 @@ class LODstatsPlugin(plugins.SingletonPlugin):
 
 
     def get_actions(self):
-        return {'subscription_sparql_dataset': action.get.subscription_sparql_dataset}
+        return {
+            'sparql_dataset': action.get.sparql_dataset,
+            'subscription_sparql_dataset': action.get.subscription_sparql_dataset}
 

@@ -8,6 +8,7 @@ import datetime
 import lodstats.stats as stats
 import logging
 import RDF
+import urllib   
 
 
 log = logging.getLogger(__name__)
@@ -17,25 +18,48 @@ class SPARQLController(base.BaseController):
     def index(self):
         query = base.request.params.get('query', None)
 
-
-        if query:
-            base.c.query = query
-        else:
-            base.c.query='''select * 
-from <http://lodstats.org/datasets>
+        if not query:
+            query='''select * 
 where
 {
    ?dataset a void:Dataset.
+   ?dataset void:vocabulary <http://purl.org/ontology/bibo/>.
 }
 order by ?dataset
 '''
+        base.c.query = query
 
-        results = store.user.query(base.c.query, complete=True)
+        context = {'model': model, 'session': model.Session, 'user': base.c.user}
+
+        definition = {}
+        definition['query'] = str(urllib.unquote(query))
+        definition['filters'] = {}
+        definition['type'] = 'sparql'
+        definition['data_type'] = 'dataset'
         
-        for result in results['results']['bindings']:
-            for header_name in results['head']['vars']:
-                if result[header_name]['type'] == 'uri':
-                    result[header_name]['object'] = h.uri_to_object(result[header_name]['value'])
+        base.c.subscription = logic.get_action('subscription')(context, {'subscription_definition': definition})
+
+        if base.c.subscription:
+            results = {'head': {'vars': []},
+                       'results': {'bindings': []}}
+                       
+            subscription_dict = {'subscription_id': base.c.subscription['id']}
+            logic.get_action('subscription_item_list_update')(context, subscription_dict)
+            item_list = logic.get_action('subscription_item_list')(context, subscription_dict)
+            logic.get_action('subscription_mark_changes_as_seen')(context, subscription_dict)
+            
+            vars_ = set()
+            
+            for item in item_list:
+                data = item['data']
+                vars_.update(data.keys())
+                data['__status__'] = item['status']            
+                results['results']['bindings'].append(data)
+
+            results['head']['vars'] = list(vars_)                
+        else:
+            results = logic.get_action('sparql_dataset')({}, {'query': query, 'objects': True})
+
 
         if isinstance(results, str):
             base.c.query_error = results

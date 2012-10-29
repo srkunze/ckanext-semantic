@@ -1,0 +1,19 @@
+.sparql-result.status-seen
+{
+    background: #FFFFFF;
+}
+
+.sparql-result.status-added
+{
+    background: #CAFFC4;
+}
+
+.sparql-result.status-changed
+{
+    background: #FFF0C4;
+}
+
+.sparql-result.status-removed
+{
+    background: #CCCCCC;
+}
