@@ -13,7 +13,7 @@ import os
 log = logging.getLogger(__name__)
 
 
-class LODstatsPlugin(plugins.SingletonPlugin):
+class SemanticPlugin(plugins.SingletonPlugin):
     """
     """
     plugins.implements(plugins.IConfigurer, inherit=True)

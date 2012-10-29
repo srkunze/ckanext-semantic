@@ -25,9 +25,9 @@ setup(
 	entry_points=\
 	"""
         [ckan.plugins]
-        semantic=ckanext.semantic.plugin:LODstatsPlugin
+        semantic=ckanext.semantic.plugin:SemanticPlugin
 
         [paste.paster_command]
-        semantic=ckanext.semantic.commands:LODStatsExtCommand
+        semantic=ckanext.semantic.commands:SemanticCommand
 	""",
 )

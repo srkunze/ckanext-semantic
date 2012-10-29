@@ -16,7 +16,7 @@
     </ul>
     {% else %}
       <div class="module-content">
-        <p class="empty">No SPARQL subscriptions here. What about {{ h.nav_link(_('creating'), controller='ckanext.lodstatsext.controllers.sparql:SPARQLController', action='index') }} one?</p>
+        <p class="empty">No SPARQL subscriptions here. What about {{ h.nav_link(_('creating'), controller='ckanext.semantic.controllers.sparql:SPARQLController', action='index') }} one?</p>
       </div>
     {% endif %}
   </section>

@@ -1,7 +1,7 @@
 from . import EntityLocation
 from . import SubscriptionExtractor
 import ckan.model as model
-import ckanext.lodstatsext.lib.helpers as h
+import ckanext.semantic.lib.helpers as h
 import math
 
      

@@ -1,5 +1,5 @@
 from . import MethodData
-import ckanext.lodstatsext.model.store as store
+import ckanext.semantic.model.store as store
 
 
 class TopicData(MethodData):
