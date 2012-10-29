@@ -1,0 +1,117 @@
+{% extends "page.html" %}
+
+{% block subtitle %}{{ _('SPARQL for a dataset and more') }}{% endblock %}
+
+{% block breadcrumb_content %}
+  <li class="active">{{ h.nav_link(_('SPARQL'), controller='sparql', action='index') }}</li>
+{% endblock %}
+
+{% block primary_content %}
+<link rel="stylesheet" href="css/codemirror/codemirror.css" />
+<script src="scripts/codemirror/codemirror.js"></script>
+<script src="scripts/codemirror/mode/sparql/sparql.js"></script>
+        
+        
+  <section class="module">
+    <div class="module-content">
+      <form id="dataset-search" class="dataset-search clearfix" method="get" data-module="select-switch">
+         <textarea id="sparql-textarea" name="query">{{ c.query }}</textarea>
+         <script>
+          var editor = CodeMirror.fromTextArea(document.getElementById('sparql-textarea'), {
+            mode: 'application/x-sparql-query',
+            tabMode: 'indent',
+            matchBrackets: true,
+            indentUnit: 4,
+            lineNumbers: true
+          });
+          </script>
+        <span class="control-group search-giant">
+          <button style="margin:0; padding: 0; left: 600px; top: 25px; border:1px solid" type="submit" value="{{ _('Search') }}">Submit</button>
+        </span>
+
+        {% if c.fields -%}
+          <span>
+            {%- for k, v in c.fields -%}
+              <input type="hidden" name="{{ k }}" value="{{ v }}" />
+            {% endfor -%}
+          </span>
+        {%- endif %}
+      </form>
+      <div class="results">
+        <strong>
+
+        </strong>
+
+      </div>
+
+      {% if c.query_error %}
+        {% trans %}
+          <p><strong>There was an error while searching.</strong> Please try again.</p>
+
+        {% endtrans %}
+          <p>{{ c.query_error }}</p>
+      {% endif %}
+      
+        {% if c.results %}
+        <table border=1>
+          <thead>
+            <tr>
+              {% for header_name in c.results.head.vars %}
+                <th>{{ header_name }}</th>
+              {% endfor %}
+            </tr>
+          </thead>
+          <tbody>
+
+          {% for result in c.results.results.bindings %}
+            <tr>
+            {% for header_name in c.results.head.vars %}
+              <td>
+                {% if result[header_name].object %}
+                  {{ h.link_to(result[header_name].object.name, result[header_name].value) }}
+                {% else %}
+                {{ result[header_name].value }}
+                {% endif %}
+              </td>
+            {% endfor %}
+            </tr>
+          {% endfor %}
+
+          </tbody>
+      </table>
+      {% endif %}
+    </div>
+
+  </section>
+
+{% endblock %}
+
+{% block secondary_content %}
+  <section class="module module-narrow module-shallow">
+    <h2 class="module-heading"><i class="icon-medium icon-caret-left"></i> {{ h.nav_link(_('Subscriptions'), controller='subscription', action='index') }}</h2>
+    <div class="module-content">
+      {% if c.subscription %}
+        <form id="subscription-form" method="post" action="{{ h.url_for(controller='subscription', action='delete', subscription_name=c.subscription.name) }}">
+          <p><b>Name</b>: {{ c.subscription.name }}</p>
+          <button id="delete_subscription" class="btn">Unsubscribe</button>
+          <input type="hidden" name="return_url" value="" class="return_url" />
+        </form>
+      {% else %}
+        <form id="subscription-form" method="post">
+          <p>
+            Be <b>informed</b> in case <b>new</b> results match the SPARQL query and
+            results <b>change</b>.
+          </p>
+          
+          {% if c.subscriptable %}
+            <input type="text" name="subscription_name" placeholder="Name of this query" style="height:14px; width:160px" />
+          {% endif %}
+          <button id="create_subscription" action="{{ h.url_for(controller='subscription', action='create') }}" class="btn">Subscribe</button>
+          <input type="hidden" name="subscription_data_type" value="dataset" />
+          <input type="hidden" name="subscription_definition_type" value="search" />
+        </form>          
+      {% endif %}
+    </div>
+  </section>
+
+{% endblock %}

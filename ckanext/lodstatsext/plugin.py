@@ -37,8 +37,9 @@ class LODstatsPlugin(plugins.SingletonPlugin):
 
 
     def before_map(self, map):
-        map.connect('/vocabulary', controller='ckanext.lodstatsext.controllers.vocabulary:VocabularyController', action='read')
+        map.connect('/sparql', controller='ckanext.lodstatsext.controllers.sparql:SPARQLController', action='index')
 
+        map.connect('/vocabulary', controller='ckanext.lodstatsext.controllers.vocabulary:VocabularyController', action='read')
         
         map.redirect('/recommendation/', '/recommendation')
         map.connect('/recommendation', controller='ckanext.lodstatsext.controllers.recommendation:RecommendationController', action='read')
