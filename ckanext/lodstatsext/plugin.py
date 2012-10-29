@@ -58,6 +58,7 @@ class LODstatsPlugin(plugins.SingletonPlugin):
         similarities = similarity_stats.SimilarityStats()
         similarities.set_entity(dataset_uri, str(prefix.void.Dataset))
         similarities.set_similar_entity_class(str(prefix.void.Dataset))
+        #TODO: change between different similarity methods
         similarities.set_similarity_method(methods.TopicSimilarity)
         similarities.count_limit = 5
         similarities.load()
