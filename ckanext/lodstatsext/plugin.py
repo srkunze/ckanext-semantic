@@ -168,6 +168,7 @@ class LODstatsPlugin(plugins.SingletonPlugin):
                 combined_results.append(result)
 
         search_results['results'] = combined_results
+        search_results['count'] = len(combined_results)
 
         return search_results
 
