@@ -1,6 +1,7 @@
 import ckan.model as model
 import ckan.lib.dictization as d
 import ckan.plugins as plugins
+import ckan.plugins.toolkit as toolkit
 import logging
 import logic.action as action
 import lib.helpers as h
@@ -36,6 +37,8 @@ class SemanticPlugin(plugins.SingletonPlugin):
             config['extra_public_paths'] += ',' + public_dir
         else:
             config['extra_public_paths'] = public_dir
+        
+        toolkit.add_resource('theme/public', 'ckanext-semantic')
 
 
     def before_map(self, map):

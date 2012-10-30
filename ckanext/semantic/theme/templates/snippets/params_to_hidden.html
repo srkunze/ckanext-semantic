@@ -17,12 +17,13 @@ except
   {% set except = {} %}
 {% endif %}
 
+
 {% for name_value_pair in name_value_pairs.split('&') %}
   {% set name_value = name_value_pair.split('=') %}
   {% set name = name_value[0] %}
   {% set value = h.unquote(name_value[1]) %}
   
-  {% if not except_names[name] and not except[name_value_pair] %}
+  {% if name and value and not except_names[name] and not except[name + '=' + value] %}
     <input type="hidden" name="{{ name }}" value="{{ value }}" />
   {% endif %}
 {% endfor %}
