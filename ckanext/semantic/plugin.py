@@ -208,5 +208,6 @@ class SemanticPlugin(plugins.SingletonPlugin):
     def get_actions(self):
         return {
             'sparql_dataset': action.get.sparql_dataset,
-            'subscription_sparql_dataset': action.get.subscription_sparql_dataset}
+            'subscription_sparql_dataset': action.get.subscription_sparql_dataset,
+            'subscription_sparql_dataset_list': action.get.subscription_sparql_dataset_list}
 
