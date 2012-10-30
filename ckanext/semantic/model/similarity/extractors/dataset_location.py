@@ -1,6 +1,7 @@
 from . import EntityLocation
 from . import DatasetExtractor
 import ckanext.semantic.model.store as store
+import ckanext.semantic.lib.location as hl
 import math
 
           
@@ -13,18 +14,18 @@ class DatasetLocation(EntityLocation, DatasetExtractor):
         rows = store.root.query('''
                                 prefix void: <http://rdfs.org/ns/void#>
 
-                                select ?dataset ?minLat ?maxLat ?minLong ?maxLong
+                                select ?dataset ?min_latitude ?max_latitude ?min_longitude ?max_longitude
                                 where
                                 {
                                     ?dataset void:propertyPartition ?latPropertyPartition.
                                     ?latPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#lat>.
-                                    ?latPropertyPartition void:minValue ?minLat.
-                                    ?latPropertyPartition void:maxValue ?maxLat.
+                                    ?latPropertyPartition void:minValue ?min_latitude.
+                                    ?latPropertyPartition void:maxValue ?max_latitude.
 
                                     ?dataset void:propertyPartition ?longPropertyPartition.
                                     ?longPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#long>.
-                                    ?longPropertyPartition void:minValue ?minLong.
-                                    ?longPropertyPartition void:maxValue ?maxLong.
+                                    ?longPropertyPartition void:minValue ?min_longitude.
+                                    ?longPropertyPartition void:maxValue ?max_longitude.
                                 }
                                 ''')
         self.entities = {}
@@ -40,9 +41,8 @@ class DatasetLocation(EntityLocation, DatasetExtractor):
             latitude_difference = math.radians(max_latitude - min_latitude)
             longitude_difference = math.radians(max_longitude - min_longitude)
 
-            earth_radius = 6378
-            latitude_diameter = earth_radius * latitude_difference
-            longitude_diameter = earth_radius * math.cos(average_latitude) * longitude_difference
+            latitude_diameter = hl.earth_radius * latitude_difference
+            longitude_diameter = hl.earth_radius * math.cos(average_latitude) * longitude_difference
 
             radius = max(latitude_diameter, longitude_diameter) / 2
 

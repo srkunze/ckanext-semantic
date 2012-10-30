@@ -1,5 +1,5 @@
 from . import SimilarityMethod
-import ckanext.semantic.lib.location as h
+import ckanext.semantic.lib.location as hl
 
 
 class LocationSimilarity(SimilarityMethod):
@@ -13,7 +13,7 @@ class LocationSimilarity(SimilarityMethod):
         max_radius = max(similar_entity['radius'], self._entity['radius']) + 1.0
         
         radius_sum = min_radius + max_radius
-        distance = h.distance(self._entity['latitude'], self._entity['longitude'],
+        distance = hl.distance(self._entity['latitude'], self._entity['longitude'],
                               similar_entity['latitude'], similar_entity['longitude'])
         difference = distance - radius_sum
         

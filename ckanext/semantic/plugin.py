@@ -4,6 +4,8 @@ import ckan.plugins as plugins
 import logging
 import logic.action as action
 import lib.helpers as h
+import lib.location as hl
+import math
 import model.similarity.similarity_stats as similarity_stats
 import model.prefix as prefix
 import model.similarity.methods as methods
@@ -93,6 +95,7 @@ class SemanticPlugin(plugins.SingletonPlugin):
         if 'location_latitude' in filters and \
            'location_longitude' in filters and \
            'location_radius' in filters:
+            select_query_string += ' ?min_latitude ?max_latitude ?min_longitude ?max_longitude'
 
             where_query_string += '?dataset void:propertyPartition ?latPropertyPartition.\n'
             where_query_string += '?latPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#lat>.\n'
@@ -107,7 +110,7 @@ class SemanticPlugin(plugins.SingletonPlugin):
             #virtuoso 6 has no BIND, so debugging this formular is quite tedious and error-prone
             #where_query_string += 'filter(' + filters['location_radius'][0] + ' + fn:max(bif:pi()*6378*(?maxLatitude - ?minLatitude)/180, 2*bif:pi()*6378*bif:cos((?maxLatitude - ?minLatitude)/2)*(?maxLongitude - ?minLongitude)/360)/2 > (2 * 3956 * bif:asin(bif:sqrt((bif:power(bif:sin(2*bif:pi() + (' + filters['location_latitude'][0] + ' - (?minLatitude + ?maxLatitude)/2)*bif:pi()/360), 2) + bif:cos(2*bif:pi() + ' + filters['location_latitude'][0] + '*bif:pi()/180) * bif:cos(2*bif:pi() + (?minLatitude + ?maxLatitude)/2*bif:pi()/180) * bif:power(bif:sin(2*bif:pi() + (' + filters['location_longitude'][0] + ' - (?minLongitude + ?maxLongitude)/2)*bif:pi()/360), 2))))))\n'
 
-        if 'time_type' in filters:
+        if 'time_min' in filters and 'time_max' in filters:
             where_query_string += '''
                                   ?dataset void:propertyPartition ?dateTimePropertyPartition.
                                   ?dateTimePropertyPartition void:minValue ?min_time.
@@ -141,29 +144,53 @@ class SemanticPlugin(plugins.SingletonPlugin):
                        
         rows = store.root.query(query_string)
         
-        #FIXME: workaround as long as virtuoso 6 is not functioning properly
         if 'location_latitude' in filters and \
            'location_longitude' in filters and \
            'location_radius' in filters:
-            [row for row in rows if row['min_latitude']['value'] != '']
+            [row for row in rows if 'min_latitude' in row]
             
-            latitude = filters['location_latitude']
-            longitude = filters['location_longitude']
-            radius = filters['location_radius']
+            latitude = math.radians(float(filters['location_latitude'][0]))
+            longitude = math.radians(float(filters['location_longitude'][0]))
+            radius = float(filters['location_radius'][0]) + 1
+            
+            row2 = []
             
             for row in rows:
-                min_latitude = row['min_latitude']['value']
-                max_latitude = row['max_latitude']['value']
-                min_longitude = row['min_longitude']['value']
-                max_longitude = row['max_longitude']['value']
-            
-        
-        if 'time_type' in filters:
-            [row for row in rows if row['minDateTime']['value'] != '']
-            if filters['time_type'] == 'span' and \
-               'time_min' in filters and \
-               'time_max' in filters:
-                [row for row in rows if max(row['min_time']['value'], filters['time_min'][0]) <= min(row['max_time']['value'], filters['time_max'][0])]
+                min_latitude = float(row['min_latitude']['value'])
+                max_latitude = float(row['max_latitude']['value'])
+                min_longitude = float(row['min_longitude']['value'])
+                max_longitude = float(row['max_longitude']['value'])
+                dataset_latitude = math.radians((min_latitude + max_latitude) / 2)
+                dataset_longitude = math.radians((min_longitude + max_longitude) / 2)
+
+                latitude_difference = math.radians(max_latitude - min_latitude)
+                longitude_difference = math.radians(max_longitude - min_longitude)
+                latitude_diameter = hl.earth_radius * latitude_difference
+                longitude_diameter = hl.earth_radius * math.cos(dataset_latitude) * longitude_difference
+                dataset_radius = max(latitude_diameter, longitude_diameter) / 2 + 1
+                
+                print latitude
+                print longitude
+                print dataset_latitude
+                print dataset_longitude
+                
+                distance = hl.distance(latitude, longitude, dataset_latitude, dataset_longitude)
+                
+                print row['dataset']['value']
+                print distance
+                print dataset_radius
+                print radius
+                print distance - dataset_radius <= radius
+                
+                if distance - dataset_radius <= radius:
+                    row2.append(row)
+
+            rows = row2
+
+        #FIXME: workaround as long as virtuoso 6 is not functioning properly
+        if 'time_min' in filters and 'time_max' in filters:
+            [row for row in rows if 'min_time' in row]
+            [row for row in rows if max(row['min_time']['value'], filters['time_min'][0]) <= min(row['max_time']['value'], filters['time_max'][0])]
 
 
         datasets = [h.uri_to_object(row['dataset']['value']) for row in rows]
