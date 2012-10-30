@@ -7,36 +7,15 @@
 {% endblock %}
 
 {% block primary_content %}
-<link rel="stylesheet" href="css/sparql.css" />
-<link rel="stylesheet" href="css/codemirror/codemirror.css" />
-<script src="scripts/codemirror/codemirror.js"></script>
-<script src="scripts/codemirror/mode/sparql/sparql.js"></script>
-        
-        
   <section class="module">
     <div class="module-content">
       <form id="dataset-search" class="dataset-search clearfix" method="get" data-module="select-switch">
          <textarea id="sparql-textarea" name="query">{{ c.query }}</textarea>
-         <script>
-          var editor = CodeMirror.fromTextArea(document.getElementById('sparql-textarea'), {
-            mode: 'application/x-sparql-query',
-            tabMode: 'indent',
-            matchBrackets: true,
-            indentUnit: 4,
-            lineNumbers: true
-          });
-          </script>
+
         <span class="control-group search-giant">
           <button style="margin:0; padding: 0; left: 600px; top: 25px; border:1px solid" type="submit" value="{{ _('Search') }}">Submit</button>
         </span>
 
-        {% if c.fields -%}
-          <span>
-            {%- for k, v in c.fields -%}
-              <input type="hidden" name="{{ k }}" value="{{ v }}" />
-            {% endfor -%}
-          </span>
-        {%- endif %}
       </form>
       <div class="results">
         <strong>
@@ -127,3 +106,21 @@
   </section>
 
 {% endblock %}
+
+
+{% block styles %}
+  {{ super() }}
+  
+  {% resource 'ckanext-semantic/vendor/codemirror/lib/codemirror.css' %}
+  {% resource 'ckanext-semantic/css/sparql/codemirror.css' %}
+  {% resource 'ckanext-semantic/css/sparql/sparql.css' %}
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  
+  {% resource 'ckanext-semantic/vendor/codemirror/lib/codemirror.js' %}
+  {% resource 'ckanext-semantic/vendor/codemirror/mode/sparql/sparql.js' %}
+  {% resource 'ckanext-semantic/javascript/sparql/sparql.js' %}
+{% endblock %}
+
