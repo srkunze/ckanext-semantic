@@ -5,7 +5,7 @@
   {{ super() }}
 
   <section class="module module-narrow module-shallow">
-    <h2 class="module-heading">SPARQL Subscriptions</h2>
+    <h2 class="module-heading">{{ h.nav_link(_('SPARQL'), controller='ckanext.semantic.controllers.sparql:SPARQLController', action='index') }} Subscriptions</h2>
     {% if c.subscriptions.sparql|length > 0 %}
     <ul class="nav nav-simple">
       {% for subscription in c.subscriptions.sparql %}
