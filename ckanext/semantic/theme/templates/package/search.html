@@ -21,7 +21,7 @@
       {% if name in ['topic'] %}
         <form method="get" style="margin:0">
           <button type="submit" style="background:white; border-left: 0; border-right: 0; border-top: 1px dotted; border-bottom: 0; height:27px; text-align:left; width:220px; padding-left:15px" >{{ value }}&nbsp; &nbsp; X</button>
-          {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except_name='topic', except_value=value%}
+          {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except={('topic=' + value):True} %}
         </form>
       {% endif %}
     {% endfor %}
@@ -34,22 +34,22 @@
     <div id="map" style="height:280px"></div>
     <div class="module-content">
       <form name="location" method="get">
-        Latitude <input type="text" class="input" name="location_latitude" style="height:14px; width:165px" value="{{ c.fields_grouped.location_latitude[0] }}" placeholder="40.417" />
-        Longitude <input type="text" class="input" name="location_longitude" style="height:14px; width:165px" value="{{ c.fields_grouped.location_longitude[0] }}" placeholder="-3.703" />
-        Radius <input type="text" class="input" name="location_radius" style="height:14px; width:165px" value="{{ c.fields_grouped.location_radius[0] }}" placeholder="50" />
+        Latitude <input type="text" class="input" name="location_latitude" style="height:14px; width:165px" value="{{ c.fields_grouped.location_latitude[0] if c.fields_grouped.location_latitude }}" placeholder="40.417" />
+        Longitude <input type="text" class="input" name="location_longitude" style="height:14px; width:165px" value="{{ c.fields_grouped.location_longitude[0] if c.fields_grouped.location_longitude }}" placeholder="-3.703" />
+        Radius <input type="text" class="input" name="location_radius" style="height:14px; width:165px" value="{{ c.fields_grouped.location_radius[0] if c.fields_grouped.location_radius }}" placeholder="50" />
 
-      {% if c.fields_grouped.location_latitude[0] %}
-        {#{% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params %}#}
+      {% if c.fields_grouped.location_latitude %}
+        {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except_names={'location_latitude':True, 'location_longitude':True, 'location_radius':True} %}
         <button type="submit" class="btn" style="height:34px; margin-top:-10px">Update</button>
       {% else %}
         <button type="submit" class="btn" style="height:34px; margin-top:-10px">Apply</button>
       {% endif %}
 
       </form>
-      {% if c.fields_grouped.location_latitude[0] %}
+      {% if c.fields_grouped.location_latitude %}
         <form method="get">
           <button type="submit" class="btn" style="height:34px; margin-top:-10px">Remove</button>
-{#          {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except_name=['location_latitude', 'location_longitude', 'location_radius']%}#}
+          {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except_names={'location_latitude':True, 'location_longitude':True, 'location_radius':True} %}
         </form>
       {% endif %}
     </div>
@@ -121,6 +121,24 @@
   <section class="module module-narrow">
     <h2 class="module-heading"><i class="icon-medium icon-filter"></i> Time</h2>
     <div class="module-content">
+      <form name="location" method="get">
+        From <input type="text" class="input" name="time_min" style="height:14px; width:165px" value="{{ c.fields_grouped.time_min[0] if c.fields_grouped.time_min }}" placeholder="1980-01-23" />
+        Until <input type="text" class="input" name="time_max" style="height:14px; width:165px" value="{{ c.fields_grouped.time_max[0] if c.fields_grouped.time_max }}" placeholder="2001-04" />
+
+      {% if c.fields_grouped.time_min %}
+        {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except_names={'time_min':True, 'time_max':True} %}
+        <button type="submit" class="btn" style="height:34px; margin-top:-10px">Update</button>
+      {% else %}
+        <button type="submit" class="btn" style="height:34px; margin-top:-10px">Apply</button>
+      {% endif %}
+
+      </form>
+      {% if c.fields_grouped.time_max %}
+        <form method="get">
+          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Remove</button>
+          {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except_names={'time_min':True, 'time_max':True} %}
+        </form>
+      {% endif %}
     </div>
   </section>
   

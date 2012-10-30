@@ -147,7 +147,7 @@ class SemanticPlugin(plugins.SingletonPlugin):
         if 'location_latitude' in filters and \
            'location_longitude' in filters and \
            'location_radius' in filters:
-            [row for row in rows if 'min_latitude' in row]
+            rows = [row for row in rows if 'min_latitude' in row]
             
             latitude = math.radians(float(filters['location_latitude'][0]))
             longitude = math.radians(float(filters['location_longitude'][0]))
@@ -178,8 +178,10 @@ class SemanticPlugin(plugins.SingletonPlugin):
 
         #FIXME: workaround as long as virtuoso 6 is not functioning properly
         if 'time_min' in filters and 'time_max' in filters:
-            [row for row in rows if 'min_time' in row]
-            [row for row in rows if max(row['min_time']['value'], filters['time_min'][0]) <= min(row['max_time']['value'], filters['time_max'][0])]
+            rows = [row for row in rows if 'min_time' in row]
+            rows = [row for row in rows if max(row['min_time']['value'], filters['time_min'][0]) <= min(row['max_time']['value'], filters['time_max'][0])]
+
+
 
 
         datasets = [h.uri_to_object(row['dataset']['value']) for row in rows]
