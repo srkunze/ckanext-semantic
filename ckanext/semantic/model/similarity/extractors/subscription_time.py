@@ -40,8 +40,8 @@ class SubscriptionTime(EntityTime, SubscriptionExtractor):
     def extract_search_subscription_time(self, subscription):
         filters = subscription.definition['filters']
         if 'time_min' in filters and 'time_max' in filters:
-            return {'min_time': ht.to_naive_utc(ht.min_datetime(filters['time_min'])),
-                    'max_time': ht.to_naive_utc(ht.max_datetime(filters['time_max']))}
+            return {'min_time': ht.to_naive_utc(ht.min_datetime(filters['time_min'][0])),
+                    'max_time': ht.to_naive_utc(ht.max_datetime(filters['time_max'][0]))}
 
 
         return None

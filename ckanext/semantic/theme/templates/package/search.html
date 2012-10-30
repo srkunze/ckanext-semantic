@@ -8,8 +8,8 @@
     <h2 class="module-heading"><i class="icon-medium icon-filter"></i> Topic</h2>
     <div class="module-content">
       <form method="get">
-        <input id="topic_input" type="text" class="input" name="topic" style="height:14px; width:115px" placeholder="http://purl.org/ontology/bibo/" />
-          {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params %}
+        <input id="topic_input" autocomplete="off" type="text" class="input" name="topic" style="height:14px; width:115px" placeholder="http://purl.org/ontology/bibo/" />
+        {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params %}
         <button type="submit" class="btn" style="height:34px; margin-top:-10px">Add</button>
       </form>
     </div>

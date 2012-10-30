@@ -61,3 +61,4 @@ class RecommendationController(base.BaseController):
                     base.c.recommendation[type_] = [dataset_dict]
 
         return base.render('recommendation.html')
+

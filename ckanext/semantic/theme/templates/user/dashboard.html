@@ -1,14 +1,6 @@
 {% ckan_extends %}
 
-{% block secondary_content %}
-
+{% block actions_content %}
+  <li>{% link_for _('Recommendations'), controller='ckanext.semantic.controllers.recommendation:RecommendationController', action='read', class_="btn btn-primary icon-large", icon="plus" %}</li>
   {{ super() }}
-
-  <section class="module module-narrow">
-    <h2 class="module-heading"><i class="icon-medium icon-filter"></i> Topic</h2>
-    <div class="module-content"></div>
-
-  </section>
-  
 {% endblock %}
-

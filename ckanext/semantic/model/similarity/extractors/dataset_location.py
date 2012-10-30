@@ -30,10 +30,10 @@ class DatasetLocation(EntityLocation, DatasetExtractor):
                                 ''')
         self.entities = {}
         for row in rows:
-            min_latitude = float(row['minLat']['value'])
-            max_latitude = float(row['maxLat']['value'])
-            min_longitude = float(row['minLong']['value'])
-            max_longitude = float(row['maxLong']['value'])
+            min_latitude = float(row['min_latitude']['value'])
+            max_latitude = float(row['max_latitude']['value'])
+            min_longitude = float(row['min_longitude']['value'])
+            max_longitude = float(row['max_longitude']['value'])
 
             average_latitude = math.radians((min_latitude + max_latitude) / 2)
             average_longitude = math.radians((min_longitude + max_longitude) / 2)
