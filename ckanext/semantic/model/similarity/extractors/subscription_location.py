@@ -35,11 +35,11 @@ class SubscriptionLocation(EntityLocation, SubscriptionExtractor):
 
 
     def extract_search_subscription_location(self, subscription):
-        if 'location' in subscription.definition['filters']:
-            location = subscription.definition['filters']['location']
-            return {'latitude': math.radians(float(location['latitude'])),
-                    'longitude': math.radians(float(location['longitude'])),
-                    'radius': float(location['radius'])}
+        filters = subscription.definition['filters']
+        if 'location_latitude' in filters and 'location_longitude' in filters and 'location_radius' in filters:
+            return {'latitude': math.radians(float(filters['location_latitude'])),
+                    'longitude': math.radians(float(filters['location_longitude'])),
+                    'radius': float(filters['location_radius'])}
             
         return None
 

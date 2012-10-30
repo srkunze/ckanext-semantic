@@ -38,17 +38,11 @@ class SubscriptionTime(EntityTime, SubscriptionExtractor):
 
 
     def extract_search_subscription_time(self, subscription):
-        if 'time' in subscription.definition['filters']:
-            time = subscription.definition['filters']['time']
-            if time['type'] == 'span':
-                return {'min_time': ht.to_naive_utc(ht.min_datetime(time['min'])),
-                        'max_time': ht.to_naive_utc(ht.max_datetime(time['max']))}
-                
-            elif time['type'] == 'point':
-                point = ht.to_naive_utc(ht.min_datetime(time['point']))
-                variance = datetime.timedelta(days=int(time['variance']))
+        filters = subscription.definition['filters']
+        if 'time_min' in filters and 'time_max' in filters:
+            return {'min_time': ht.to_naive_utc(ht.min_datetime(filters['time_min'])),
+                    'max_time': ht.to_naive_utc(ht.max_datetime(filters['time_max']))}
 
-                return {'min_time': point - variance, 'max_time': point + variance}
 
         return None
 
