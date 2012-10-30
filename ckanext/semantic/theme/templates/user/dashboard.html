@@ -1,6 +1,6 @@
 {% ckan_extends %}
 
 {% block actions_content %}
-  <li>{% link_for _('Recommendations'), controller='ckanext.semantic.controllers.recommendation:RecommendationController', action='read', class_="btn btn-primary icon-large", icon="plus" %}</li>
+  <li>{% link_for _('Recommendations'), controller='ckanext.semantic.controllers.recommendation:RecommendationController', action='read', class_="btn btn-primary icon-large", icon="thumbs-up" %}</li>
   {{ super() }}
 {% endblock %}

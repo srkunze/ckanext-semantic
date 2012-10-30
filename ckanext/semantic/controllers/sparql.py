@@ -32,13 +32,16 @@ order by ?dataset
         context = {'model': model, 'session': model.Session, 'user': base.c.user}
 
         definition = {}
-        definition['query'] = str(urllib.unquote(query))
+        definition['query'] = urllib.unquote(query)
         definition['filters'] = {}
         definition['type'] = 'sparql'
         definition['data_type'] = 'dataset'
         
-        base.c.subscription = logic.get_action('subscription')(context, {'subscription_definition': definition})
-
+        try:
+            base.c.subscription = logic.get_action('subscription')(context, {'subscription_definition': definition})
+        except logic.NotAuthorized:
+            pass
+            
         if base.c.subscription:
             results = {'head': {'vars': []},
                        'results': {'bindings': []}}
