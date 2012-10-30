@@ -169,19 +169,8 @@ class SemanticPlugin(plugins.SingletonPlugin):
                 longitude_diameter = hl.earth_radius * math.cos(dataset_latitude) * longitude_difference
                 dataset_radius = max(latitude_diameter, longitude_diameter) / 2 + 1
                 
-                print latitude
-                print longitude
-                print dataset_latitude
-                print dataset_longitude
-                
                 distance = hl.distance(latitude, longitude, dataset_latitude, dataset_longitude)
-                
-                print row['dataset']['value']
-                print distance
-                print dataset_radius
-                print radius
-                print distance - dataset_radius <= radius
-                
+
                 if distance - dataset_radius <= radius:
                     row2.append(row)
 
