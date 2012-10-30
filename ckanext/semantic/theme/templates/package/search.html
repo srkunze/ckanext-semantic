@@ -82,10 +82,17 @@
   
 {% endblock %}
 
+{% block styles %}
+  {{ super() }}
+  
+  {% resource 'ckanext-semantic/vendor/leaflet/dist/leaflet.css' %}
+{% endblock %}
+
 
 {% block scripts %}
   {{ super() }}
   
-  {% resource 'ckanext-semantic/scripts/subscription/semantic.js' %}
+  {% resource 'ckanext-semantic/vendor/leaflet/dist/leaflet.js' %}
+  {% resource 'ckanext-semantic/javascript/subscription/semantic.js' %}
 {% endblock %}
 
