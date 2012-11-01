@@ -48,7 +48,7 @@
             {% for header_name in c.results.head.vars %}
               <td class="sparql-result status-{{ result.__status__ }}">
                 {% if result[header_name].object %}
-                  {{ h.link_to(result[header_name].object.name, result[header_name].value) }}
+                  {{ h.link_to(result[header_name].object.title, result[header_name].value) }}
                 {% else %}
                   {{ result[header_name].value }}
                 {% endif %}
@@ -71,10 +71,10 @@
     <h2 class="module-heading"><i class="icon-medium icon-caret-left"></i> {{ h.nav_link(_('Subscriptions'), controller='subscription', action='index') }}</h2>
     <div class="module-content">
       {% if c.subscription %}
-        <form id="subscription-form" method="post" action="{{ h.url_for(controller='subscription', action='delete', subscription_name=c.subscription.name) }}">
+        <form name="delete_subscription_form" method="post" onsubmit="return set_return_url();" action="{{ h.url_for(controller='subscription', action='delete', subscription_name=c.subscription.name) }}">
           <p><b>Name</b>: {{ c.subscription.name }}</p>
-          <button id="delete_subscription" class="btn">Unsubscribe</button>
           <input type="hidden" name="return_url" value="" class="return_url" />
+          <input type="submit" class="btn" value="Unsubscribe" />
         </form>
 
         <p>
@@ -87,7 +87,7 @@
             <b class="sparql-result status-removed">Removed Row</b>
         </p>
       {% else %}
-        <form id="subscription-form" method="post" action="{{ h.url_for(controller='subscription', action='create') }}">
+        <form name="create_subscription_form" method="post" onsubmit="return validate_subscription_name();" action="{{ h.url_for(controller='subscription', action='create') }}">
           <p>
             Be <b>informed</b> in case <b>new</b> results match the SPARQL query and
             results <b>change</b>.
@@ -98,7 +98,7 @@
             <input type="hidden" name="subscription_type" value="sparql" />
             <input type="hidden" name="subscription_data_type" value="dataset" />
             <input type="hidden" name="query" value="{{ c.query }}" />
-            <button id="create_subscription" class="btn">Subscribe</button>
+            <input type="submit" class="btn" value="Subscribe" />
           {% endif %}
         </form>          
       {% endif %}
