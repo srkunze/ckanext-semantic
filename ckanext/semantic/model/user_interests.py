@@ -3,13 +3,13 @@ import ckanext.semantic.lib.helpers as h
 import ckanext.semantic.model.prefix as prefix
 
 
-class User:
+class UserInterests:
     def __init__(self, user):
         self.user = user
         self.interests = []
 
 
-    def load_interests(self):
+    def load(self):
         query = model.Session.query(model.Package)
         query = query.join(model.UserFollowingDataset, model.Package.id == model.UserFollowingDataset.object_id)
         query = query.filter(model.UserFollowingDataset.follower_id == self.user.id)

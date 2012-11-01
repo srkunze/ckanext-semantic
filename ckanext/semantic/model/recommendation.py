@@ -1,15 +1,16 @@
 import ckanext.semantic.lib.helpers as h
 import ckanext.semantic.model.store as store
-import ckanext.semantic.model.user as mu
+import ckanext.semantic.model.user_interests as mui
 import similarity
 import similarity.methods as methods
 
 
 class Recommendation:
     def __init__(self, user):
-        self._user = mu.User(user)
+        self._user_interests = mui.UserInterests(user)
         self._recommended_entity_class_uri = None
         self._count_limit = None
+        self._additional_interests = set()
         self._similarity_stats = similarity.SimilarityStats()
         self.entities = {}
         
@@ -21,6 +22,10 @@ class Recommendation:
         
     def set_count_limit(self, count_limit):
         self._count_limit = count_limit
+    
+    
+    def set_additional_interests(self, additional_interests):
+        self._additional_interests = additional_interests
 
 
     def set_type(self, recommendation_type):
@@ -47,14 +52,14 @@ class Recommendation:
         not_in_database = set()
         interests = set()
         
-        self._user.load_interests()
-        for interest in self._user.interests:
+        self._user_interests.load()
+        for interest in self._user_interests.interests:
             interests.add(interest.uri)
-            #TODO: add subscription items
+        interests |= self._additional_interests
             
-        for interest in self._user.interests:
+        for interest in self._user_interests.interests:
             self._similarity_stats.set_entity(interest.uri, interest.class_uri)
-            self._similarity_stats.count_limit = 2 * self._count_limit * len(self._user.interests)
+            self._similarity_stats.count_limit = 2 * self._count_limit * len(interests)
 
             self._similarity_stats.load()
             

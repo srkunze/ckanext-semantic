@@ -32,9 +32,19 @@ class RecommendationController(base.BaseController):
         base.c.user_dict = user_dict
         base.c.is_myself = user_dict['name'] == base.c.user
         
-            
+
         recommendation = r.Recommendation(base.c.userobj)
         recommendation.set_recommended_entity_class(str(prefix.void.Dataset.uri))
+
+
+        dataset_interests = set()
+        subscription_query = model.Session.query(model.Subscription).filter(model.Subscription.owner_id==base.c.user_dict['id'])
+        for subscription in subscription_query.all():
+            dataset_list = logic.get_action('subscription_dataset_list')(context, {'subscription_id': subscription.id})
+            for dataset in dataset_list:
+                dataset_interests.add(h.dataset_to_uri(dataset['name']))
+        recommendation.set_additional_interests(dataset_interests)
+
          
         if type_ == None:
            types = ['topic', 'location', 'time']
@@ -42,6 +52,7 @@ class RecommendationController(base.BaseController):
         else:
             types = [type_]
             recommendation.set_count_limit(10)
+        
 
         base.c.recommendation = {}
         for type_ in types:
