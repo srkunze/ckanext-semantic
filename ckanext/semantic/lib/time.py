@@ -3,13 +3,13 @@ import dateutil
 
 
 def min_datetime(datetime_string):
-    return dateutil.parser.parse(datetime_string, default=datetime.datetime(2000, 1, 1, 0, 0, 0, 0, None))
+    return dateutil.parser.parse(datetime_string, default=datetime.datetime.min)
 
 
 def max_datetime(datetime_string):
     for day in range(31, 27, -1):
         try:
-            return dateutil.parser.parse(datetime_string, default=datetime.datetime(2000, 12, day, 23, 59, 59, 999999, None))
+            return dateutil.parser.parse(datetime_string, default=datetime.datetime.max.replace(day=day))
         except ValueError:
             pass
 

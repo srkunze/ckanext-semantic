@@ -6,6 +6,7 @@ import logging
 import logic.action as action
 import lib.helpers as h
 import lib.location as hl
+import lib.time as ht
 import math
 import model.similarity.similarity_stats as similarity_stats
 import model.prefix as prefix
@@ -87,7 +88,11 @@ class SemanticPlugin(plugins.SingletonPlugin):
     
         prefix_query_string = 'prefix void: <http://rdfs.org/ns/void#>\nprefix xs: <http://www.w3.org/2001/XMLSchema#>'
         select_query_string = 'select ?dataset'
-        where_query_string = 'where\n{\n    ?dataset a void:Dataset.\n'
+        where_query_string = '''
+where
+{
+?dataset a void:Dataset.
+'''
         group_by_query_string = ''
 
         if 'topic' in filters:
@@ -99,65 +104,49 @@ class SemanticPlugin(plugins.SingletonPlugin):
            'location_longitude' in filters and \
            'location_radius' in filters:
             select_query_string += ' ?min_latitude ?max_latitude ?min_longitude ?max_longitude'
+            where_query_string += '''
+?dataset void:propertyPartition ?latPropertyPartition.
+?latPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#lat>.
+?latPropertyPartition void:minValue ?min_latitude.
+?latPropertyPartition void:maxValue ?max_latitude.
 
-            where_query_string += '?dataset void:propertyPartition ?latPropertyPartition.\n'
-            where_query_string += '?latPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#lat>.\n'
-            where_query_string += '?latPropertyPartition void:minValue ?min_latitude.\n'
-            where_query_string += '?latPropertyPartition void:maxValue ?max_latitude.\n'
-            
-            where_query_string += '?dataset void:propertyPartition ?longPropertyPartition.\n'
-            where_query_string += '?longPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#long>.\n'
-            where_query_string += '?longPropertyPartition void:minValue ?min_longitude.\n'
-            where_query_string += '?longPropertyPartition void:maxValue ?max_longitude.\n'
+?dataset void:propertyPartition ?longPropertyPartition.
+?longPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#long>.
+?longPropertyPartition void:minValue ?min_longitude.
+?longPropertyPartition void:maxValue ?max_longitude.
+'''
 
             #virtuoso 6 has no BIND, so debugging this formular is quite tedious and error-prone
             #where_query_string += 'filter(' + filters['location_radius'][0] + ' + fn:max(bif:pi()*6378*(?maxLatitude - ?minLatitude)/180, 2*bif:pi()*6378*bif:cos((?maxLatitude - ?minLatitude)/2)*(?maxLongitude - ?minLongitude)/360)/2 > (2 * 3956 * bif:asin(bif:sqrt((bif:power(bif:sin(2*bif:pi() + (' + filters['location_latitude'][0] + ' - (?minLatitude + ?maxLatitude)/2)*bif:pi()/360), 2) + bif:cos(2*bif:pi() + ' + filters['location_latitude'][0] + '*bif:pi()/180) * bif:cos(2*bif:pi() + (?minLatitude + ?maxLatitude)/2*bif:pi()/180) * bif:power(bif:sin(2*bif:pi() + (' + filters['location_longitude'][0] + ' - (?minLongitude + ?maxLongitude)/2)*bif:pi()/360), 2))))))\n'
 
-        if 'time_min' in filters and 'time_max' in filters:
-            where_query_string += '''
-                                  ?dataset void:propertyPartition ?dateTimePropertyPartition.
-                                  ?dateTimePropertyPartition void:minValue ?min_time.
-                                  ?dateTimePropertyPartition void:maxValue ?max_time.
-                                  filter(datatype(?min_time) = xs:dateTime)
-                                  filter(datatype(?max_time) = xs:dateTime)
-                                  '''
-            #virtuoso 6 bugs make this kind of queries impossible
-            #if self.definition['time']['type'] == 'span':
-            #    where_query_string += 'filter('
-            #    where_query_string += 'if(?minDateTime > "' + self.definition['time']['min'] + '"^^xs:dateTime, ?minDateTime, "' + self.definition['time']['min'] + '"^^xs:dateTime) <='
-            #    where_query_string += 'if(?maxDateTime < "' + self.definition['time']['max'] + '"^^xs:dateTime, ?maxDateTime, "' + self.definition['time']['max'] + '"^^xs:dateTime)'
-            #    where_query_string += ')'
-
-            #if self.definition['time']['type'] == 'point':
-            #    where_query_string += 'filter('
-            #    where_query_string += 'if(?minDateTime > bif:dateadd("day", ' + self.definition['time']['variance'] + ', "' + self.definition['time']['point'] + '"^^xs:dateTime), ?minDateTime, bif:dateadd("day", ' + self.definition['time']['variance'] + ', "' + self.definition['time']['point'] + '"^^xs:dateTime)) <='
-            #    where_query_string += 'if(?maxDateTime < bif:dateadd("day", ' + self.definition['time']['variance'] + ', "' + self.definition['time']['point'] + '"^^xs:dateTime), ?maxDateTime, bif:dateadd("day", ' + self.definition['time']['variance'] + ', "' + self.definition['time']['point'] + '"^^xs:dateTime))'
-            #    where_query_string += ')'
-            #workaround
+        if 'time_min' in filters or 'time_max' in filters:
             select_query_string += ' (min(?min_time) as ?min_time) (max(?max_time) as ?max_time)'
+            where_query_string += '''
+?dataset void:propertyPartition ?dateTimePropertyPartition.
+?dateTimePropertyPartition void:minValue ?min_time.
+?dateTimePropertyPartition void:maxValue ?max_time.
+filter(datatype(?min_time) = xs:dateTime)
+filter(datatype(?max_time) = xs:dateTime)
+'''
             group_by_query_string = 'group by ?dataset'
 
         where_query_string += '}'
  
         query_string = prefix_query_string + '\n' + \
-                       select_query_string + '\n' + \
+                       select_query_string + \
                        where_query_string + '\n' + \
                        group_by_query_string + '\n'
-                       
-                       
+        
         rows = store.root.query(query_string)
         
         if 'location_latitude' in filters and \
            'location_longitude' in filters and \
            'location_radius' in filters:
-            rows = [row for row in rows if 'min_latitude' in row]
-            
             latitude = math.radians(float(filters['location_latitude'][0]))
             longitude = math.radians(float(filters['location_longitude'][0]))
             radius = float(filters['location_radius'][0]) + 1
             
-            row2 = []
-            
+            rows2 = []
             for row in rows:
                 min_latitude = float(row['min_latitude']['value'])
                 max_latitude = float(row['max_latitude']['value'])
@@ -175,17 +164,22 @@ class SemanticPlugin(plugins.SingletonPlugin):
                 distance = hl.distance(latitude, longitude, dataset_latitude, dataset_longitude)
 
                 if distance - dataset_radius <= radius:
-                    row2.append(row)
-
-            rows = row2
+                    rows2.append(row)
+            rows = rows2
 
         #FIXME: workaround as long as virtuoso 6 is not functioning properly
-        if 'time_min' in filters and 'time_max' in filters:
-            rows = [row for row in rows if 'min_time' in row]
-            rows = [row for row in rows if max(row['min_time']['value'], filters['time_min'][0]) <= min(row['max_time']['value'], filters['time_max'][0])]
+        if 'time_min' in filters or 'time_max' in filters:
+            rows2 = []
+            for row in rows:
+                min_time = ht.to_naive_utc(ht.min_datetime(filters.get('time_min', [''])[0]))
+                max_time = ht.to_naive_utc(ht.max_datetime(filters.get('time_max', [''])[0]))
 
-
-
+                dataset_min_time = ht.to_naive_utc(ht.min_datetime(row['min_time']['value']))
+                dataset_max_time = ht.to_naive_utc(ht.max_datetime(row['max_time']['value']))
+            
+                if max(min_time, dataset_min_time) <= min(max_time, dataset_max_time):
+                    rows2.append(row)
+            rows = rows2
 
         datasets = [h.uri_to_object(row['dataset']['value']) for row in rows]
         datasets = [d.model_dictize.package_dictize(dataset, {'model': model}) for dataset in datasets if dataset is not None]

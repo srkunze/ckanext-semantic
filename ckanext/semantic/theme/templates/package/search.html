@@ -5,7 +5,7 @@
   {{ super() }}
 
   <section class="module module-narrow">
-    <h2 class="module-heading"><i class="icon-medium icon-filter"></i> Topic</h2>
+    <h2 class="module-heading"><i class="icon-medium icon-filter"></i> Topic (RDF only)</h2>
     <div class="module-content">
       <form method="get">
         <input id="topic_input" autocomplete="off" type="text" class="input" name="topic" style="height:14px; width:115px" placeholder="http://purl.org/ontology/bibo/" />
@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.4/leaflet.css" />
   <script src="http://cdn.leafletjs.com/leaflet-0.4/leaflet.js"></script>
   <section class="module module-narrow">
-    <h2 class="module-heading"><i class="icon-medium icon-filter"></i> Location</h2>
+    <h2 class="module-heading"><i class="icon-medium icon-filter"></i> Location (RDF only)</h2>
     <div id="map" style="height:280px"></div>
     <div class="module-content">
       <form name="location" method="get">
@@ -57,7 +57,7 @@
   </section>
   
   <section class="module module-narrow">
-    <h2 class="module-heading"><i class="icon-medium icon-filter"></i> Time</h2>
+    <h2 class="module-heading"><i class="icon-medium icon-filter"></i> Time (RDF only)</h2>
     <div class="module-content">
       <form name="time" method="get">
         From <input type="text" class="input" name="time_min" style="height:14px; width:165px" value="{{ c.fields_grouped.time_min[0] if c.fields_grouped.time_min }}" placeholder="1980-01-23" />
