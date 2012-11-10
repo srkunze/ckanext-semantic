@@ -59,25 +59,32 @@ class SemanticPlugin(plugins.SingletonPlugin):
     
     
     def before_view(self, pkg_dict):
-        #TODO: personlize that
         dataset_uri = h.dataset_to_uri(pkg_dict['name'])
         
         similarities = similarity_stats.SimilarityStats()
         similarities.set_entity(dataset_uri, str(prefix.void.Dataset))
         similarities.set_similar_entity_class(str(prefix.void.Dataset))
-        #TODO: change between different similarity methods
-        similarities.set_similarity_method(methods.TopicSimilarity)
         similarities.count_limit = 5
-        similarities.load()
         
-        pkg_dict['similar'] = []
-        for similar_entity, similarity_weight, similarity_distance in similarities.rows:
-            entity_object = h.uri_to_object(similar_entity)
-            if entity_object:
-                pkg_dict['similar'].append(entity_object)
+        similarity_methods = {'topic': methods.TopicSimilarity,
+                              'location': methods.LocationSimilarity,
+                              'time': methods.TimeSimilarity}
+
+        pkg_dict['similar'] = {}
+        for method_name, method in similarity_methods.iteritems():
+            similarities.set_similarity_method(method)
+            similarities.load()
             
-        
-        
+            for similar_entity, similarity_weight, similarity_distance in similarities.rows:
+                entity_object = h.uri_to_object(similar_entity)
+                if not entity_object:
+                    continue
+                
+                if method_name in pkg_dict['similar']:
+                    pkg_dict['similar'][method_name].append(entity_object)
+                else:
+                    pkg_dict['similar'][method_name] = [entity_object]
+
         return pkg_dict
         
         

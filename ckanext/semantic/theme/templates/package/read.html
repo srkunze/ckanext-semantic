@@ -4,15 +4,43 @@
 
   {{ super() }}
 
+  {% if pkg.similar.topic %}
   <section class="module module-narrow">
-    <h2 class="module-heading"><i class="icon-medium icon-copy"></i> Similar Datasets</h2>
+    <h2 class="module-heading"><i class="icon-medium icon-copy"></i> Similar Topics</h2>
     <ul class="nav nav-simple">
-      {% for similar in pkg.similar %}
+      {% for similar in pkg.similar.topic %}
         <li class="nav-item">
           {% link_for _( similar.title ), controller='package', action='read', id=similar.name %}
         </li>
       {% endfor %}
     </ul>
   </section>
+  {% endif %}
+  
+  {% if pkg.similar.location %}
+  <section class="module module-narrow">
+    <h2 class="module-heading"><i class="icon-medium icon-copy"></i> Similar Region</h2>
+    <ul class="nav nav-simple">
+      {% for similar in pkg.similar.location %}
+        <li class="nav-item">
+          {% link_for _( similar.title ), controller='package', action='read', id=similar.name %}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+  
+  {% if pkg.similar.time %}
+  <section class="module module-narrow">
+    <h2 class="module-heading"><i class="icon-medium icon-copy"></i> Similar Time</h2>
+    <ul class="nav nav-simple">
+      {% for similar in pkg.similar.time %}
+        <li class="nav-item">
+          {% link_for _( similar.title ), controller='package', action='read', id=similar.name %}
+        </li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
 {% endblock %}
 
