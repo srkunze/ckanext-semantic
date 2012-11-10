@@ -239,7 +239,7 @@ class SimilarityStats(object):
                                 }
                                 order by desc(?similarity_weight) ?similarity_distance
                                 limit ''' + str(self.count_limit) + '''
-                                ''', debug=True)
+                                ''')
         
         self.rows = [(row['similar_entity']['value'],
                       row['similarity_weight']['value'] if row.has_key('similarity_weight') else None,
