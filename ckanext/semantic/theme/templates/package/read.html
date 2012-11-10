@@ -61,7 +61,7 @@
       <tbody>
       {% for vocabulary in pkg.topic.vocabularies %}
         <tr>
-          <td class="dataset-details" property="foaf:homepage">{{ h.link_to(vocabulary) }}</td>
+          <td>{{ h.link_to(vocabulary, vocabulary) }}</td>
         </tr>
       {% endfor %}
       </tbody>
