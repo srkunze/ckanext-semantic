@@ -215,7 +215,6 @@ class SimilarityStats(object):
                 filter_string += '?similarity_distance <= ' + str(self.max_similarity_distance)
             filter_string += ')'
         
-        #FIXME: owl:Thing problem to determine class of entity1
         rows = store.root.query('''
                                 prefix xs: <http://www.w3.org/2001/XMLSchema#>
                                 prefix sim: <http://purl.org/ontology/similarity/>
@@ -240,7 +239,7 @@ class SimilarityStats(object):
                                 }
                                 order by desc(?similarity_weight) ?similarity_distance
                                 limit ''' + str(self.count_limit) + '''
-                                ''')
+                                ''', debug=True)
         
         self.rows = [(row['similar_entity']['value'],
                       row['similarity_weight']['value'] if row.has_key('similarity_weight') else None,
@@ -274,13 +273,13 @@ class SimilarityStats(object):
         for similar_entity_uri, result in results.iteritems():
             similarity_weight, similarity_distance = self._similarity_method.post_process_result(*result)
             
-            #TODO: filtering similarities by min and max should be reflected in configuration
+            #TODO: filtering similarities by min and max should be reflected in configuration in order to be sorted out
             if similarity_weight is not None and self.min_similarity_weight is not None and similarity_weight < self.min_similarity_weight or \
                similarity_distance is not None and self.max_similarity_distance is not None and similarity_distance > self.max_similarity_distance:
                #continue
                pass
             
-            # no nice way of updating a similarity with only one element
+            # no nice way of updating a similarity with only one element => skip it
             if self._entity_uri != similar_entity_uri:
                self._commit(similar_entity_uri, similarity_weight, similarity_distance)
         

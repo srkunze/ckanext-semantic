@@ -69,12 +69,16 @@ class SemanticPlugin(plugins.SingletonPlugin):
         similarity_methods = {'topic': methods.TopicSimilarity,
                               'location': methods.LocationSimilarity,
                               'time': methods.TimeSimilarity}
-
+        min_similarity_weight = {'topic': 0.1, 'location': 0.0, 'time': 0.0}
+        max_similarity_distance = {'topic': 0.0, 'location': 0.3, 'time': 0.5}
+        
         pkg_dict['similar'] = {}
         for method_name, method in similarity_methods.iteritems():
             similarities.set_similarity_method(method)
+            similarities.min_similarity_weight = min_similarity_weight[method_name]
+            similarities.max_similarity_distance = max_similarity_distance[method_name]
             similarities.load()
-            
+                        
             for similar_entity, similarity_weight, similarity_distance in similarities.rows:
                 entity_object = h.uri_to_object(similar_entity)
                 if not entity_object:
