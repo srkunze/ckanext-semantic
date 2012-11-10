@@ -1,0 +1,11 @@
+{% ckan_extends %}
+
+{% block package_item_content %}
+  {{ super() }}
+  
+  {% if package.location %}
+    <div class="map" latitude="{{ package.location.latitude }}" longitude="{{ package.location.longitude }}" radius="{{ package.location.radius }}"  style="width: 300px; height: 150px"></div>
+  {% endif %}
+  
+{% endblock %}
+
