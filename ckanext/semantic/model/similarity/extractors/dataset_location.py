@@ -8,9 +8,9 @@ import math
 class DatasetLocation(EntityLocation, DatasetExtractor):
     def __init__(self):
         super(DatasetLocation, self).__init__()
-        
-        
-    def _extract(self):
+    
+
+    def _extract(self, dataset_filter = ''):
         rows = store.root.query('''
                                 prefix void: <http://rdfs.org/ns/void#>
 
@@ -26,6 +26,8 @@ class DatasetLocation(EntityLocation, DatasetExtractor):
                                     ?longPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#long>.
                                     ?longPropertyPartition void:minValue ?min_longitude.
                                     ?longPropertyPartition void:maxValue ?max_longitude.
+                                    
+                                    ''' + dataset_filter + '''
                                 }
                                 ''')
         self.entities = {}

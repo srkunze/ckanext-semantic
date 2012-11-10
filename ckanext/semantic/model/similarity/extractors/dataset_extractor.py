@@ -8,6 +8,11 @@ class DatasetExtractor(object):
         self._evaluated_extracted = False
     
     
+    def extract(self, dataset_uri):
+        dataset_filter = 'filter(?dataset = <' + dataset_uri + '>)'
+        self._extract(dataset_filter)
+
+
     def changed_since(self, entity_uri, oldest_update):
         if oldest_update is None:
             return True

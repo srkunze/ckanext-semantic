@@ -18,13 +18,13 @@ $.ajax(
 
 
 
-var latitude = document.forms.location.location_latitude
-var longitude =document.forms.location.location_longitude
-var radius = document.forms.location.location_radius
+var latitude = document.forms.location.location_latitude;
+var longitude =document.forms.location.location_longitude;
+var radius = document.forms.location.location_radius;
 
-var map = L.map('map')
+var map = L.map('map');
 
-map.setView([0, 0], 0)
+map.setView([0, 0], 0);
 
 L.tileLayer('http://{s}.tile.cloudmade.com/BC9A493B41014CAABB98F0471D759707/997/256/{z}/{x}/{y}.png', {
     attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>',
@@ -55,7 +55,7 @@ function update_circle(moveMap)
     
     circle = L.circle([lat, lng], 1000.0 * rad, {
         color: 'red',
-        fillColor: '#f03',
+        fillColor: '#F03',
         fillOpacity: 0.5
     }).addTo(map);
 

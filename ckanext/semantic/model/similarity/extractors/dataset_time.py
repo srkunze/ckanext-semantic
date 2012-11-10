@@ -5,7 +5,7 @@ import ckanext.semantic.lib.time as ht
 
 
 class DatasetTime(EntityTime, DatasetExtractor):
-    def _extract(self):
+    def _extract(self, dataset_filter = ''):
         rows = store.root.query('''
                                 prefix void: <http://rdfs.org/ns/void#>
                                 prefix xs: <http://www.w3.org/2001/XMLSchema#>
@@ -16,8 +16,11 @@ class DatasetTime(EntityTime, DatasetExtractor):
                                     ?dataset void:propertyPartition ?dateTimePropertyPartition.
                                     ?dateTimePropertyPartition void:minValue ?min_time.
                                     ?dateTimePropertyPartition void:maxValue ?max_time.
+                                    
                                     filter(datatype(?min_time) = xs:dateTime)
                                     filter(datatype(?max_time) = xs:dateTime)
+                                    
+                                    ''' + dataset_filter + '''
                                 }
                                 group by ?dataset
                                 ''')

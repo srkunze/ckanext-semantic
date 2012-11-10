@@ -10,6 +10,7 @@ import lib.time as ht
 import math
 import model.similarity.similarity_stats as similarity_stats
 import model.prefix as prefix
+import model.similarity.extractors as extractors
 import model.similarity.methods as methods
 import model.store as store
 import os
@@ -88,6 +89,8 @@ class SemanticPlugin(plugins.SingletonPlugin):
                     pkg_dict['similar'][method_name].append(entity_object)
                 else:
                     pkg_dict['similar'][method_name] = [entity_object]
+
+        self._enrich_dataset_dict(pkg_dict)
 
         return pkg_dict
         
@@ -208,6 +211,24 @@ filter(datatype(?max_time) = xs:dateTime)
         search_results['count'] = len(combined_results)
 
         return search_results
+        
+        
+    def before_search_view(self, pkg_dict):
+        self._enrich_dataset_dict(pkg_dict)
+
+        return pkg_dict
+    
+    
+    def _enrich_dataset_dict(self, dataset_dict):
+        dataset_uri = h.dataset_to_uri(dataset_dict['name'])
+        dataset_extractors = {'topic': extractors.DatasetTopic(),
+                              'location': extractors.DatasetLocation(),
+                              'time': extractors.DatasetTime()}
+        
+        for method_name, extractor in dataset_extractors.iteritems():
+           extractor.extract(dataset_uri)
+           if extractor.entities:
+               dataset_dict[method_name] = extractor.entities.values()[0]
 
 
     def get_actions(self):

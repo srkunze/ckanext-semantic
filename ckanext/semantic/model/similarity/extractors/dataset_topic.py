@@ -4,7 +4,7 @@ import ckanext.semantic.model.store as store
 
           
 class DatasetTopic(EntityTopic, DatasetExtractor):
-    def _extract(self):
+    def _extract(self, dataset_filter = ''):
         rows = store.root.query('''
                                 prefix void: <http://rdfs.org/ns/void#>
 
@@ -12,6 +12,8 @@ class DatasetTopic(EntityTopic, DatasetExtractor):
                                 where
                                 {
                                     ?dataset void:vocabulary ?vocabulary.
+                                                                        
+                                    ''' + dataset_filter + '''
                                 }
                                 ''')
 
