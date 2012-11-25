@@ -29,7 +29,7 @@ class SemanticPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IRoutes, inherit=True)
     plugins.implements(plugins.ISearchFacets, inherit=True)
-    plugins.implements(plugins.ISubscription, inherit=True)
+#    plugins.implements(plugins.ISubscription, inherit=True)
     
     
     def update_config(self, config):
@@ -100,6 +100,14 @@ class SemanticPlugin(plugins.SingletonPlugin):
         return pkg_dict
         
         
+    def before_search(self, search_params):
+        if 'filters' in search_params:
+            search_params['filters'] = dict([(filter_name, filter_list) for (filter_name, filter_list) in search_params['filters'].iteritems() if filter_name not in self.search_facets()])
+        if 'facet.field' in search_params:
+            search_params['facet.field'] = [facet_name for facet_name in search_params['facet.field'] if facet_name not in self.search_facets()]
+        return search_params
+
+
     def after_search(self, search_results, search_params):
         if 'filters' not in search_params:
             return search_results
@@ -238,8 +246,17 @@ filter(datatype(?max_time) = xs:dateTime)
 
     ######################################
     #   plugin.ISearchFacets interface   #               
-    def additional_search_facets(self):
+    def search_facets(self):
         return ['topic', 'location_latitude', 'location_longitude', 'location_radius', 'time_min', 'time_max']
+
+
+    def search_facet_titles(self):
+        return {'topic': 'Topic',
+                'location_latitude': 'Latitude',
+                'location_longitude': 'Longitude',
+                'location_radius': 'Circumradius',
+                'time_min': 'Since',
+                'time_max': 'Until'}
         
     #   plugin.ISearchFacets interface   #
     ######################################
