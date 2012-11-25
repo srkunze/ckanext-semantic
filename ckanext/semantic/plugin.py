@@ -258,6 +258,17 @@ filter(datatype(?max_time) = xs:dateTime)
         return preliminary_definition
     
     
+    def item_to_objects(self, item):
+        datasets = []
+        for key, value in item.data.iteritems():
+            if value['type'] == 'uri':
+                object_ = h.uri_to_object(value['value'])
+                if isinstance(object_, model.Package):
+                    datasets.append(object_)
+        
+        return datasets
+    
+
     def show_url(self):
         url = h.url_for(controller='ckanext.semantic.controllers.sparql:SPARQLController', action='index')
         url += '?query=' + urllib.quote_plus(c.subscription['definition']['query'])
@@ -271,6 +282,5 @@ filter(datatype(?max_time) = xs:dateTime)
     def get_actions(self):
         return {
             'sparql_dataset': action.get.sparql_dataset,
-            'subscription_sparql_dataset': action.get.subscription_sparql_dataset,
-            'subscription_sparql_dataset_list': action.get.subscription_sparql_dataset_list}
+            'subscription_sparql_dataset': action.get.subscription_sparql_dataset}
 
