@@ -1,7 +1,9 @@
+import ckan.lib.base as base
 import ckan.model as model
 import ckan.lib.dictization as d
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
+import ckan.logic as logic
 import logging
 import logic.action as action
 import lib.helpers as h
@@ -14,6 +16,7 @@ import model.similarity.extractors as extractors
 import model.similarity.methods as methods
 import model.store as store
 import os
+import urllib
 
 log = logging.getLogger(__name__)
 
@@ -245,22 +248,31 @@ filter(datatype(?max_time) = xs:dateTime)
     ######################################
     #   plugin.ISubscription interface   #
     def definition_type(self):
-        return 'SPARQL'
+        return 'sparql'
 
 
     def data_type(self):
         return 'dataset'
         
     
-    def prepare_creation(self, preliminary_definition, parameters):
-        preliminary_definition['query'] = parameters['query']
+    def prepare_creation(self, subscription_definition, parameters):
+        subscription_definition['query'] = parameters['query'][0]
     
-        return preliminary_definition
-    
-    
-    def item_to_objects(self, item):
+        return subscription_definition
+        
+        
+    def item_data_and_key_name(self, subscription_definition):
+        results = logic.get_action('sparql_query')({}, {'query': subscription_definition['query']})
+
+        if isinstance(results, str):
+            return [], None
+
+        return results['results']['bindings'], None
+
+
+    def item_to_objects(self, subscription_item):
         datasets = []
-        for key, value in item.data.iteritems():
+        for key, value in subscription_item.data.iteritems():
             if value['type'] == 'uri':
                 object_ = h.uri_to_object(value['value'])
                 if isinstance(object_, model.Package):
@@ -269,10 +281,14 @@ filter(datatype(?max_time) = xs:dateTime)
         return datasets
     
 
-    def show_url(self):
-        url = h.url_for(controller='ckanext.semantic.controllers.sparql:SPARQLController', action='index')
-        url += '?query=' + urllib.quote_plus(c.subscription['definition']['query'])
+    def show_url(self, subscription):
+        url = base.h.url_for(controller='ckanext.semantic.controllers.sparql:SPARQLController', action='index')
+        url += '?query=' + urllib.quote_plus(subscription['definition']['query'])
         return url
+
+
+    def subscription_equal_definition(self, subscription, definition):
+        return subscription.definition['query'] == definition['query']
 
     #   plugin.ISubscription interface   #
     ######################################
@@ -280,7 +296,5 @@ filter(datatype(?max_time) = xs:dateTime)
 
 
     def get_actions(self):
-        return {
-            'sparql_dataset': action.get.sparql_dataset,
-            'subscription_sparql_dataset': action.get.subscription_sparql_dataset}
+        return {'sparql_query': action.get.sparql_query}
 

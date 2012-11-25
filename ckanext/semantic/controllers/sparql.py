@@ -61,7 +61,7 @@ order by ?dataset
 
             results['head']['vars'] = list(vars_)                
         else:
-            results = logic.get_action('sparql_dataset')({}, {'query': query})
+            results = logic.get_action('sparql_query')({}, {'query': query})
     
         if isinstance(results, str):
             base.c.query_error = results
