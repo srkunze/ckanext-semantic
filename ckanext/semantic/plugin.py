@@ -21,10 +21,11 @@ log = logging.getLogger(__name__)
 class SemanticPlugin(plugins.SingletonPlugin):
     """
     """
-    plugins.implements(plugins.IConfigurer, inherit=True)
-    plugins.implements(plugins.IRoutes, inherit=True)
-    plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IActions, inherit=True)
+    plugins.implements(plugins.IConfigurer, inherit=True)
+    plugins.implements(plugins.IPackageController, inherit=True)
+    plugins.implements(plugins.IRoutes, inherit=True)
+    plugins.implements(plugins.ISearchFacets, inherit=True)
     
     
     def update_config(self, config):
@@ -229,6 +230,10 @@ filter(datatype(?max_time) = xs:dateTime)
            extractor.extract(dataset_uri)
            if extractor.entities:
                dataset_dict[method_name] = extractor.entities.values()[0]
+               
+               
+    def additional_search_facets(self):
+        return ['topic', 'location_latitude', 'location_longitude', 'location_radius', 'time_min', 'time_max']
 
 
     def get_actions(self):
