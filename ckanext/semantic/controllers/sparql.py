@@ -38,7 +38,7 @@ order by ?dataset
         definition['data_type'] = 'dataset'
         
         try:
-            base.c.subscription = logic.get_action('subscription')(context, {'subscription_definition': definition})
+            base.c.subscription = logic.get_action('subscription_show')(context, {'subscription_definition': definition})
         except logic.NotAuthorized:
             pass
             
