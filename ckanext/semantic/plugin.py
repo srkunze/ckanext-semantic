@@ -26,6 +26,7 @@ class SemanticPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IRoutes, inherit=True)
     plugins.implements(plugins.ISearchFacets, inherit=True)
+    plugins.implements(plugins.ISubscription, inherit=True)
     
     
     def update_config(self, config):
@@ -231,9 +232,40 @@ filter(datatype(?max_time) = xs:dateTime)
            if extractor.entities:
                dataset_dict[method_name] = extractor.entities.values()[0]
                
-               
+
+    ######################################
+    #   plugin.ISearchFacets interface   #               
     def additional_search_facets(self):
         return ['topic', 'location_latitude', 'location_longitude', 'location_radius', 'time_min', 'time_max']
+        
+    #   plugin.ISearchFacets interface   #
+    ######################################
+    
+            
+    ######################################
+    #   plugin.ISubscription interface   #
+    def definition_type(self):
+        return 'SPARQL'
+
+
+    def data_type(self):
+        return 'dataset'
+        
+    
+    def prepare_creation(self, preliminary_definition, parameters):
+        preliminary_definition['query'] = parameters['query']
+    
+        return preliminary_definition
+    
+    
+    def show_url(self):
+        url = h.url_for(controller='ckanext.semantic.controllers.sparql:SPARQLController', action='index')
+        url += '?query=' + urllib.quote_plus(c.subscription['definition']['query'])
+        return url
+
+    #   plugin.ISubscription interface   #
+    ######################################
+
 
 
     def get_actions(self):
