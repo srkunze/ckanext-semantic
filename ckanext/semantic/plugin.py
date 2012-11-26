@@ -65,6 +65,15 @@ class SemanticPlugin(plugins.SingletonPlugin):
     
     
     def before_view(self, pkg_dict):
+        if toolkit.base.c.controller == 'package' and toolkit.base.c.action == 'action':
+            self._add_similar_datasets(pkg_dict)
+
+        self._add_semantic_data(pkg_dict)
+
+        return pkg_dict
+        
+        
+    def _add_similar_datasets(self, pkg_dict):
         dataset_uri = h.dataset_to_uri(pkg_dict['name'])
         
         similarities = similarity_stats.SimilarityStats()
@@ -95,11 +104,19 @@ class SemanticPlugin(plugins.SingletonPlugin):
                 else:
                     pkg_dict['similar'][method_name] = [entity_object]
 
-        self._enrich_dataset_dict(pkg_dict)
 
-        return pkg_dict
+    def _add_semantic_data(self, dataset_dict):
+        dataset_uri = h.dataset_to_uri(dataset_dict['name'])
+        dataset_extractors = {'topic': extractors.DatasetTopic(),
+                              'location': extractors.DatasetLocation(),
+                              'time': extractors.DatasetTime()}
         
-        
+        for method_name, extractor in dataset_extractors.iteritems():
+           extractor.extract(dataset_uri)
+           if extractor.entities:
+               dataset_dict[method_name] = extractor.entities.values()[0]
+
+      
     def before_search(self, search_params):
         if 'filters' in search_params:
             search_params['filters'] = dict([(filter_name, filter_list) for (filter_name, filter_list) in search_params['filters'].iteritems() if filter_name not in self.search_facets()])
@@ -209,40 +226,18 @@ filter(datatype(?max_time) = xs:dateTime)
             rows = rows2
 
         datasets = [h.uri_to_object(row['dataset']['value']) for row in rows]
-        datasets = [d.model_dictize.package_dictize(dataset, {'model': model}) for dataset in datasets if dataset is not None]
-
+        datasets_id_list = [dataset.id for dataset in datasets if dataset is not None]
 
         combined_results =[]
-
-        for dataset in datasets:
-            for result in search_results['results']:
-                if dataset['id'] != result['id']:
-                    continue
-                combined_results.append(result)
+        for result in search_results['results']:
+            if result['id'] in dataset_id_list:
+                combined_results.append(result
 
         search_results['results'] = combined_results
         search_results['count'] = len(combined_results)
 
         return search_results
         
-        
-    def before_search_view(self, pkg_dict):
-        self._enrich_dataset_dict(pkg_dict)
-
-        return pkg_dict
-    
-    
-    def _enrich_dataset_dict(self, dataset_dict):
-        dataset_uri = h.dataset_to_uri(dataset_dict['name'])
-        dataset_extractors = {'topic': extractors.DatasetTopic(),
-                              'location': extractors.DatasetLocation(),
-                              'time': extractors.DatasetTime()}
-        
-        for method_name, extractor in dataset_extractors.iteritems():
-           extractor.extract(dataset_uri)
-           if extractor.entities:
-               dataset_dict[method_name] = extractor.entities.values()[0]
-               
 
     ######################################
     #   plugin.ISearchFacets interface   #               
