@@ -119,16 +119,17 @@ class SemanticPlugin(plugins.SingletonPlugin):
       
     def before_search(self, search_params):
         if 'filters' in search_params:
-            search_params['filters'] = dict([(filter_name, filter_list) for (filter_name, filter_list) in search_params['filters'].iteritems() if filter_name not in self.search_facets()])
-        if 'facet.field' in search_params:
-            search_params['facet.field'] = [facet_name for facet_name in search_params['facet.field'] if facet_name not in self.search_facets()]
+            self._filters = dict([(filter_name, filter_list) for (filter_name, filter_list) in search_params['filters'].iteritems() if filter_name in self.search_facet_titles().keys()])
+            search_params['filters'] = dict([(filter_name, filter_list) for (filter_name, filter_list) in search_params['filters'].iteritems() if filter_name not in self.search_facet_titles().keys()])
+
         return search_params
 
 
     def after_search(self, search_results, search_params):
-        if 'filters' not in search_params:
+        if not self._filters:
             return search_results
-        filters = search_params['filters']
+            
+        filters = self._filters
     
         prefix_query_string = 'prefix void: <http://rdfs.org/ns/void#>\nprefix xs: <http://www.w3.org/2001/XMLSchema#>'
         select_query_string = 'select ?dataset'
@@ -241,10 +242,6 @@ filter(datatype(?max_time) = xs:dateTime)
 
     ######################################
     #   plugin.ISearchFacets interface   #               
-    def search_facets(self):
-        return ['topic', 'location_latitude', 'location_longitude', 'location_radius', 'time_min', 'time_max']
-
-
     def search_facet_titles(self):
         return {'topic': 'Topic',
                 'location_latitude': 'Latitude',
