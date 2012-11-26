@@ -65,7 +65,7 @@ class SemanticPlugin(plugins.SingletonPlugin):
     
     
     def before_view(self, pkg_dict):
-        if toolkit.base.c.controller == 'package' and toolkit.base.c.action == 'action':
+        if toolkit.base.c.controller == 'package' and toolkit.base.c.action == 'read':
             self._add_similar_datasets(pkg_dict)
 
         self._add_semantic_data(pkg_dict)
@@ -226,7 +226,7 @@ filter(datatype(?max_time) = xs:dateTime)
             rows = rows2
 
         datasets = [h.uri_to_object(row['dataset']['value']) for row in rows]
-        datasets_id_list = [dataset.id for dataset in datasets if dataset is not None]
+        dataset_id_list = [dataset.id for dataset in datasets if dataset is not None]
 
         combined_results =[]
         for result in search_results['results']:
