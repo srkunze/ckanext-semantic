@@ -231,7 +231,7 @@ filter(datatype(?max_time) = xs:dateTime)
         combined_results =[]
         for result in search_results['results']:
             if result['id'] in dataset_id_list:
-                combined_results.append(result
+                combined_results.append(result)
 
         search_results['results'] = combined_results
         search_results['count'] = len(combined_results)
