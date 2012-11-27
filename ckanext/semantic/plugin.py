@@ -118,18 +118,14 @@ class SemanticPlugin(plugins.SingletonPlugin):
 
       
     def before_search(self, search_params):
-        if 'filters' in search_params:
-            self._filters = dict([(filter_name, filter_list) for (filter_name, filter_list) in search_params['filters'].iteritems() if filter_name in self.search_facet_titles().keys()])
-            search_params['filters'] = dict([(filter_name, filter_list) for (filter_name, filter_list) in search_params['filters'].iteritems() if filter_name not in self.search_facet_titles().keys()])
-
         return search_params
 
 
     def after_search(self, search_results, search_params):
-        if not self._filters:
+        if 'filters' not in search_params:
             return search_results
             
-        filters = self._filters
+        filters = search_params['filters']
     
         prefix_query_string = 'prefix void: <http://rdfs.org/ns/void#>\nprefix xs: <http://www.w3.org/2001/XMLSchema#>'
         select_query_string = 'select ?dataset'
