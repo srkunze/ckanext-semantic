@@ -1,4 +1,4 @@
-import SearchConcept from .
+from . import SearchConcept
 
 
 class TopicSearch(SearchConcept):
@@ -6,11 +6,12 @@ class TopicSearch(SearchConcept):
         return 'topic'
 
 
-    def extract_filters(self, search_param):
+    def extract_filters(self, search_params):
+        filters = search_params['filters']
         topic = {}
-        if 'topic' in search_param['filters']:
-            topic = search_param['filters']['topic']
-            del search_param['filters']['topic']
+        if 'topic' in filters:
+            topic = filters['topic']
+            del filters['topic']
         return topic
 
     

@@ -15,6 +15,7 @@ import model.prefix as prefix
 import model.similarity.extractors as extractors
 import model.similarity.methods as methods
 import model.store as store
+import model.search as search
 import os
 import urllib
 
@@ -121,145 +122,13 @@ class SemanticPlugin(plugins.SingletonPlugin):
         if 'filters' not in search_params:
             return search_results
         
-        search = Search()
+        search = search.Search()
         search.execute(search_params)
-
-        return search.get_search_params()
-
-
-    def _extract_filters(self, filters):
-
+        for id_ in search.result_ids:
+            search_params['fq'] += ' id:%s' % id_
             
-        location = {}
-        if 'location_latitude' in filters and \
-           'location_longitude' in filters and \
-           'location_radius' in filters:
-            location['latitude'] = filters['location_latitude']
-            location['longitude'] = filters['location_longitude']
-            location['radius'] = filters['location_radius']
-            del filters['location_latitude']
-            del filters['location_longitude']
-            del filters['location_radius']
-        
-        time = {}
-        if 'time_min' in filters or 'time_max' in filters:
-            time['time_min'] = filters['time_min']
-            time['time_max'] = filters['time_max']
-            del filters['time_min']
-            del filters['time_max']
-            
-        return {'topic': topic, 'location': location, 'time': time}
-    
-    def _build_query(self, filters):
-        prefix_query_string = 'prefix void: <http://rdfs.org/ns/void#>\nprefix xs: <http://www.w3.org/2001/XMLSchema#>'
-        select_query_string = 'select ?dataset'
-        where_query_string = '''
-where
-{
-?dataset a void:Dataset.
-'''
-        group_by_query_string = ''
+        return search_params
 
-        if topic:
-
-                
-        if 'location_latitude' in filters and \
-           'location_longitude' in filters and \
-           'location_radius' in filters:
-            select_query_string += ' ?min_latitude ?max_latitude ?min_longitude ?max_longitude'
-            where_query_string += '''
-?dataset void:propertyPartition ?latPropertyPartition.
-?latPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#lat>.
-?latPropertyPartition void:minValue ?min_latitude.
-?latPropertyPartition void:maxValue ?max_latitude.
-
-?dataset void:propertyPartition ?longPropertyPartition.
-?longPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#long>.
-?longPropertyPartition void:minValue ?min_longitude.
-?longPropertyPartition void:maxValue ?max_longitude.
-'''
-
-            # virtuoso 6 has no BIND, so debugging this formular is quite tedious and error-prone
-            # where_query_string += 'filter(' + filters['location_radius'][0] + ' + fn:max(bif:pi()*6378*(?maxLatitude - ?minLatitude)/180, 2*bif:pi()*6378*bif:cos((?maxLatitude - ?minLatitude)/2)*(?maxLongitude - ?minLongitude)/360)/2 > (2 * 3956 * bif:asin(bif:sqrt((bif:power(bif:sin(2*bif:pi() + (' + filters['location_latitude'][0] + ' - (?minLatitude + ?maxLatitude)/2)*bif:pi()/360), 2) + bif:cos(2*bif:pi() + ' + filters['location_latitude'][0] + '*bif:pi()/180) * bif:cos(2*bif:pi() + (?minLatitude + ?maxLatitude)/2*bif:pi()/180) * bif:power(bif:sin(2*bif:pi() + (' + filters['location_longitude'][0] + ' - (?minLongitude + ?maxLongitude)/2)*bif:pi()/360), 2))))))\n'
-
-        if 'time_min' in filters or 'time_max' in filters:
-            select_query_string += ' (min(?min_time) as ?min_time) (max(?max_time) as ?max_time)'
-            where_query_string += '''
-?dataset void:propertyPartition ?dateTimePropertyPartition.
-?dateTimePropertyPartition void:minValue ?min_time.
-?dateTimePropertyPartition void:maxValue ?max_time.
-filter(datatype(?min_time) = xs:dateTime)
-filter(datatype(?max_time) = xs:dateTime)
-'''
-            group_by_query_string = 'group by ?dataset'
-
-        where_query_string += '}'
- 
-        query_string = prefix_query_string + '\n' + \
-                       select_query_string + \
-                       where_query_string + '\n' + \
-                       group_by_query_string + '\n'
-                       
-        return query_string
-
-        
-    def _post_process_results(self, results, filters):
-        if 'location' in filters:
-            latitude = math.radians(float(filters['location']['latitude']))
-            longitude = math.radians(float(filters['location']['longitude']))
-            radius = float(filters['location']['radius']) + 1
-            
-            rows2 = []
-            for row in rows:
-                min_latitude = float(row['min_latitude']['value'])
-                max_latitude = float(row['max_latitude']['value'])
-                min_longitude = float(row['min_longitude']['value'])
-                max_longitude = float(row['max_longitude']['value'])
-                dataset_latitude = math.radians((min_latitude + max_latitude) / 2)
-                dataset_longitude = math.radians((min_longitude + max_longitude) / 2)
-
-                latitude_difference = math.radians(max_latitude - min_latitude)
-                longitude_difference = math.radians(max_longitude - min_longitude)
-                latitude_diameter = hl.earth_radius * latitude_difference
-                longitude_diameter = hl.earth_radius * math.cos(dataset_latitude) * longitude_difference
-                dataset_radius = max(latitude_diameter, longitude_diameter) / 2 + 1
-                
-                distance = hl.distance(latitude, longitude, dataset_latitude, dataset_longitude)
-
-                if distance - dataset_radius <= radius:
-                    rows2.append(row)
-            rows = rows2
-
-        if 'time_min' in filters or 'time_max' in filters:
-            rows2 = []
-            for row in rows:
-                min_time = ht.to_naive_utc(ht.min_datetime(filters.get('time_min', [''])[0]))
-                max_time = ht.to_naive_utc(ht.max_datetime(filters.get('time_max', [''])[0]))
-
-                dataset_min_time = ht.to_naive_utc(ht.min_datetime(row['min_time']['value']))
-                dataset_max_time = ht.to_naive_utc(ht.max_datetime(row['max_time']['value']))
-            
-                if max(min_time, dataset_min_time) <= min(max_time, dataset_max_time):
-                    rows2.append(row)
-            rows = rows2
-
-        datasets = [h.uri_to_object(row['dataset']['value']) for row in rows]
-        dataset_id_list = [dataset.id for dataset in datasets if dataset]
-        
-        return dataset_id_list
-    
-    def _update_search_params(self, search_params, results):
-
-
-
-#        combined_results =[]
-#        for result in search_results['results']:
-#            if result['id'] in dataset_id_list:
-#                combined_results.append(result)
-
-#        search_results['results'] = combined_results
-#        search_results['count'] = len(combined_results)
-        
 
     ######################################
     #   plugin.ISearchFacets interface   #               

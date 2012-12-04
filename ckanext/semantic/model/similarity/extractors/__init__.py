@@ -3,8 +3,8 @@ class EntityExtractor(object):
         super(EntityExtractor, self).__init__()
         self._entity_uri = None
         self._extracted = False
-        
-        
+
+
     def set_entity(self, entity_uri):
         self._entity_uri = entity_uri
 
@@ -12,14 +12,12 @@ class EntityExtractor(object):
     def get_entity_data(self):
         if not self._extracted:
             self._extract()
-            
         return self.entities[self._entity_uri]
-        
-        
+
+
     def get_similar_entities(self, oldest_update):
         if not self._extracted:
             self._extract()
-        
         return dict([(entity_uri, entity_data) for entity_uri, entity_data in self.entities.iteritems() if self._entity_uri == entity_uri or self.changed_since(entity_uri, oldest_update)])
 
 
