@@ -1,4 +1,5 @@
 from . import SearchConcept
+import ckanext.semantic.lib.time as ht
 
 
 class TimeSearch(SearchConcept):

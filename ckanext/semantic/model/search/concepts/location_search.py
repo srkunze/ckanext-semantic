@@ -1,4 +1,6 @@
 from . import SearchConcept
+import ckanext.semantic.lib.location as hl
+import math
 
 
 class LocationSearch(SearchConcept):

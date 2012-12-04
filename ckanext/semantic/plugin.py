@@ -1,20 +1,15 @@
 import ckan.lib.base as base
 import ckan.model as model
-import ckan.lib.dictization as d
 import ckan.plugins as plugins
 import ckan.plugins.toolkit as toolkit
 import ckan.logic as logic
 import logging
 import logic.action as action
 import lib.helpers as h
-import lib.location as hl
-import lib.time as ht
-import math
 import model.similarity.similarity_stats as similarity_stats
 import model.prefix as prefix
 import model.similarity.extractors as extractors
 import model.similarity.methods as methods
-import model.store as store
 import model.search as search
 import os
 import urllib
