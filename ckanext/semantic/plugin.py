@@ -62,8 +62,8 @@ class SemanticPlugin(plugins.SingletonPlugin):
         map.connect('/dataset/{id}.n3', controller='ckanext.semantic.controllers.dataset:DatasetController', action='read_n3')
 
         return map
-    
-    
+
+
     def before_view(self, pkg_dict):
         if toolkit.base.c.controller == 'package' and toolkit.base.c.action == 'read':
             self._add_similar_datasets(pkg_dict)
@@ -71,8 +71,8 @@ class SemanticPlugin(plugins.SingletonPlugin):
         self._add_semantic_data(pkg_dict)
 
         return pkg_dict
-        
-        
+
+
     def _add_similar_datasets(self, pkg_dict):
         dataset_uri = h.dataset_to_uri(pkg_dict['name'])
         
@@ -118,15 +118,39 @@ class SemanticPlugin(plugins.SingletonPlugin):
 
       
     def before_search(self, search_params):
-        return search_params
-
-
-    def after_search(self, search_results, search_params):
         if 'filters' not in search_params:
             return search_results
+        
+        search = Search()
+        search.execute(search_params)
+
+        return search.get_search_params()
+
+
+    def _extract_filters(self, filters):
+
             
-        filters = search_params['filters']
+        location = {}
+        if 'location_latitude' in filters and \
+           'location_longitude' in filters and \
+           'location_radius' in filters:
+            location['latitude'] = filters['location_latitude']
+            location['longitude'] = filters['location_longitude']
+            location['radius'] = filters['location_radius']
+            del filters['location_latitude']
+            del filters['location_longitude']
+            del filters['location_radius']
+        
+        time = {}
+        if 'time_min' in filters or 'time_max' in filters:
+            time['time_min'] = filters['time_min']
+            time['time_max'] = filters['time_max']
+            del filters['time_min']
+            del filters['time_max']
+            
+        return {'topic': topic, 'location': location, 'time': time}
     
+    def _build_query(self, filters):
         prefix_query_string = 'prefix void: <http://rdfs.org/ns/void#>\nprefix xs: <http://www.w3.org/2001/XMLSchema#>'
         select_query_string = 'select ?dataset'
         where_query_string = '''
@@ -136,10 +160,8 @@ where
 '''
         group_by_query_string = ''
 
-        if 'topic' in filters:
-            for topic in filters['topic']:
-            #TODO: differentiate between vocabularies, classes, properties and injections
-                where_query_string += '?dataset void:vocabulary <' + topic + '>.\n'
+        if topic:
+
                 
         if 'location_latitude' in filters and \
            'location_longitude' in filters and \
@@ -157,8 +179,8 @@ where
 ?longPropertyPartition void:maxValue ?max_longitude.
 '''
 
-            #virtuoso 6 has no BIND, so debugging this formular is quite tedious and error-prone
-            #where_query_string += 'filter(' + filters['location_radius'][0] + ' + fn:max(bif:pi()*6378*(?maxLatitude - ?minLatitude)/180, 2*bif:pi()*6378*bif:cos((?maxLatitude - ?minLatitude)/2)*(?maxLongitude - ?minLongitude)/360)/2 > (2 * 3956 * bif:asin(bif:sqrt((bif:power(bif:sin(2*bif:pi() + (' + filters['location_latitude'][0] + ' - (?minLatitude + ?maxLatitude)/2)*bif:pi()/360), 2) + bif:cos(2*bif:pi() + ' + filters['location_latitude'][0] + '*bif:pi()/180) * bif:cos(2*bif:pi() + (?minLatitude + ?maxLatitude)/2*bif:pi()/180) * bif:power(bif:sin(2*bif:pi() + (' + filters['location_longitude'][0] + ' - (?minLongitude + ?maxLongitude)/2)*bif:pi()/360), 2))))))\n'
+            # virtuoso 6 has no BIND, so debugging this formular is quite tedious and error-prone
+            # where_query_string += 'filter(' + filters['location_radius'][0] + ' + fn:max(bif:pi()*6378*(?maxLatitude - ?minLatitude)/180, 2*bif:pi()*6378*bif:cos((?maxLatitude - ?minLatitude)/2)*(?maxLongitude - ?minLongitude)/360)/2 > (2 * 3956 * bif:asin(bif:sqrt((bif:power(bif:sin(2*bif:pi() + (' + filters['location_latitude'][0] + ' - (?minLatitude + ?maxLatitude)/2)*bif:pi()/360), 2) + bif:cos(2*bif:pi() + ' + filters['location_latitude'][0] + '*bif:pi()/180) * bif:cos(2*bif:pi() + (?minLatitude + ?maxLatitude)/2*bif:pi()/180) * bif:power(bif:sin(2*bif:pi() + (' + filters['location_longitude'][0] + ' - (?minLongitude + ?maxLongitude)/2)*bif:pi()/360), 2))))))\n'
 
         if 'time_min' in filters or 'time_max' in filters:
             select_query_string += ' (min(?min_time) as ?min_time) (max(?max_time) as ?max_time)'
@@ -177,15 +199,15 @@ filter(datatype(?max_time) = xs:dateTime)
                        select_query_string + \
                        where_query_string + '\n' + \
                        group_by_query_string + '\n'
+                       
+        return query_string
+
         
-        rows = store.root.query(query_string)
-        
-        if 'location_latitude' in filters and \
-           'location_longitude' in filters and \
-           'location_radius' in filters:
-            latitude = math.radians(float(filters['location_latitude'][0]))
-            longitude = math.radians(float(filters['location_longitude'][0]))
-            radius = float(filters['location_radius'][0]) + 1
+    def _post_process_results(self, results, filters):
+        if 'location' in filters:
+            latitude = math.radians(float(filters['location']['latitude']))
+            longitude = math.radians(float(filters['location']['longitude']))
+            radius = float(filters['location']['radius']) + 1
             
             rows2 = []
             for row in rows:
@@ -208,7 +230,6 @@ filter(datatype(?max_time) = xs:dateTime)
                     rows2.append(row)
             rows = rows2
 
-        #FIXME: workaround as long as virtuoso 6 is not functioning properly
         if 'time_min' in filters or 'time_max' in filters:
             rows2 = []
             for row in rows:
@@ -223,17 +244,21 @@ filter(datatype(?max_time) = xs:dateTime)
             rows = rows2
 
         datasets = [h.uri_to_object(row['dataset']['value']) for row in rows]
-        dataset_id_list = [dataset.id for dataset in datasets if dataset is not None]
+        dataset_id_list = [dataset.id for dataset in datasets if dataset]
+        
+        return dataset_id_list
+    
+    def _update_search_params(self, search_params, results):
 
-        combined_results =[]
-        for result in search_results['results']:
-            if result['id'] in dataset_id_list:
-                combined_results.append(result)
 
-        search_results['results'] = combined_results
-        search_results['count'] = len(combined_results)
 
-        return search_results
+#        combined_results =[]
+#        for result in search_results['results']:
+#            if result['id'] in dataset_id_list:
+#                combined_results.append(result)
+
+#        search_results['results'] = combined_results
+#        search_results['count'] = len(combined_results)
         
 
     ######################################
@@ -252,12 +277,12 @@ filter(datatype(?max_time) = xs:dateTime)
             
     ######################################
     #   plugin.ISubscription interface   #
-    def definition_type(self):
-        return 'sparql'
-
-
-    def data_type(self):
-        return 'dataset'
+    def is_responsible(self, subscription_definition):
+        if subscription_definition['type'] == 'sparql' and \
+           subscription_definition['data_type'] == 'dataset':
+           return true
+           
+        return false
         
     
     def prepare_creation(self, subscription_definition, parameters):
