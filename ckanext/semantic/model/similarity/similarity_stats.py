@@ -13,7 +13,7 @@ import RDF
 from . import SimilarityConfiguration
 
 
-class SimilarityStats(object):
+class Similarity(object):
     extractor_class = {methods.TopicSimilarity:{str(prefix.void.Dataset): extractors.DatasetTopic, str(prefix.ckan.Subscription): extractors.SubscriptionTopic},
                        methods.LocationSimilarity:{str(prefix.void.Dataset): extractors.DatasetLocation, str(prefix.ckan.Subscription): extractors.SubscriptionLocation},
                        methods.TimeSimilarity:{str(prefix.void.Dataset): extractors.DatasetTime, str(prefix.ckan.Subscription): extractors.SubscriptionTime}}
@@ -122,11 +122,11 @@ class SimilarityStats(object):
         
         
     def _get_valid_extractor_class(self, entity_class_uri):
-        return SimilarityStats.extractor_class[self._similarity_method_class][entity_class_uri]
+        return Similarity.extractor_class[self._similarity_method_class][entity_class_uri]
         
         
     def _get_valid_extractor_classes(self):
-        return SimilarityStats.extractor_class[self._similarity_method_class].values()
+        return Similarity.extractor_class[self._similarity_method_class].values()
 
 
     def load(self, update_when_necessary=True):

@@ -11,13 +11,13 @@ class Recommendation:
         self._recommended_entity_class_uri = None
         self._count_limit = None
         self._additional_interests = set()
-        self._similarity_stats = similarity.SimilarityStats()
+        self._similarity = similarity.Similarity()
         self.entities = {}
         
     def set_recommended_entity_class(self, recommended_entity_class_uri):
         self._recommended_entity_class_uri = recommended_entity_class_uri
 
-        self._similarity_stats.set_similar_entity_class(self._recommended_entity_class_uri)
+        self._similarity.set_similar_entity_class(self._recommended_entity_class_uri)
         
         
     def set_count_limit(self, count_limit):
@@ -42,9 +42,9 @@ class Recommendation:
             similarity_method_class = methods.TimeSimilarity
             max_similarity_distance = 0.5
 
-        self._similarity_stats.set_similarity_method(similarity_method_class)
-        self._similarity_stats.min_similarity_weight = min_similarity_weight
-        self._similarity_stats.max_similarity_distance = max_similarity_distance
+        self._similarity.set_similarity_method(similarity_method_class)
+        self._similarity.min_similarity_weight = min_similarity_weight
+        self._similarity.max_similarity_distance = max_similarity_distance
 
             
     def load(self):
@@ -58,12 +58,12 @@ class Recommendation:
         interests |= self._additional_interests
             
         for interest in self._user_interests.interests:
-            self._similarity_stats.set_entity(interest.uri, interest.class_uri)
-            self._similarity_stats.count_limit = 2 * self._count_limit * len(interests)
+            self._similarity.set_entity(interest.uri, interest.class_uri)
+            self._similarity.count_limit = 2 * self._count_limit * len(interests)
 
-            self._similarity_stats.load()
+            self._similarity.load()
             
-            for similar_entity, similarity_weight, similarity_distance in self._similarity_stats.rows:
+            for similar_entity, similarity_weight, similarity_distance in self._similarity.rows:
                 if similar_entity in not_in_database or similar_entity in interests:
                     continue
 

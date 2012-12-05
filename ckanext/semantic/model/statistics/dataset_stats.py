@@ -1,4 +1,4 @@
-import ckan.model as model
+import ckanext.semantic.model.dataset_statistics_configuration as dsc
 import ckanext.semantic.lib.helpers as h
 import ckanext.semantic.model.prefix as prefix
 
@@ -45,6 +45,7 @@ class DatasetStatistics(StatisticsConcept):
 
 
     def _determine_rdf_dataset_due(self):
+        dsc.DatasetStatisticsConfiguration()
         dataset without statistics
         dataset with statistics
 
