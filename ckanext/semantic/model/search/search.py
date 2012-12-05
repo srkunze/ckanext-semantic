@@ -8,10 +8,12 @@ class Search(object):
     Performs a SPARQL search and stores the result_ids.
     '''
     def __init__(self):
-        self.concepts = []
+        self._concepts = []
         subclasses = concepts.SearchConcept.__subclasses__()
         for subclass in subclasses:
             self.concepts.append(subclass())
+        self.results = []
+        self.result_ids = []
 
 
     def execute(self, search_params):
@@ -23,13 +25,13 @@ class Search(object):
             self.result_ids = []
             return
         query = self._build_query_from_filters(filters)
-        results = store.user.query(query)
-        self.result_ids = self._post_process_results(results, filters)
+        self.results = store.user.query(query)
+        self.result_ids = self._post_process_results(self.results, filters)
 
 
     def _extract_filters(self, search_params):
         filters = {}
-        for concept in self.concepts:
+        for concept in self._concepts:
             filter_ =  concept.extract_filters(search_params)
             if not filter_:
                 continue
@@ -44,7 +46,7 @@ class Search(object):
             'where': '?dataset a void:Dataset.',
             'group_by': '',
         }
-        for concept in self.concepts:
+        for concept in self._concepts:
             if concept.get_name() not in filters:
                 continue
             concept_query_dict = concept.build_query_dict(filters[concept.get_name()])
@@ -63,7 +65,7 @@ class Search(object):
 
 
     def _post_process_results(self, results, filters):
-        for concept in self.concepts:
+        for concept in self._concepts:
             if concept.get_name() not in filters:
                 continue
             results = concept.post_process_results(results, filters[concept.get_name()])
