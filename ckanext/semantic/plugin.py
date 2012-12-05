@@ -117,11 +117,14 @@ class SemanticPlugin(plugins.SingletonPlugin):
         if 'filters' not in search_params:
             return search_results
         
-        search = search.Search()
-        search.execute(search_params)
-        for id_ in search.result_ids:
-            search_params['fq'] += ' id:%s' % id_
-            
+        semantic_search = search.Search()
+        semantic_search.execute(search_params)
+        if semantic_search.result_ids:
+            search_params['fq'] += '(id:%s' % semantic_search.result_ids[0]
+            for id_ in semantic_search.result_ids[1:]:
+                search_params['fq'] += ' OR id:%s' % id_
+            search_params['fq'] += ')'
+ 
         return search_params
 
 

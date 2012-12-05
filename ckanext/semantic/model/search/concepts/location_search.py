@@ -14,9 +14,9 @@ class LocationSearch(SearchConcept):
         if 'location_latitude' in filters and \
            'location_longitude' in filters and \
            'location_radius' in filters:
-            location['latitude'] = filters['location_latitude']
-            location['longitude'] = filters['location_longitude']
-            location['radius'] = filters['location_radius']
+            location['latitude'] = filters['location_latitude'][0]
+            location['longitude'] = filters['location_longitude'][0]
+            location['radius'] = filters['location_radius'][0]
             del filters['location_latitude']
             del filters['location_longitude']
             del filters['location_radius']
@@ -39,13 +39,13 @@ class LocationSearch(SearchConcept):
             }
 
 
-    def post_process_results(self, results, filters):
-        latitude = math.radians(float(filters['location']['latitude']))
-        longitude = math.radians(float(filters['location']['longitude']))
-        radius = float(filters['location']['radius']) + 1
+    def post_process_results(self, results, filter_):
+        latitude = math.radians(float(filter_['latitude']))
+        longitude = math.radians(float(filter_['longitude']))
+        radius = float(filter_['radius']) + 1
         
         rows2 = []
-        for row in rows:
+        for row in results:
             min_latitude = float(row['min_latitude']['value'])
             max_latitude = float(row['max_latitude']['value'])
             min_longitude = float(row['min_longitude']['value'])
@@ -63,4 +63,5 @@ class LocationSearch(SearchConcept):
 
             if distance - dataset_radius <= radius:
                 rows2.append(row)
-        rows = rows2
+        return rows2
+

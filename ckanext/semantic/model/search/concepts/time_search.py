@@ -43,5 +43,5 @@ filter(datatype(?max_time) = xs:dateTime)
         
             if max(min_time, dataset_min_time) <= min(max_time, dataset_max_time):
                 rows2.append(row)
-        rows = rows2
+        return rows2
 
