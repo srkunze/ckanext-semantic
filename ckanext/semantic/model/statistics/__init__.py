@@ -6,7 +6,7 @@ import RDF
 class StatisticsFactory(object):
     @classmethod
     def create(cls, concept):
-        if concept not in StatisticsConcept.__subclasses__:
+        if concept not in StatisticsConcept.__subclasses__():
             raise Exception('Given concept is no statistics concept')
             
         statistics = concept()
@@ -72,8 +72,6 @@ class StatisticsConcept(object):
         raise NotImplementedError()
 
 
-
-
-import DatasetStatistics from dataset_stats
-import VocabularyStatistics from vocabulary_stats
+from dataset_statistics import DatasetStatistics
+from vocabulary_statistics import VocabularyStatistics
 

@@ -1,4 +1,5 @@
-import ckanext.semantic.model.dataset_statistics_configuration as dsc
+from . import StatisticsConcept
+import dataset_statistics_configuration as dsc
 import ckanext.semantic.lib.helpers as h
 import ckanext.semantic.model.prefix as prefix
 
@@ -36,7 +37,7 @@ class DatasetStatistics(StatisticsConcept):
 
     def create_results(self):
         if not self.dataset:
-            self.dataset = self.determine_rdf_dataset_due()
+            self.dataset = self._determine_rdf_dataset_due()
 
         self.dataset.uri = h.dataset_to_uri(self.dataset.name)
         resource = self._get_rdf_resource(self.dataset)
@@ -45,9 +46,13 @@ class DatasetStatistics(StatisticsConcept):
 
 
     def _determine_rdf_dataset_due(self):
-        dsc.DatasetStatisticsConfiguration()
-        dataset without statistics
-        dataset with statistics
+        t = self.session(dsc.DatasetStatisticsConfiguration).subquery('t')
+        x = self.session(self.model.Package).filter(~ self.model.Package.id.in_(t.dataset_id))
+        print x.count()
+        
+#        .filter(~ dsc.DatasetStatisticsConfiguration.dataset_id.in_())
+#        dataset without statistics
+#        dataset with statistics
 
 
     def _get_rdf_resource(self, dataset):

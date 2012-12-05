@@ -1,10 +1,11 @@
+from . import StatisticsConcept
 import ckanext.semantic.model.prefix as prefix
 import ckanext.semantic.model.store as store
 import math
 import RDF
 
 
-class VocabularyStats(Statistics):
+class VocabularyStatistics(StatisticsConcept):
     graph = 'http://lodstats.org/vocabularies'
     
     @classmethod
@@ -86,7 +87,4 @@ class VocabularyStats(Statistics):
                                     ?vocabulary ?predicate ?object.
                                 }
                                 ''')
-        
 
-    def clear_rdf(self):
-        self.rdf = RDF.Model()
