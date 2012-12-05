@@ -1,7 +1,7 @@
 import ckan.model as model
 import ckanext.semantic.lib.helpers as h
 import ckanext.semantic.model.prefix as prefix
-import ckanext.semantic.model.store as store
+
 import datetime
 import lodstats
 import RDF
@@ -24,11 +24,36 @@ supported_formats = {
 }
 
 
-class DatasetStats(Statistics):
-    graph = 'http://lodstats.org/datasets'
+class DatasetStatistics(StatisticsConcept):
+    def __init__(self):
+        super(DatasetStatistics, self).__init__()
+        self.graph = 'http://lodstats.org/datasets'
+        self.dataset = None
+
+
+    def set_dataset(self, dataset):
+        self.dataset = dataset
+
+
+    def update(self):
+        dataset = self.dataset
+        
+        if not dataset:
+            dataset = self.determine_rdf_dataset_due()
+        
+        resource = self._get_rdf_resource(dataset)
+        results = self._create_results(resource)
+        self.update_store(statistics)
+
+
+    def _determine_rdf_dataset_due(self):
+        dataset without statistics
+        dataset with statistics
     
-    @classmethod
-    def update(cls, dataset_uri=None):
+    
+    def _update(self):
+        
+    
         if dataset_uri is None:
             #TODO: when too old, update, too
             #date_4_weeks_ago = datetime.date.today() - datetime.timedelta(weeks=4)
@@ -36,7 +61,7 @@ class DatasetStats(Statistics):
                                        prefix void: <http://rdfs.org/ns/void#>
                                        prefix dstats: <http://lodstats.org/dataset#>
                                        select ?dataset
-                                       from <''' + DatasetStats.graph + '''>
+                                       from <''' + self.graph + '''>
                                        where
                                        {
                                            ?dataset a void:Dataset.
@@ -60,7 +85,7 @@ class DatasetStats(Statistics):
     def __init__(self, dataset_uri):
         self.dataset = h.uri_to_object(dataset_uri)
         self.dataset.uri = dataset_uri
-        self.rdf = RDF.Model()
+
         self.rdf_resource = None
         self.rdf_resource_format = None
 
@@ -94,10 +119,8 @@ class DatasetStats(Statistics):
             
             
     def commit(self):
-        store.root.modify(graph=DatasetStats.graph,
+        store.root.modify(graph=self.graph,
                           insert_construct=h.rdf_to_string(self.rdf),
                           delete_construct='?dataset ?predicate ?object.\n?object ?object_predicate ?object_object.',
                           delete_where='?dataset ?predicate ?object.\nfilter(?dataset=<' + self.dataset.uri + '>)')
-    
-    def clear_rdf(self):
-        self.rdf = RDF.Model()
+

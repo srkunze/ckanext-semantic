@@ -4,7 +4,7 @@ import math
 import RDF
 
 
-class VocabularyStats:
+class VocabularyStats(StatisticsConcept):
     graph = 'http://lodstats.org/vocabularies'
     
     @classmethod
@@ -86,7 +86,4 @@ class VocabularyStats:
                                     ?vocabulary ?predicate ?object.
                                 }
                                 ''')
-        
 
-    def clear_rdf(self):
-        self.rdf = RDF.Model()
