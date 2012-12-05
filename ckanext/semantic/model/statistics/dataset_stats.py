@@ -8,23 +8,22 @@ import RDF
 import sqlalchemy
 
 
-supported_formats = {
-    'application/x-ntriples': 'nt',
-    'nt': 'nt',
-    'application/x-nquads': 'nq',
-    'nquads': 'nq',
-    'application/rdf+xml': 'rdf',
-    'rdf': 'rdf',
-    'text/turtle': 'ttl',
-    'rdf/turtle': 'ttl',
-    'text/n3': 'n3',
-    'n3': 'n3',
-    'api/sparql': 'sparql',
-    'sparql': 'sparql'
-}
-
-
 class DatasetStatistics(StatisticsConcept):
+    supported_formats = {
+        'application/x-ntriples': 'nt',
+        'nt': 'nt',
+        'application/x-nquads': 'nq',
+        'nquads': 'nq',
+        'application/rdf+xml': 'rdf',
+        'rdf': 'rdf',
+        'text/turtle': 'ttl',
+        'rdf/turtle': 'ttl',
+        'text/n3': 'n3',
+        'n3': 'n3',
+        'api/sparql': 'sparql',
+        'sparql': 'sparql'
+    }
+
     def __init__(self):
         super(DatasetStatistics, self).__init__()
         self.graph = 'http://lodstats.org/datasets'
@@ -33,94 +32,63 @@ class DatasetStatistics(StatisticsConcept):
 
     def set_dataset(self, dataset):
         self.dataset = dataset
+    
 
+    def create_results(self):
+        if not self.dataset:
+            self.dataset = self.determine_rdf_dataset_due()
 
-    def update(self):
-        dataset = self.dataset
-        
-        if not dataset:
-            dataset = self.determine_rdf_dataset_due()
-        
-        resource = self._get_rdf_resource(dataset)
-        results = self._create_results(resource)
-        self.update_store(statistics)
+        self.dataset.uri = h.dataset_to_uri(self.dataset.name)
+        resource = self._get_rdf_resource(self.dataset)
+        format = self._get_resource_format(resource)
+        self.results = self._create_results(self.dataset, resource, format)
 
 
     def _determine_rdf_dataset_due(self):
         dataset without statistics
         dataset with statistics
-    
-    
-    def _update(self):
+
+
+    def _get_rdf_resource(self, dataset):
+        for resource in dataset.resources:
+            if resource.format.lower() in DatasetStatistics.supported_formats.keys():
+                return resource
+        raise Exception('Given dataset (id=%s) has no RDF resource.' % dataset.id)
+
+
+    def _get_resource_format(self, resource):
+        return DatasetStatistics.supported_formats[resource.format.lower()]
+
+
+    def _create_results(self, dataset, resource, format):
+        dataset_rdf_uri = RDF.Uri(dataset.uri)
         
-    
-        if dataset_uri is None:
-            #TODO: when too old, update, too
-            #date_4_weeks_ago = datetime.date.today() - datetime.timedelta(weeks=4)
-            relevant_datasets = store.root.query('''
-                                       prefix void: <http://rdfs.org/ns/void#>
-                                       prefix dstats: <http://lodstats.org/dataset#>
-                                       select ?dataset
-                                       from <''' + self.graph + '''>
-                                       where
-                                       {
-                                           ?dataset a void:Dataset.
-                                           ?dataset dstats:evaluated ?evaluated.
-                                           filter(!bound(?evaluated))
-                                       }
-                                       ''')
+        results = RDF.Model()
+        results.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.evaluated, RDF.Node(literal=datetime.datetime.now().isoformat(), datatype=prefix.xs.dateTime.uri)))
 
-            if len(relevant_datasets) == 0:
-                print "no dataset requires stats update"
-                return
-                
-            dataset_uri = relevant_datasets[0]['dataset']['value']
-
-
-        dataset_stats = DatasetStats(dataset_uri)
-        dataset_stats.do_stats()
-        dataset_stats.commit()
-
-
-    def __init__(self, dataset_uri):
-        self.dataset = h.uri_to_object(dataset_uri)
-        self.dataset.uri = dataset_uri
-
-        self.rdf_resource = None
-        self.rdf_resource_format = None
-
-        for resource in self.dataset.resources:
-            if resource.format.lower() in supported_formats.keys():
-                self.rdf_resource = resource
-                self.rdf_resource_format = supported_formats[self.rdf_resource.format.lower()]
-                break
-
-
-    def do_stats(self):
-        dataset_rdf_uri = RDF.Uri(self.dataset.uri)
-        self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.evaluated, RDF.Node(literal=datetime.datetime.now().isoformat(), datatype=prefix.xs.dateTime.uri)))
-
-        if self.rdf_resource is None:
-            self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.error, prefix.dstats.NoRDFResource))
-            return
+        if resource is None:
+            results.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.error, prefix.dstats.NoRDFResource))
+            return results
 
         try:
-            self.rdf_stats = lodstats.RDFStats(format=self.rdf_resource_format, rdfurl=self.rdf_resource.url)
-            self.rdf_stats.parse()
-            self.rdf_stats.do_stats()
-            self.rdf_stats.update_model(dataset_rdf_uri, self.rdf)
+            rdf_stats = lodstats.RDFStats(format=format, rdfurl=resource.url)
+            rdf_stats.parse()
+            rdf_stats.do_stats()
+            rdf_stats.update_model(dataset_rdf_uri, results)
         except Exception as errorstr:
-            self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.error, prefix.dstats.LODStatsError))
+            results.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.error, prefix.dstats.LODStatsError))
             if isinstance(errorstr, Exception):
-                self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.errorString, RDF.Node(literal=errorstr.message, datatype=prefix.xs.string.uri)))
+                results.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.errorString, RDF.Node(literal=errorstr.message, datatype=prefix.xs.string.uri)))
             else:
-                self.rdf.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.errorString, RDF.Node(literal=errorstr, datatype=prefix.xs.string.uri)))
-            return
-            
-            
-    def commit(self):
+                results.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.errorString, RDF.Node(literal=errorstr, datatype=prefix.xs.string.uri)))
+        return results
+
+
+    def update_store(self):
+        self.create_results()
+
         store.root.modify(graph=self.graph,
-                          insert_construct=h.rdf_to_string(self.rdf),
+                          insert_construct=h.rdf_to_string(self.results),
                           delete_construct='?dataset ?predicate ?object.\n?object ?object_predicate ?object_object.',
                           delete_where='?dataset ?predicate ?object.\nfilter(?dataset=<' + self.dataset.uri + '>)')
 

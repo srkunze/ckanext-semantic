@@ -40,18 +40,18 @@ class SemanticCommand(cli.CkanCommand):
 
 
     def update_dataset_due_statistics(self):
-        dataset_due_statistics = statistics.Statistics.create(Statistics.DatasetDue)
+        dataset_due_statistics = statistics.Statistics.create(statistics.DatasetStatistics)
         dataset_due_statistics.update_store()
 
 
     def update_dataset_statistics(self, dataset_name):
-        dataset_statistics = statistics.Statistics.create(Statistics.Dataset)
+        dataset_statistics = statistics.Statistics.create(statistics.DatasetStatistics)
         dataset = model.Session.query(model.Package).filter(model.Package.name == dataset_name)
         dataset_statistics.set_dataset(dataset)
         dataset_statistics.update_store()
 
 
     def update_vocabulary_statistics(self):
-        vocabulary_statistics = statistics.Statistics.create(Statistics.Vocabulary)
+        vocabulary_statistics = statistics.Statistics.create(statistics.VocabularyStatistics)
         vocabulary_statistics.update_store()
 

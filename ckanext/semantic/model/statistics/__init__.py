@@ -23,7 +23,7 @@ class StatisticsConcept(object):
     dataset statistics or vocabulary statistics
     '''
     def __init__(self):
-        self.rdf = RDF.Model()
+        self.results = RDF.Model()
 
 
     def set_store(self, store):
