@@ -26,7 +26,7 @@ class SemanticCommand(cli.CkanCommand):
 
     def command(self):
         if not self.args or self.args[0] in ['--help', '-h', 'help']:
-            print ExampleCommand.__doc__
+            print SemanticCommand.__doc__
             return
             
 
