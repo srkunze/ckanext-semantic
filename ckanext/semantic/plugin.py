@@ -6,7 +6,7 @@ import ckan.logic as logic
 import logging
 import logic.action as action
 import lib.helpers as h
-import model.similarity.similarity_stats as similarity_stats
+import model.similarity.similarity as similarity
 import model.prefix as prefix
 import model.similarity.extractors as extractors
 import model.similarity.methods as methods
@@ -86,7 +86,7 @@ class SemanticPlugin(plugins.SingletonPlugin):
     def _add_similar_datasets(self, pkg_dict):
         dataset_uri = h.dataset_to_uri(pkg_dict['name'])
         
-        similarities = similarity_stats.SimilarityStats()
+        similarities = similarity.Similarity()
         similarities.set_entity(dataset_uri, str(prefix.void.Dataset))
         similarities.set_similar_entity_class(str(prefix.void.Dataset))
         similarities.count_limit = 5
