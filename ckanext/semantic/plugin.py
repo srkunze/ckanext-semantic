@@ -19,6 +19,8 @@ log = logging.getLogger(__name__)
 
 class SemanticPlugin(plugins.SingletonPlugin):
     """
+    A CKAN extension that enables CKAN to crawl RDF datasets and
+    make use of the created VoID stats.
     """
     plugins.implements(plugins.IActions, inherit=True)
     plugins.implements(plugins.IConfigurer, inherit=True)
@@ -28,6 +30,8 @@ class SemanticPlugin(plugins.SingletonPlugin):
 #    plugins.implements(plugins.ISubscription, inherit=True)
     
     
+    ####################################
+    #   plugin.IConfigurer interface   #
     def update_config(self, config):
         here = os.path.dirname(__file__)
         template_dir = os.path.join(here, 'theme', 'templates')
@@ -42,8 +46,13 @@ class SemanticPlugin(plugins.SingletonPlugin):
             config['extra_public_paths'] = public_dir
         
         toolkit.add_resource('theme/public', 'ckanext-semantic')
+        
+    #   plugin.IConfigurer interface   # 
+    ####################################
 
 
+    ################################
+    #   plugin.IRoutes interface   #               
     def before_map(self, map):
         map.connect('/sparql', controller='ckanext.semantic.controllers.sparql:SPARQLController', action='index')
 
@@ -59,7 +68,12 @@ class SemanticPlugin(plugins.SingletonPlugin):
 
         return map
 
+    #   plugin.IRoutes interface   #               
+    ################################
 
+
+    ###########################################
+    #   plugin.IPackageController interface   #               
     def before_view(self, pkg_dict):
         if toolkit.base.c.controller == 'package' and toolkit.base.c.action == 'read':
             self._add_similar_datasets(pkg_dict)
@@ -127,6 +141,9 @@ class SemanticPlugin(plugins.SingletonPlugin):
  
         return search_params
 
+    #   plugin.IPackageController interface   #               
+    ###########################################
+
 
     ######################################
     #   plugin.ISearchFacets interface   #               
@@ -192,7 +209,11 @@ class SemanticPlugin(plugins.SingletonPlugin):
     ######################################
 
 
-
+    #################################
+    #   plugin.IActions interface   #
     def get_actions(self):
         return {'sparql_query': action.get.sparql_query}
+
+    #   plugin.IActions interface   #
+    #################################
 
