@@ -61,8 +61,8 @@
     <div class="module-content">
       <form name="time" method="get">
         <p>Here you can filter by the time the dataset is about.</p>
-        From (ISO format) <input type="text" class="input" name="time_min" style="height:14px; width:165px" value="{{ c.fields_grouped.time_min[0] if c.fields_grouped.time_min }}" placeholder="1980-01-23" />
-        Until (ISO format) <input type="text" class="input" name="time_max" style="height:14px; width:165px" value="{{ c.fields_grouped.time_max[0] if c.fields_grouped.time_max }}" placeholder="2001-04" />
+        From (ISO format) <input type="text" class="input" name="time_min" style="height:14px; width:165px" value="{{ c.fields_grouped.get('time_min', [''])[0] }}" placeholder="1980-01-23" />
+        Until (ISO format) <input type="text" class="input" name="time_max" style="height:14px; width:165px" value="{{ c.fields_grouped.get('time_max', [''])[0] }}" placeholder="2001-04" />
 
       {% if c.fields_grouped.time_min %}
         {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except_names={'time_min':True, 'time_max':True} %}
@@ -72,7 +72,7 @@
       {% endif %}
 
       </form>
-      {% if c.fields_grouped.time_max %}
+      {% if c.fields_grouped.time_min or c.fields_grouped.time_max %}
         <form method="get">
           <button type="submit" class="btn" style="height:34px; margin-top:-10px">Remove</button>
           {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except_names={'time_min':True, 'time_max':True} %}

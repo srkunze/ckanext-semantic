@@ -8,7 +8,7 @@ class LocationSearch(SearchConcept):
         return 'location'
 
 
-    def extract_filters(self, search_params):
+    def extract_filter(self, search_params):
         filters = search_params['filters']
         location = {}
         if 'location_latitude' in filters and \
@@ -17,9 +17,6 @@ class LocationSearch(SearchConcept):
             location['latitude'] = filters['location_latitude'][0]
             location['longitude'] = filters['location_longitude'][0]
             location['radius'] = filters['location_radius'][0]
-            del filters['location_latitude']
-            del filters['location_longitude']
-            del filters['location_radius']
         return location
 
     

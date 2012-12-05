@@ -22,7 +22,7 @@ class Search(object):
         if not filters:
             self.result_ids = []
             return
-        query = self._build_query(filters)
+        query = self._build_query_from_filters(filters)
         results = store.user.query(query)
         self.result_ids = self._post_process_results(results, filters)
 
@@ -37,7 +37,7 @@ class Search(object):
         return filters
 
 
-    def _build_query(self, filters):
+    def _build_query_from_filters(self, filters):
         query_dict = {
             'prefix': 'void: <http://rdfs.org/ns/void#>\nprefix xs: <http://www.w3.org/2001/XMLSchema#>',
             'select': '?dataset',
@@ -50,12 +50,12 @@ class Search(object):
             concept_query_dict = concept.build_query_dict(filters[concept.get_name()])
             for query_part_name, query_part in concept_query_dict.iteritems():
                 query_dict[query_part_name] += '\n' + query_part
-        return self._compose_query_string(query_dict)
+        return self._build_query_from_dict(query_dict)
 
 
-    def _compose_query_string(self, query_dict):
+    def _build_query_from_dict(self, query_dict):
         if query_dict['group_by']:
-            query_dict['group_by']= 'group_by %s\n' % query_dict['group_by']
+            query_dict['group_by']= 'group by %s\n' % query_dict['group_by']
         return 'prefix %s\n' % query_dict['prefix'] + \
                'select %s\n' % query_dict['select'] + \
                'where\n{%s}\n' % query_dict['where'] + \

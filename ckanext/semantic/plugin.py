@@ -115,7 +115,7 @@ class SemanticPlugin(plugins.SingletonPlugin):
       
     def before_search(self, search_params):
         if 'filters' not in search_params:
-            return search_results
+            return search_params
         
         semantic_search = search.Search()
         semantic_search.execute(search_params)
@@ -130,13 +130,14 @@ class SemanticPlugin(plugins.SingletonPlugin):
 
     ######################################
     #   plugin.ISearchFacets interface   #               
-    def search_facet_titles(self):
-        return {'topic': 'Topic',
-                'location_latitude': 'Latitude',
-                'location_longitude': 'Longitude',
-                'location_radius': 'Circumradius',
-                'time_min': 'Since',
-                'time_max': 'Until'}
+    def update_facet_titles(self, facet_titles):
+        facet_titles.update({'topic': 'Topic',
+                             'location_latitude': 'Latitude',
+                             'location_longitude': 'Longitude',
+                             'location_radius': 'Circumradius',
+                             'time_min': 'Since',
+                             'time_max': 'Until'})
+        return facet_titles
         
     #   plugin.ISearchFacets interface   #
     ######################################

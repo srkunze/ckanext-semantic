@@ -7,15 +7,13 @@ class TimeSearch(SearchConcept):
         return 'time'
 
 
-    def extract_filters(self, search_params):
+    def extract_filter(self, search_params):
         filters = search_params['filters']
         time = {}
         if 'time_min' in filters:
-            time['min'] = filters['time_min']
-            del filters['time_min']
+            time['min'] = filters['time_min'][0]
         if 'time_max' in filters:
-            time['max'] = filters['time_max']
-            del filters['time_max']
+            time['max'] = filters['time_max'][0]
         return time
 
     
@@ -28,15 +26,15 @@ class TimeSearch(SearchConcept):
 filter(datatype(?min_time) = xs:dateTime)
 filter(datatype(?max_time) = xs:dateTime)
 ''',
-            'group_by': 'group by ?dataset',
+            'group_by': '?dataset',
         }
 
 
-    def post_process_results(self, results, filters):
+    def post_process_results(self, results, filter_):
         rows2 = []
-        for row in rows:
-            min_time = ht.to_naive_utc(ht.min_datetime(filters.get('time_min', [''])[0]))
-            max_time = ht.to_naive_utc(ht.max_datetime(filters.get('time_max', [''])[0]))
+        for row in results:
+            min_time = ht.to_naive_utc(ht.min_datetime(filter_.get('time_min', '')))
+            max_time = ht.to_naive_utc(ht.max_datetime(filter_.get('time_max', '')))
 
             dataset_min_time = ht.to_naive_utc(ht.min_datetime(row['min_time']['value']))
             dataset_max_time = ht.to_naive_utc(ht.max_datetime(row['max_time']['value']))
