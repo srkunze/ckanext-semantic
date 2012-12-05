@@ -34,11 +34,23 @@ class SemanticCommand(cli.CkanCommand):
         getattr(self, self.args[0])(*(self.args[1:]))
 
 
-    def test(self):
-        pass
+    def update_dataset_due_statistics(self):
+        statistics = Statistics.create(Statistics.DatasetDue)
+        statistics.update()
         
+    
+    def update_dataset_due_statistics(self):
+        statistics = Statistics.create(Statistics.Dataset)
+        statistics.update()
+        
+    
+    def update_dataset_due_statistics(self):
+        statistics = Statistics.create(Statistics.Vocabulary)
+        statistics.update()
+        
+    
 
-    def update(self, class_='dataset', name=None):
+
         if class_ == 'dataset':
             query = model.Session.query(model.Package)
             if name is not None:

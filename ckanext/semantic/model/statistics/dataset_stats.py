@@ -24,7 +24,7 @@ supported_formats = {
 }
 
 
-class DatasetStats:
+class DatasetStats(Statistics):
     graph = 'http://lodstats.org/datasets'
     
     @classmethod

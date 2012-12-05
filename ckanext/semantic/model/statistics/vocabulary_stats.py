@@ -4,7 +4,7 @@ import math
 import RDF
 
 
-class VocabularyStats(Statistics):
+class VocabularyStats:
     graph = 'http://lodstats.org/vocabularies'
     
     @classmethod
