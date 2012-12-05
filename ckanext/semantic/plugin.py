@@ -115,8 +115,8 @@ class SemanticPlugin(plugins.SingletonPlugin):
                     pkg_dict['similar'][method_name] = [entity_object]
 
 
-    def _add_semantic_data(self, dataset_dict):
-        dataset_uri = h.dataset_to_uri(dataset_dict['name'])
+    def _add_semantic_data(self, pkg_dict):
+        dataset_uri = h.dataset_to_uri(pkg_dict['name'])
         dataset_extractors = {'topic': extractors.DatasetTopic(),
                               'location': extractors.DatasetLocation(),
                               'time': extractors.DatasetTime()}
@@ -124,7 +124,7 @@ class SemanticPlugin(plugins.SingletonPlugin):
         for method_name, extractor in dataset_extractors.iteritems():
            extractor.extract(dataset_uri)
            if extractor.entities:
-               dataset_dict[method_name] = extractor.entities.values()[0]
+               pkg_dict[method_name] = extractor.entities.values()[0]
 
       
     def before_search(self, search_params):
