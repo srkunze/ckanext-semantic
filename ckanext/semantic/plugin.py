@@ -26,7 +26,6 @@ class SemanticPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer, inherit=True)
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IRoutes, inherit=True)
-    plugins.implements(plugins.ISearchFacets, inherit=True)
 #    plugins.implements(plugins.ISubscription, inherit=True)
     
     
@@ -141,12 +140,7 @@ class SemanticPlugin(plugins.SingletonPlugin):
  
         return search_params
 
-    #   plugin.IPackageController interface   #               
-    ###########################################
-
-
-    ######################################
-    #   plugin.ISearchFacets interface   #               
+          
     def update_facet_titles(self, facet_titles):
         facet_titles.update({'topic': 'Topic',
                              'location_latitude': 'Latitude',
@@ -156,8 +150,8 @@ class SemanticPlugin(plugins.SingletonPlugin):
                              'time_max': 'Until'})
         return facet_titles
         
-    #   plugin.ISearchFacets interface   #
-    ######################################
+    #   plugin.IPackageController interface   #
+    ###########################################
     
             
     ######################################
