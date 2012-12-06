@@ -140,3 +140,4 @@ class DatasetStatistics(StatisticsConcept):
         if not configuration:
             configuration = dsc.DatasetStatisticsConfiguration(self.dataset.id)
         return configuration
+
