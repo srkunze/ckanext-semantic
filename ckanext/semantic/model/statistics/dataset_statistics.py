@@ -27,7 +27,7 @@ class DatasetStatistics(StatisticsConcept):
 
     def __init__(self):
         super(DatasetStatistics, self).__init__()
-        self.graph = 'http://lodstats.org/datasets'
+        self.graph = 'http://stats.lod2.eu/datasets'
         self.dataset = None
 
 
