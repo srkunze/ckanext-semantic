@@ -325,10 +325,8 @@ class Similarity(object):
         
     def _get_configuration(self):
         configuration = model.Session.query(SimilarityConfiguration).get((self._entity_uri, self._similarity_method.uri))
-
-        if configuration is None:
-            return SimilarityConfiguration(self._entity_uri, self._similarity_method.uri)
-            
+        if not configuration:
+            configuration = SimilarityConfiguration(self._entity_uri, self._similarity_method.uri)
         return configuration
 
 
