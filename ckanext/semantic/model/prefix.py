@@ -10,7 +10,7 @@ dcat.str = dcat._prefix
 dct = RDF.NS('http://purl.org/dc/terms/')
 dct.str = dct._prefix
 
-dstats = RDF.NS('http://lodstats.org/dataset#')
+dstats = RDF.NS('http://stats.lod2.eu/vocabulary/dataset#')
 dstats.str = dstats._prefix
 
 foaf = RDF.NS('http://xmlns.com/foaf/0.1/')
@@ -31,13 +31,13 @@ rdfs.str = rdfs._prefix
 sim = RDF.NS('http://purl.org/ontology/similarity/')
 sim.str = sim._prefix
 
-sstats = RDF.NS('http://lodstats.org/similarity#')
+sstats = RDF.NS('http://stats.lod2.eu/vocabulary/similarity#')
 sstats.str = sstats._prefix
 
 void = RDF.NS('http://rdfs.org/ns/void#')
 void.str = void._prefix
 
-vstats = RDF.NS('http://lodstats.org/vocabulary#')
+vstats = RDF.NS('http://stats.lod2.eu/vocabulary/vocabulary#')
 vstats.str = vstats._prefix
 
 xs = RDF.NS('http://www.w3.org/2001/XMLSchema#')
