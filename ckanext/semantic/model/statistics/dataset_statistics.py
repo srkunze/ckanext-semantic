@@ -33,19 +33,19 @@ class DatasetStatistics(StatisticsConcept):
 
     def set_dataset(self, dataset):
         self.dataset = dataset
-    
+
 
     def create_results(self):
         if not self.dataset:
             self.dataset = self._determine_rdf_dataset_due()
             if not self.dataset:
                 return
-        
+
         configuration = self._get_configuration()
         configuration.created = datetime.datetime.now()
         self.session.merge(configuration)
         self.session.commit()
-        
+
         print "dataset statistics for %s (%s) created at %s" % (self.dataset.id, self.dataset.name, configuration.created.isoformat())
 
         self.dataset.uri = h.dataset_to_uri(self.dataset.name)
@@ -57,12 +57,12 @@ class DatasetStatistics(StatisticsConcept):
     def _determine_rdf_dataset_due(self):
         configurations = self.session.query(dsc.DatasetStatisticsConfiguration.dataset_id).subquery('configurations')
         dataset_query = self.session.query(self.model.Package)
-        
+
         query = dataset_query.filter(~ self.model.Package.id.in_(configurations))
         query = query.join(self.model.Revision, self.model.Package.revision_id==self.model.Revision.id)
         query = query.order_by(self.model.Revision.timestamp)
         datasets_without_statistics = query.all()
-        
+
         dataset = self._first_rdf_dataset(datasets_without_statistics)
         if dataset:
             return dataset
@@ -72,7 +72,7 @@ class DatasetStatistics(StatisticsConcept):
         query = query.order_by(dsc.DatasetStatisticsConfiguration.created)
         datasets_with_statistics = query.all()
         return self._first_rdf_dataset(datasets_with_statistics)
-        
+
 
     def _first_rdf_dataset(self, datasets):
         for dataset in datasets:
@@ -101,7 +101,7 @@ class DatasetStatistics(StatisticsConcept):
 
     def _create_results(self, dataset, resource, format):
         dataset_rdf_uri = RDF.Uri(dataset.uri)
-        
+
         results = RDF.Model()
         results.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.evaluated, RDF.Node(literal=datetime.datetime.now().isoformat(), datatype=prefix.xs.dateTime.uri)))
 
