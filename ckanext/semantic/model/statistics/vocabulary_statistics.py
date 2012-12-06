@@ -6,10 +6,29 @@ import RDF
 
 
 class VocabularyStatistics(StatisticsConcept):
-    graph = 'http://lodstats.org/vocabularies'
-    
-    @classmethod
-    def update(cls):
+    def __init__(self):
+        super(DatasetStatistics, self).__init__()
+        self.graph = 'http://stats.lod2.eu/vocabularies'
+        self.dataset = None
+
+
+    def create_results(self):
+        dataset_count = self._get_dataset_count()
+        vocabulary_counts = self._get_vocabulary_counts()
+        
+        self.results = RDF.Model()
+        for vocabulary_count in vocabulary_counts:
+            absolute_frequency = float(row['dataset_count']['value'])
+            relative_frequency = absolute_frequency / dataset_count
+            
+            self._append(vocabulary_uri = row['vocabulary']['value'],
+                         absolute_frequency = absolute_frequency,
+                         relative_frequency = relative_frequency,
+                         complementary_frequency = 0.5 * math.cos(math.pi * relative_frequency) + 0.5,
+                         inverse_frequency = math.log1p(1 / relative_frequency))
+
+
+    def _get_dataset_count(self):
         result = store.root.query('''
                                   prefix void: <http://rdfs.org/ns/void#>
                                   select (count(distinct ?dataset) as ?dataset_count)
@@ -18,9 +37,11 @@ class VocabularyStatistics(StatisticsConcept):
                                       ?dataset void:vocabulary ?vocabulary.
                                   }
                                   ''')
-        dataset_count = float(result[0]['dataset_count']['value'])
-        
-        result = store.root.query('''
+        return float(result[0]['dataset_count']['value'])
+
+
+    def _get_vocabulary_counts(self):
+        return = store.root.query('''
                                   prefix void: <http://rdfs.org/ns/void#>
                                   select ?vocabulary (count(distinct ?dataset) as ?dataset_count)
                                   where
@@ -31,26 +52,13 @@ class VocabularyStatistics(StatisticsConcept):
                                   order by desc(?dataset_count)
                                   ''')
 
-        vocabulary_stats = VocabularyStats()
 
-        for row in result:
-            absolute_frequency = float(row['dataset_count']['value'])
-            relative_frequency = float(absolute_frequency) / float(dataset_count)
-            
-            vocabulary_stats.append(vocabulary_uri = row['vocabulary']['value'],
-                                    lin_specificity = 1 - relative_frequency,
-                                    cos_specificity = 0.5 * math.cos(math.pi * relative_frequency) + 0.5,
-                                    log_specificity = math.log1p(1 / relative_frequency),
-                                    dataset_count = int(absolute_frequency))
-
-        vocabulary_stats.commit()
-
-
-    def __init__(self):
-        self.rdf = RDF.Model()
-        
-        
-    def append(self, vocabulary_uri, lin_specificity, cos_specificity, log_specificity, dataset_count):
+    def _append(self,
+                vocabulary_uri,
+                absolute_frequency,
+                relative_frequency,
+                complementary_frequency,
+                inverse_frequency):
         vocabulary_rdf_uri = RDF.Uri(vocabulary_uri)
         
         self.rdf.append(RDF.Statement(
@@ -81,7 +89,7 @@ class VocabularyStatistics(StatisticsConcept):
     def load(self):
         return store.root.query('''
                                 select *
-                                from <''' + VocabularyStats.graph + '''>
+                                from <''' + self.graph + '''>
                                 where
                                 {
                                     ?vocabulary ?predicate ?object.
