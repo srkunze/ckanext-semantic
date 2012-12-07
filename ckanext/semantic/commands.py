@@ -40,7 +40,8 @@ class SemanticCommand(cli.CkanCommand):
 
     def update_dataset_due_statistics(self):
         dataset_due_statistics = statistics.StatisticsFactory.create_statistics(statistics.DatasetStatistics)
-        dataset_due_statistics.set_quiescent_time(pylons.config.get('ckan.sematic.quiescent_time'))
+        dataset_due_statistics.set_waiting_time(pylons.config.get('ckan.sematic.waiting_time'))
+        dataset_due_statistics.set_ratio_old_new(pylons.config.get('ckan.sematic.ratio_old_new'))
         dataset_due_statistics.update_store()
 
 
@@ -48,7 +49,8 @@ class SemanticCommand(cli.CkanCommand):
         dataset_statistics = statistics.StatisticsFactory.create_statistics(statistics.DatasetStatistics)
         dataset = model.Session.query(model.Package).filter(model.Package.name == dataset_name)
         dataset_statistics.set_dataset(dataset)
-        dataset_due_statistics.set_quiescent_time(pylons.config.get('ckan.sematic.quiescent_time'))
+        dataset_due_statistics.set_waiting_time(pylons.config.get('ckan.sematic.waiting_time'))
+        dataset_due_statistics.set_ratio_old_new(pylons.config.get('ckan.sematic.ratio_old_new'))
         dataset_statistics.update_store()
 
 

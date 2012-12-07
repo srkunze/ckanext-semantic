@@ -5,6 +5,7 @@ import ckanext.semantic.model.prefix as prefix
 import datetime
 import lodstats
 import RDF
+import sqlalchemy
 
 
 class DatasetStatistics(StatisticsConcept):
@@ -13,10 +14,12 @@ class DatasetStatistics(StatisticsConcept):
         'nt': 'nt',
         'application/x-nquads': 'nq',
         'nquads': 'nq',
+        'nq': 'nq',
         'application/rdf+xml': 'rdf',
         'rdf': 'rdf',
         'text/turtle': 'ttl',
         'rdf/turtle': 'ttl',
+        'ttl': 'ttl',
         'text/n3': 'n3',
         'n3': 'n3',
         'api/sparql': 'sparql',
@@ -33,8 +36,12 @@ class DatasetStatistics(StatisticsConcept):
         self._dataset = dataset
 
 
-    def set_quiescent_time(self, quiescent_time):
-        self._quiescent_time = int(quiescent_time)
+    def set_waiting_time(self, waiting_time):
+        self._waiting_time = int(waiting_time)
+
+
+    def set_ratio_old_new(self, ratio_old_new):
+        self._ratio_old_new = float(ratio_old_new)
 
 
     def create_results(self):
@@ -57,37 +64,56 @@ class DatasetStatistics(StatisticsConcept):
 
 
     def _determine_rdf_dataset_due(self):
-        configurations = self._session.query(dsc.DatasetStatisticsConfiguration.dataset_id).subquery('configurations')
-        dataset_query = self._session.query(self._model.Package)
+        now = datetime.datetime.now()
+        rdf_dataset_query = self._get_rdf_dataset_query()
+        configuration_subquery = self._get_configurations_subquery()
 
-        query = dataset_query.filter(~ self._model.Package.id.in_(configurations))
-        query = query.join(self._model.Revision, self._model.Package.revision_id==self._model.Revision.id)
-        query = query.order_by(self._model.Revision.timestamp)
-        datasets_without_statistics = query.all()
+        query = rdf_dataset_query.filter(~ self._model.Package.id.in_(configuration_subquery))
+        query = query.join(self._model.PackageRevision, self._model.PackageRevision.continuity_id==self._model.Package.id)
+        query = query.add_column(sqlalchemy.func.min(self._model.PackageRevision.revision_timestamp)).group_by(self._model.Package.id)
 
-        dataset = self._first_rdf_dataset(datasets_without_statistics)
-        if dataset:
-            return dataset
+        id_without, q_without = self._get_oldest_dataset(query, now)
 
-        query = dataset_query.join(dsc.DatasetStatisticsConfiguration, self._model.Package.id==dsc.DatasetStatisticsConfiguration.dataset_id)
-        query = query.filter(dsc.DatasetStatisticsConfiguration.created < (datetime.datetime.now() - datetime.timedelta(weeks=self._quiescent_time)))
+        query = rdf_dataset_query.filter(self._model.Package.id.in_(configuration_subquery))
+        query = query.join(dsc.DatasetStatisticsConfiguration, self._model.Package.id==dsc.DatasetStatisticsConfiguration.dataset_id)
+        query = query.filter(dsc.DatasetStatisticsConfiguration.created < (datetime.datetime.now() - datetime.timedelta(weeks=self._waiting_time)))
+        query = query.add_column(dsc.DatasetStatisticsConfiguration.created)
         query = query.order_by(dsc.DatasetStatisticsConfiguration.created)
-        datasets_with_statistics = query.all()
-        return self._first_rdf_dataset(datasets_with_statistics)
+        result = query.first()
+        id_with = None
+        q_with = 0
+        if result:
+            id_with = result[0]
+            q_with = self._ratio_old_new * float(((now - result[1]) - datetime.timedelta(weeks=self._waiting_time)).days)
+
+        dataset_id_due = id_without
+        if q_with > q_without:
+            dataset_id_due = id_with
+
+        if dataset_id_due:
+            return self._session.query(self._model.Package).get(dataset_id_due)
 
 
-    def _first_rdf_dataset(self, datasets):
-        for dataset in datasets:
-            if self._is_rdf_dataset(dataset):
-                return dataset
+    def _get_rdf_dataset_query(self):
+        rdf_dataset_query = self._session.query(self._model.Package.id)
+        rdf_dataset_query = rdf_dataset_query.join(self._model.ResourceGroup, self._model.ResourceGroup.package_id==self._model.Package.id)
+        rdf_dataset_query = rdf_dataset_query.join(self._model.Resource, self._model.Resource.resource_group_id==self._model.ResourceGroup.id)
+        rdf_dataset_query = rdf_dataset_query.filter(self._model.Resource.format.in_(DatasetStatistics._supported_formats.keys()))
+        return rdf_dataset_query
 
 
-    def _is_rdf_dataset(self, dataset):
-        try:
-            self._get_rdf_resource(dataset)
-        except Exception:
-            return False
-        return True
+    def _get_configurations_subquery(self):
+        return self._session.query(dsc.DatasetStatisticsConfiguration.dataset_id).subquery('configuration')
+
+
+    def _get_oldest_dataset(self, query, now):
+        id = None
+        timestamp = now
+        for row in query.all():
+            if row[1] < timestamp:
+                id = row[0]
+                timestamp = row[1]
+        return id, float((now - timestamp).days)
 
 
     def _get_rdf_resource(self, dataset):
@@ -117,7 +143,7 @@ class DatasetStatistics(StatisticsConcept):
             rdf_stats.do_stats()
             rdf_stats.update_model(dataset_rdf_uri, results)
         except Exception as errorstr:
-            results.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.error, prefix.dstats.LODStatsError))
+            results.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.error, prefix.dstats.StatisticToolError))
             if isinstance(errorstr, Exception):
                 results.append(RDF.Statement(dataset_rdf_uri, prefix.dstats.errorString, RDF.Node(literal=errorstr.message, datatype=prefix.xs.string.uri)))
             else:
