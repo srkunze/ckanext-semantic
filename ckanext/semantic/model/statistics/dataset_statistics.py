@@ -33,6 +33,10 @@ class DatasetStatistics(StatisticsConcept):
         self._dataset = dataset
 
 
+    def set_quiescent_time(self, quiescent_time):
+        self._quiescent_time = int(quiescent_time)
+
+
     def create_results(self):
         if not self._dataset:
             self._dataset = self._determine_rdf_dataset_due()
@@ -66,7 +70,7 @@ class DatasetStatistics(StatisticsConcept):
             return dataset
 
         query = dataset_query.join(dsc.DatasetStatisticsConfiguration, self._model.Package.id==dsc.DatasetStatisticsConfiguration.dataset_id)
-        query = query.filter(dsc.DatasetStatisticsConfiguration.created < (datetime.datetime.now() - datetime.timedelta(weeks=2)))
+        query = query.filter(dsc.DatasetStatisticsConfiguration.created < (datetime.datetime.now() - datetime.timedelta(weeks=self._quiescent_time)))
         query = query.order_by(dsc.DatasetStatisticsConfiguration.created)
         datasets_with_statistics = query.all()
         return self._first_rdf_dataset(datasets_with_statistics)

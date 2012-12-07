@@ -5,7 +5,7 @@ import model.prefix as prefix
 import model.statistics as statistics
 import datetime
 import logging
-
+import pylons
 
 log = logging.getLogger(__name__)
 
@@ -40,6 +40,7 @@ class SemanticCommand(cli.CkanCommand):
 
     def update_dataset_due_statistics(self):
         dataset_due_statistics = statistics.StatisticsFactory.create_statistics(statistics.DatasetStatistics)
+        dataset_due_statistics.set_quiescent_time(pylons.config.get('ckan.sematic.quiescent_time'))
         dataset_due_statistics.update_store()
 
 
@@ -47,6 +48,7 @@ class SemanticCommand(cli.CkanCommand):
         dataset_statistics = statistics.StatisticsFactory.create_statistics(statistics.DatasetStatistics)
         dataset = model.Session.query(model.Package).filter(model.Package.name == dataset_name)
         dataset_statistics.set_dataset(dataset)
+        dataset_due_statistics.set_quiescent_time(pylons.config.get('ckan.sematic.quiescent_time'))
         dataset_statistics.update_store()
 
 
