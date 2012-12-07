@@ -5,7 +5,7 @@ import RDF
 
 class StatisticsFactory(object):
     @classmethod
-    def create(cls, concept):
+    def create_statistics(cls, concept):
         if concept not in StatisticsConcept.__subclasses__():
             raise Exception('Given concept is no statistics concept')
             
