@@ -5,8 +5,7 @@ DROP TABLE similarity_configuration;
 CREATE TABLE dataset_statistics_configuration
 (
     dataset_id TEXT PRIMARY KEY,
-    created TIMESTAMP WITHOUT TIME ZONE,
-    request_count INTEGER
+    created TIMESTAMP WITHOUT TIME ZONE
 );
 
 
