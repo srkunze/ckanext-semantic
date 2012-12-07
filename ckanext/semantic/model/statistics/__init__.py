@@ -27,19 +27,19 @@ class StatisticsConcept(object):
 
 
     def set_store(self, store):
-        self.store = store  
+        self._store = store  
 
 
     def set_graph(self, graph):
-        self.graph = graph
+        self._graph = graph
 
 
     def set_session(self, session):
-        self.session = session
+        self._session = session
 
 
     def set_model(self, model):
-        self.model = model
+        self._model = model
 
 
     def load_from_store(self):

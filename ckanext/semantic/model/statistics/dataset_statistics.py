@@ -2,15 +2,13 @@ from . import StatisticsConcept
 import dataset_statistics_configuration as dsc
 import ckanext.semantic.lib.helpers as h
 import ckanext.semantic.model.prefix as prefix
-
 import datetime
 import lodstats
 import RDF
-import sqlalchemy
 
 
 class DatasetStatistics(StatisticsConcept):
-    supported_formats = {
+    _supported_formats = {
         'application/x-ntriples': 'nt',
         'nt': 'nt',
         'application/x-nquads': 'nq',
@@ -27,47 +25,47 @@ class DatasetStatistics(StatisticsConcept):
 
     def __init__(self):
         super(DatasetStatistics, self).__init__()
-        self.graph = 'http://stats.lod2.eu/datasets'
-        self.dataset = None
+        self._graph = 'http://stats.lod2.eu/datasets'
+        self._dataset = None
 
 
     def set_dataset(self, dataset):
-        self.dataset = dataset
+        self._dataset = dataset
 
 
     def create_results(self):
-        if not self.dataset:
-            self.dataset = self._determine_rdf_dataset_due()
-            if not self.dataset:
+        if not self._dataset:
+            self._dataset = self._determine_rdf_dataset_due()
+            if not self._dataset:
                 return
 
         configuration = self._get_configuration()
         configuration.created = datetime.datetime.now()
-        self.session.merge(configuration)
-        self.session.commit()
+        self._session.merge(configuration)
+        self._session.commit()
 
-        print "dataset statistics for %s (%s) created at %s" % (self.dataset.id, self.dataset.name, configuration.created.isoformat())
+        print "dataset statistics for %s (%s) created at %s" % (self._dataset.id, self._dataset.name, configuration.created.isoformat())
 
-        self.dataset.uri = h.dataset_to_uri(self.dataset.name)
-        resource = self._get_rdf_resource(self.dataset)
+        self._dataset.uri = h.dataset_to_uri(self._dataset.name)
+        resource = self._get_rdf_resource(self._dataset)
         format = self._get_resource_format(resource)
-        self.results = self._create_results(self.dataset, resource, format)
+        self.results = self._create_results(self._dataset, resource, format)
 
 
     def _determine_rdf_dataset_due(self):
-        configurations = self.session.query(dsc.DatasetStatisticsConfiguration.dataset_id).subquery('configurations')
-        dataset_query = self.session.query(self.model.Package)
+        configurations = self._session.query(dsc.DatasetStatisticsConfiguration.dataset_id).subquery('configurations')
+        dataset_query = self._session.query(self._model.Package)
 
-        query = dataset_query.filter(~ self.model.Package.id.in_(configurations))
-        query = query.join(self.model.Revision, self.model.Package.revision_id==self.model.Revision.id)
-        query = query.order_by(self.model.Revision.timestamp)
+        query = dataset_query.filter(~ self._model.Package.id.in_(configurations))
+        query = query.join(self._model.Revision, self._model.Package.revision_id==self._model.Revision.id)
+        query = query.order_by(self._model.Revision.timestamp)
         datasets_without_statistics = query.all()
 
         dataset = self._first_rdf_dataset(datasets_without_statistics)
         if dataset:
             return dataset
 
-        query = dataset_query.join(dsc.DatasetStatisticsConfiguration, self.model.Package.id==dsc.DatasetStatisticsConfiguration.dataset_id)
+        query = dataset_query.join(dsc.DatasetStatisticsConfiguration, self._model.Package.id==dsc.DatasetStatisticsConfiguration.dataset_id)
         query = query.filter(dsc.DatasetStatisticsConfiguration.created < (datetime.datetime.now() - datetime.timedelta(weeks=2)))
         query = query.order_by(dsc.DatasetStatisticsConfiguration.created)
         datasets_with_statistics = query.all()
@@ -90,13 +88,13 @@ class DatasetStatistics(StatisticsConcept):
 
     def _get_rdf_resource(self, dataset):
         for resource in dataset.resources:
-            if resource.format.lower() in DatasetStatistics.supported_formats.keys():
+            if resource.format.lower() in DatasetStatistics._supported_formats.keys():
                 return resource
         raise Exception('Given dataset (id=%s) has no RDF resource.' % dataset.id)
 
 
     def _get_resource_format(self, resource):
-        return DatasetStatistics.supported_formats[resource.format.lower()]
+        return DatasetStatistics._supported_formats[resource.format.lower()]
 
 
     def _create_results(self, dataset, resource, format):
@@ -125,19 +123,19 @@ class DatasetStatistics(StatisticsConcept):
 
     def update_store(self):
         self.create_results()
-        if not self.dataset:
+        if not self._dataset:
             return
 
-        self.store.modify(graph=self.graph,
+        self._store.modify(graph=self._graph,
                           insert_construct=h.rdf_to_string(self.results),
                           delete_construct='?dataset ?predicate ?object.\n?object ?object_predicate ?object_object.',
-                          delete_where='?dataset ?predicate ?object.\nfilter(?dataset=<' + self.dataset.uri + '>)')
+                          delete_where='?dataset ?predicate ?object.\nfilter(?dataset=<' + self._dataset.uri + '>)')
         print "store update at %s" % datetime.datetime.now().isoformat()
 
 
     def _get_configuration(self):
-        configuration = self.model.Session.query(dsc.DatasetStatisticsConfiguration).get(self.dataset.id)
+        configuration = self._model.Session.query(dsc.DatasetStatisticsConfiguration).get(self._dataset.id)
         if not configuration:
-            configuration = dsc.DatasetStatisticsConfiguration(self.dataset.id)
+            configuration = dsc.DatasetStatisticsConfiguration(self._dataset.id)
         return configuration
 
