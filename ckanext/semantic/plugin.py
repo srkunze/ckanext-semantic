@@ -11,6 +11,7 @@ import model.prefix as prefix
 import model.similarity.extractors as extractors
 import model.similarity.methods as methods
 import model.search as search
+import model.store as store
 import os
 import urllib
 
@@ -130,14 +131,14 @@ class SemanticPlugin(plugins.SingletonPlugin):
         if 'filters' not in search_params:
             return search_params
         
-        semantic_search = search.Search()
-        semantic_search.execute(search_params)
+        semantic_search = search.Search(store.user)
+        semantic_search.execute(search_params['filters'])
         if semantic_search.result_ids:
             search_params['fq'] += '(id:%s' % semantic_search.result_ids[0]
             for id_ in semantic_search.result_ids[1:]:
                 search_params['fq'] += ' OR id:%s' % id_
             search_params['fq'] += ')'
- 
+
         return search_params
 
           

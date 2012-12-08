@@ -8,8 +8,7 @@ class LocationSearch(SearchConcept):
         return 'location'
 
 
-    def extract_filter(self, search_params):
-        filters = search_params['filters']
+    def process_filters(self, filters):
         location = {}
         if 'location_latitude' in filters and \
            'location_longitude' in filters and \

@@ -1,5 +1,4 @@
 import ckanext.semantic.lib.helpers as h
-import ckanext.semantic.model.store as store
 import concepts
 
 
@@ -7,32 +6,33 @@ class Search(object):
     '''
     Performs a SPARQL search and stores the result_ids.
     '''
-    def __init__(self):
+    def __init__(self, client):
         self._concepts = []
         subclasses = concepts.SearchConcept.__subclasses__()
         for subclass in subclasses:
             self.concepts.append(subclass())
         self.results = []
         self.result_ids = []
+        self._client = client
 
 
-    def execute(self, search_params):
+    def execute(self, filters):
         '''
         Store the results that match the filters.
         '''
-        filters = self._extract_filters(search_params)
+        filters = self._process_filters(filters)
         if not filters:
             self.result_ids = []
             return
         query = self._build_query_from_filters(filters)
-        self.results = store.user.query(query)
+        self.results = self._client.query(query)
         self.result_ids = self._post_process_results(self.results, filters)
 
 
-    def _extract_filters(self, search_params):
+    def _process_filters(self, filters):
         filters = {}
         for concept in self._concepts:
-            filter_ =  concept.extract_filters(search_params)
+            filter_ =  concept.process_filters(filters)
             if not filter_:
                 continue
             filters[concept.get_name()] = filter_

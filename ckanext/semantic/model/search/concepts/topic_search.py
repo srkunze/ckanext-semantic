@@ -6,8 +6,7 @@ class TopicSearch(SearchConcept):
         return 'topic'
 
 
-    def extract_filter(self, search_params):
-        filters = search_params['filters']
+    def process_filters(self, filters):
         topic = {}
         if 'topic' in filters:
             topic = filters['topic']

@@ -7,8 +7,7 @@ class TimeSearch(SearchConcept):
         return 'time'
 
 
-    def extract_filter(self, search_params):
-        filters = search_params['filters']
+    def process_filters(self, filters):
         time = {}
         if 'time_min' in filters:
             time['min'] = filters['time_min'][0]
