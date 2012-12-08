@@ -156,7 +156,7 @@ class DatasetStatistics(StatisticsConcept):
         if not self._dataset:
             return
 
-        self._store.modify(graph=self._graph,
+        self._client.modify(graph=self._graph,
                           insert_construct=h.rdf_to_string(self.results),
                           delete_construct='?dataset ?predicate ?object.\n?object ?object_predicate ?object_object.',
                           delete_where='?dataset ?predicate ?object.\nfilter(?dataset=<' + self._dataset.uri + '>)')

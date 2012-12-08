@@ -28,7 +28,7 @@ class VocabularyStatistics(StatisticsConcept):
 
 
     def _get_dataset_count(self):
-        result = self._store.query('''
+        result = self._client.query('''
                                    prefix void: <http://rdfs.org/ns/void#>
                                    select (count(distinct ?dataset) as ?dataset_count)
                                    where
@@ -40,7 +40,7 @@ class VocabularyStatistics(StatisticsConcept):
 
 
     def _get_vocabulary_counts(self):
-        return self._store.query('''
+        return self._client.query('''
                                  prefix void: <http://rdfs.org/ns/void#>
                                  select ?vocabulary (count(distinct ?dataset) as ?dataset_count)
                                  where
@@ -81,11 +81,11 @@ class VocabularyStatistics(StatisticsConcept):
     def update_store(self):
         self.create_results()
 
-        self._store.clear_graph(self._graph)
-        self._store.modify(graph=self._graph, insert_construct=h.rdf_to_string(self.results))
+        self._client.clear_graph(self._graph)
+        self._client.modify(graph=self._graph, insert_construct=h.rdf_to_string(self.results))
                            
     def load_from_store(self):
-        return self._store.query('''
+        return self._client.query('''
                                  select *
                                  from <''' + self._graph + '''>
                                  where

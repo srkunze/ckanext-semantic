@@ -12,7 +12,7 @@ class StatisticsFactory(object):
         statistics = concept()
         statistics.set_model(model)
         statistics.set_session(model.Session)
-        statistics.set_store(store.root)
+        statistics.set_client(store.root)
         
         return statistics
 
@@ -26,8 +26,8 @@ class StatisticsConcept(object):
         self.results = RDF.Model()
 
 
-    def set_store(self, store):
-        self._store = store  
+    def set_client(self, client):
+        self._client = client  
 
 
     def set_graph(self, graph):
