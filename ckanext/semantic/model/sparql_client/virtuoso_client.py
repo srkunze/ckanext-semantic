@@ -19,6 +19,20 @@ class VirtuosoClient(SPARQLClient):
         return json.loads(response.text)
 
 
+    def query_value(self, query_string, datatype=str):
+        return datatype(self.query(query_string)['results']['bindings'][0].values()[0]['value'])
+
+
+    def query_list(self, query_string, datatypes):
+        results = []
+        for binding in self.query(query_string)['results']['bindings']:
+            result = {}
+            for name, datatype in datatypes.iteritems():
+                result[name] = datatype(binding[name]['value'])
+            results.append(result)
+        return results
+
+
     def modify(self, insert_construct=None, insert_where=None, delete_construct=None, delete_where=None):
         if self._graph is not None:
             from_graph_query = ' from <' + self._graph + '>'
@@ -40,12 +54,11 @@ class VirtuosoClient(SPARQLClient):
             insert_query += 'where\n{' + insert_where + '\n}\n'
 
         query = delete_query + '\n' + insert_query
-        print query
 
         return self._query_ISQL(query)
 
 
-    def clear_graph(self, graph):
+    def clear_graph(self):
         return self._query_ISQL("CLEAR GRAPH <%s>" % self._graph)
 
 

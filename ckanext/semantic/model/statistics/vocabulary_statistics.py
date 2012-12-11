@@ -17,10 +17,10 @@ class VocabularyStatistics(StatisticsConcept):
         
         self.results = RDF.Model()
         for vocabulary_count in vocabulary_counts:
-            absolute_frequency = float(vocabulary_count['dataset_count']['value'])
+            absolute_frequency = vocabulary_count['dataset_count']
             relative_frequency = absolute_frequency / dataset_count
             
-            self._append(vocabulary_uri = vocabulary_count['vocabulary']['value'],
+            self._append(vocabulary_uri = vocabulary_count['vocabulary'],
                          absolute_frequency = absolute_frequency,
                          relative_frequency = relative_frequency,
                          complementary_frequency = 0.5 * math.cos(math.pi * relative_frequency) + 0.5,
@@ -28,28 +28,27 @@ class VocabularyStatistics(StatisticsConcept):
 
 
     def _get_dataset_count(self):
-        result = self._client.query('''
-                                   prefix void: <http://rdfs.org/ns/void#>
-                                   select (count(distinct ?dataset) as ?dataset_count)
-                                   where
-                                   {
-                                       ?dataset void:vocabulary ?vocabulary.
-                                   }
-                                   ''')
-        return float(result[0]['dataset_count']['value'])
+        return self._client.query_value('''
+                                        prefix void: <http://rdfs.org/ns/void#>
+                                        select (count(distinct ?dataset) as ?dataset_count)
+                                        where
+                                        {
+                                            ?dataset void:vocabulary ?vocabulary.
+                                        }
+                                        ''', datatype=float)
 
 
     def _get_vocabulary_counts(self):
-        return self._client.query('''
-                                 prefix void: <http://rdfs.org/ns/void#>
-                                 select ?vocabulary (count(distinct ?dataset) as ?dataset_count)
-                                 where
-                                 {
-                                     ?dataset void:vocabulary ?vocabulary.
-                                 }
-                                 group by ?vocabulary
-                                 order by desc(?dataset_count)
-                                 ''')
+        return self._client.query_list('''
+                                       prefix void: <http://rdfs.org/ns/void#>
+                                       select ?vocabulary (count(distinct ?dataset) as ?dataset_count)
+                                       where
+                                       {
+                                           ?dataset void:vocabulary ?vocabulary.
+                                       }
+                                       group by ?vocabulary
+                                       order by desc(?dataset_count)
+                                       ''', datatypes={'vocabulary': str, 'dataset_count': float})
 
 
     def _append(self,
