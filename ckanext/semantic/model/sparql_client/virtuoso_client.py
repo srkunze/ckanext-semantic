@@ -54,8 +54,8 @@ class VirtuosoClient(SPARQLClient):
         temporary_file.write('SPARQL %s;' % query)
         temporary_file.flush()
 
-        cmd = ["isql-v", self._hostname, self._username, self._password, temporary_file.name]
-        process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        command = ["isql-v", self._hostname, self._username, self._password, temporary_file.name]
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if err:
             raise ISQLException(err)
