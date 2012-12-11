@@ -1,5 +1,6 @@
 import ckan.model as model
 import ckanext.semantic.model.store as store
+import pylons
 import RDF
 
 
@@ -12,7 +13,8 @@ class StatisticsFactory(object):
         statistics = concept()
         statistics.set_model(model)
         statistics.set_session(model.Session)
-        statistics.set_client(store.root)
+        dataset_due_statistics.set_client(VirtuosoClient('dba'))
+        pylons.config.get('ckan.semantic.waiting_time')
         
         return statistics
 

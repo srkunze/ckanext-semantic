@@ -1,11 +1,13 @@
-import tempfile
+import json
 import subprocess
+import tempfile
 
 
 class VirtuosoClient(SPARQLClient):
     def query(self, query_string):
-    '''
-    '''
+        url = '?query=%s' % (self._url, urllib.quote(query_string))
+        response = requests.get(url, headers={'Accept': 'application/sparql-results+json'})
+        return json.loads(response.text)
 
 
     def modify(self, insert_construct=None, insert_where=None, delete_construct=None, delete_where=None):
@@ -44,7 +46,7 @@ class VirtuosoClient(SPARQLClient):
         temporary_file.write(cmd)
         temporary_file.flush()
 
-        cmd = ["isql-v", self.hostname, self.username, self.password, temporary_file.name]
+        cmd = ["isql-v", self._hostname, self._username, self._password, temporary_file.name]
         process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if err:

@@ -39,22 +39,22 @@ class SemanticCommand(cli.CkanCommand):
 
 
     def update_dataset_due_statistics(self):
-        dataset_due_statistics = statistics.StatisticsFactory.create_statistics(statistics.DatasetStatistics)
-        dataset_due_statistics.set_waiting_time(pylons.config.get('ckan.semantic.waiting_time'))
-        dataset_due_statistics.set_ratio_old_new(pylons.config.get('ckan.semantic.ratio_old_new'))
-        dataset_due_statistics.update_store()
+        statistics = statistics.StatisticsFactory.create_statistics(statistics.DatasetStatistics)
+        statistics.update_store()
+        statistics.set_waiting_time(pylons.config.get('ckan.semantic.waiting_time'))
+        statistics.set_ratio_old_new(pylons.config.get('ckan.semantic.ratio_old_new'))
 
 
     def update_dataset_statistics(self, dataset_name):
         dataset_statistics = statistics.StatisticsFactory.create_statistics(statistics.DatasetStatistics)
         dataset = model.Session.query(model.Package).filter(model.Package.name == dataset_name)
-        dataset_statistics.set_dataset(dataset)
-        dataset_due_statistics.set_waiting_time(pylons.config.get('ckan.semantic.waiting_time'))
-        dataset_due_statistics.set_ratio_old_new(pylons.config.get('ckan.semantic.ratio_old_new'))
-        dataset_statistics.update_store()
+        statistics.set_dataset(dataset)
+        statistics.set_waiting_time(pylons.config.get('ckan.semantic.waiting_time'))
+        statistics.set_ratio_old_new(pylons.config.get('ckan.semantic.ratio_old_new'))
+        statistics.update_store()
 
 
     def update_vocabulary_statistics(self):
-        vocabulary_statistics = statistics.StatisticsFactory.create_statistics(statistics.VocabularyStatistics)
-        vocabulary_statistics.update_store()
+        statistics = statistics.StatisticsFactory.create_statistics(statistics.VocabularyStatistics)
+        statistics.update_store()
 
