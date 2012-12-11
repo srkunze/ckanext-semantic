@@ -6,9 +6,9 @@ import RDF
 
 
 class VocabularyStatistics(StatisticsConcept):
-    def __init__(self):
-        super(VocabularyStatistics, self).__init__()
-        self._graph = 'http://stats.lod2.eu/vocabularies'
+    def __init__(self, client):
+        super(VocabularyStatistics, self).__init__(client)
+        self._client.set_graph('http://stats.lod2.eu/vocabularies')
 
 
     def create_results(self):
@@ -80,17 +80,6 @@ class VocabularyStatistics(StatisticsConcept):
         
     def update_store(self):
         self.create_results()
-
-        self._client.clear_graph(self._graph)
-        self._client.modify(graph=self._graph, insert_construct=h.rdf_to_string(self.results))
-                           
-    def load_from_store(self):
-        return self._client.query('''
-                                 select *
-                                 from <''' + self._graph + '''>
-                                 where
-                                 {
-                                     ?vocabulary ?predicate ?object.
-                                 }
-                                 ''')
+        self._client.clear_graph()
+        self._client.modify(insert_construct=h.rdf_to_string(self.results))
 

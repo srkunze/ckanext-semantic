@@ -26,9 +26,9 @@ class DatasetStatistics(StatisticsConcept):
         'sparql': 'sparql'
     }
 
-    def __init__(self):
-        super(DatasetStatistics, self).__init__()
-        self._graph = 'http://stats.lod2.eu/datasets'
+    def __init__(self, client):
+        super(DatasetStatistics, self).__init__(client)
+        self._client.set_graph('http://stats.lod2.eu/datasets')
         self._dataset = None
 
 
@@ -156,10 +156,9 @@ class DatasetStatistics(StatisticsConcept):
         if not self._dataset:
             return
 
-        self._client.modify(graph=self._graph,
-                          insert_construct=h.rdf_to_string(self.results),
-                          delete_construct='?dataset ?predicate ?object.\n?object ?object_predicate ?object_object.',
-                          delete_where='?dataset ?predicate ?object.\nfilter(?dataset=<' + self._dataset.uri + '>)')
+        self._client.modify(insert_construct=h.rdf_to_string(self.results),
+                            delete_construct='?dataset ?predicate ?object.\n?object ?object_predicate ?object_object.',
+                            delete_where='?dataset ?predicate ?object.\nfilter(?dataset=<' + self._dataset.uri + '>)')
         print "store update at %s" % datetime.datetime.now().isoformat()
 
 

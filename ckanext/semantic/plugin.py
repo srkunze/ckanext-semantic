@@ -6,12 +6,12 @@ import ckan.logic as logic
 import logging
 import logic.action as action
 import lib.helpers as h
-import model.similarity.similarity as similarity
 import model.prefix as prefix
+import model.similarity.similarity as similarity
 import model.similarity.extractors as extractors
 import model.similarity.methods as methods
 import model.search as search
-import SPARQL_client
+import model.sparql_client
 import os
 import urllib
 
@@ -131,7 +131,7 @@ class SemanticPlugin(plugins.SingletonPlugin):
         if 'filters' not in search_params:
             return search_params
         
-        client = SPARQL_client.SPARQLClientFactory.create(SPARQL_client.VirtuosoClient)
+        client = sparql_client.SPARQLClientFactory.create_client(sparql_client.VirtuosoClient)
         semantic_search = search.Search(client)
         semantic_search.execute(search_params['filters'])
         if semantic_search.result_ids:

@@ -1,5 +1,5 @@
 import ckan.model as model
-import SPARQL_client
+import ckanext.semantic.model.sparql_client as sparql_client
 import RDF
 
 
@@ -8,11 +8,10 @@ class StatisticsFactory(object):
     def create_statistics(cls, concept):
         if concept not in StatisticsConcept.__subclasses__():
             raise Exception('Given concept is no statistics concept')
-        statistics = concept()
+        client = sparql_client.SPARQLClientFactory.create_client(sparql_client.VirtuosoClient, 'root')
+        statistics = concept(client)
         statistics.set_model(model)
         statistics.set_session(model.Session)
-        client = SPARQL_client.SPARQLClientFactory.create(SPARQL_client.VirtuosoClient, 'root')
-        statistics.set_client(client)
         return statistics
 
 
@@ -21,12 +20,13 @@ class StatisticsConcept(object):
     Abstract class for statistics concepts such as 
     dataset statistics or vocabulary statistics
     '''
-    def __init__(self):
+    def __init__(self, client):
         self.results = RDF.Model()
+        self.set_client(client)
 
 
     def set_client(self, client):
-        self._client = client  
+        self._client = client
 
 
     def set_graph(self, graph):
