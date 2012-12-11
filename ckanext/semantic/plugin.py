@@ -11,7 +11,7 @@ import model.prefix as prefix
 import model.similarity.extractors as extractors
 import model.similarity.methods as methods
 import model.search as search
-import model.store as store
+import SPARQL_client
 import os
 import urllib
 
@@ -131,7 +131,8 @@ class SemanticPlugin(plugins.SingletonPlugin):
         if 'filters' not in search_params:
             return search_params
         
-        semantic_search = search.Search(store.user)
+        client = SPARQL_client.SPARQLClientFactory.create(SPARQL_client.VirtuosoClient)
+        semantic_search = search.Search(client)
         semantic_search.execute(search_params['filters'])
         if semantic_search.result_ids:
             search_params['fq'] += '(id:%s' % semantic_search.result_ids[0]

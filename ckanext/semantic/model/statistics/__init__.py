@@ -1,6 +1,5 @@
 import ckan.model as model
-import ckanext.semantic.model.store as store
-import pylons
+import SPARQL_client
 import RDF
 
 
@@ -9,13 +8,11 @@ class StatisticsFactory(object):
     def create_statistics(cls, concept):
         if concept not in StatisticsConcept.__subclasses__():
             raise Exception('Given concept is no statistics concept')
-            
         statistics = concept()
         statistics.set_model(model)
         statistics.set_session(model.Session)
-        dataset_due_statistics.set_client(VirtuosoClient('dba'))
-        pylons.config.get('ckan.semantic.waiting_time')
-        
+        client = SPARQL_client.SPARQLClientFactory.create(SPARQL_client.VirtuosoClient, 'root')
+        statistics.set_client(client)
         return statistics
 
 
