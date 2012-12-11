@@ -10,7 +10,8 @@ class Search(object):
         self._concepts = []
         subclasses = concepts.SearchConcept.__subclasses__()
         for subclass in subclasses:
-            self.concepts.append(subclass())
+            self._concepts.append(subclass())
+        self.no_filters = True
         self.results = []
         self.result_ids = []
         self._client = client
@@ -22,26 +23,29 @@ class Search(object):
         '''
         filters = self._process_filters(filters)
         if not filters:
+            self.no_filters = True
+            self.results = []
             self.result_ids = []
             return
         query = self._build_query_from_filters(filters)
-        self.results = self._client.query(query)
+        self.no_filters = False
+        self.results = self._client.query_bindings_only(query)
         self.result_ids = self._post_process_results(self.results, filters)
 
 
     def _process_filters(self, filters):
-        filters = {}
+        new_filters = {}
         for concept in self._concepts:
             filter_ =  concept.process_filters(filters)
             if not filter_:
                 continue
-            filters[concept.get_name()] = filter_
-        return filters
+            new_filters[concept.get_name()] = filter_
+        return new_filters
 
 
     def _build_query_from_filters(self, filters):
         query_dict = {
-            'prefix': 'void: <http://rdfs.org/ns/void#>\nprefix xs: <http://www.w3.org/2001/XMLSchema#>',
+            'prefix': 'void: <http://rdfs.org/ns/void#>\nprefix xs: <http://www.w3.org/2001/XMLSchema#>\nprefix dstats: <http://stats.lod2.eu/vocabulary/dataset#>',
             'select': '?dataset',
             'where': '?dataset a void:Dataset.',
             'group_by': '',

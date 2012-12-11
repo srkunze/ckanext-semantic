@@ -20,8 +20,8 @@ class TimeSearch(SearchConcept):
         return {
             'select': '(min(?min_time) as ?min_time) (max(?max_time) as ?max_time)',
             'where': '''?dataset void:propertyPartition ?dateTimePropertyPartition.
-?dateTimePropertyPartition void:minValue ?min_time.
-?dateTimePropertyPartition void:maxValue ?max_time.
+?dateTimePropertyPartition dstats:minValue ?min_time.
+?dateTimePropertyPartition dstats:maxValue ?max_time.
 filter(datatype(?min_time) = xs:dateTime)
 filter(datatype(?max_time) = xs:dateTime)
 ''',

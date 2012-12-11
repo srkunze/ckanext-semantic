@@ -19,6 +19,10 @@ class VirtuosoClient(SPARQLClient):
         return json.loads(response.text)
 
 
+    def query_bindings_only(self, query_string):
+        return self.query(query_string)['results']['bindings']
+
+
     def query_value(self, query_string, datatype=str):
         return datatype(self.query(query_string)['results']['bindings'][0].values()[0]['value'])
 
