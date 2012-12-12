@@ -1,9 +1,18 @@
+import ckanext.semantic.lib.helpers as h
 import pylons
 
 
 class SPARQLClientFactory:
     @classmethod
-    def create_client(cls, client_class, role=None):
+    def create_client(cls, client_class, endpoint_type, role=None):
+        '''
+            client_class:
+                class of SPARQL client; needs to be subclass of SPARQLClient
+            endpoint_types:
+                'standard' or 'all'
+            role:
+                'root' or None
+        '''
         if client_class not in SPARQLClient.__subclasses__():
             raise Exception('Given client class is no SPARQL client')
         client = client_class()
@@ -14,12 +23,7 @@ class SPARQLClientFactory:
                 config_name += '_' + role
             config_value = pylons.config.get(config_name)
             getattr(client, 'set_%s' % config_name_part)(config_value)
-        endpoints = []
-        for index in range(0, 20):
-            endpoint = pylons.config.get('ckan.semantic.SPARQL_endpoint%s' % index, None)
-            if endpoint:
-                endpoints.append(endpoint)
-        client.set_endpoints(endpoints)
+        client.set_endpoints(h.get_endpoints(endpoint_type))
         return client
 
 

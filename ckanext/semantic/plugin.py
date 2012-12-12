@@ -75,11 +75,11 @@ class SemanticPlugin(plugins.SingletonPlugin):
     ###########################################
     #   plugin.IPackageController interface   #               
     def before_view(self, pkg_dict):
-        if toolkit.base.c.controller == 'package' and toolkit.base.c.action == 'read':
-            self._add_similar_datasets(pkg_dict)
-
-        self._add_semantic_data(pkg_dict)
-
+        if toolkit.base.c.controller == 'package':
+            if toolkit.base.c.action in ['read', 'search']:
+                self._add_semantic_data(pkg_dict)
+            if toolkit.base.c.action in ['read']:
+                self._add_similar_datasets(pkg_dict)
         return pkg_dict
 
 
@@ -120,18 +120,20 @@ class SemanticPlugin(plugins.SingletonPlugin):
         dataset_extractors = {'topic': extractors.DatasetTopic(),
                               'location': extractors.DatasetLocation(),
                               'time': extractors.DatasetTime()}
-        
+
+        client = sparql_client.SPARQLClientFactory.create_client(sparql_client.VFClient, 'standard')
         for method_name, extractor in dataset_extractors.iteritems():
-           extractor.extract(dataset_uri)
-           if extractor.entities:
-               pkg_dict[method_name] = extractor.entities.values()[0]
+            extractor.set_client(client)
+            extractor.extract(dataset_uri)
+            if extractor.entities:
+                pkg_dict[method_name] = extractor.entities.values()[0]
 
       
     def before_search(self, search_params):
         if 'filters' not in search_params:
             return search_params
         
-        client = sparql_client.SPARQLClientFactory.create_client(sparql_client.VFClient)
+        client = sparql_client.SPARQLClientFactory.create_client(sparql_client.VFClient, 'standard')
         semantic_search = search.Search(client)
         semantic_search.execute(search_params['filters'])
         if semantic_search.result_ids:

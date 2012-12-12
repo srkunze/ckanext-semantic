@@ -4,7 +4,7 @@ from . import DatasetExtractor
           
 class DatasetTopic(EntityTopic, DatasetExtractor):
     def _extract(self, dataset_filter = ''):
-        rows = self._client.query('''
+        rows = self._client.query_bindings_only('''
 prefix void: <http://rdfs.org/ns/void#>
 
 select ?dataset ?vocabulary
@@ -27,3 +27,4 @@ where
                 self.entities[dataset_uri] = {'vocabularies': [vocabulary_uri]}
 
         self._extracted = True
+

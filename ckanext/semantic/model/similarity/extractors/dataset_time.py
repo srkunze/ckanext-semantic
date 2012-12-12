@@ -5,7 +5,7 @@ import ckanext.semantic.lib.time as ht
 
 class DatasetTime(EntityTime, DatasetExtractor):
     def _extract(self, dataset_filter = ''):
-        rows = self._client.query('''
+        rows = self._client.query_bindings_only('''
 prefix void: <http://rdfs.org/ns/void#>
 prefix xs: <http://www.w3.org/2001/XMLSchema#>
 

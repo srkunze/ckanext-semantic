@@ -19,14 +19,10 @@ class SPARQLController(base.BaseController):
         query = base.request.params.get('query', None)
         base.c.chosen_endpoints = base.request.params.getall('chosen_endpoints')
 
-        
-        base.c.available_endpoints = []
-        for index in range(0, 20):
-            endpoint = pylons.config.get('ckan.semantic.SPARQL_endpoint%s' % index, None)
-            if endpoint:
-                base.c.available_endpoints.append((endpoint, pylons.config.get('ckan.semantic.SPARQL_endpoint%s_name' % index, endpoint)))
+        base.c.available_endpoints = h.get_endpoints(type_='all', with_name=True)
 
         if not query:
+            base.c.chosen_endpoints = [endpoint[0] for endpoint in base.c.available_endpoints]
             query='''
 prefix void: <http://rdfs.org/ns/void#>
 
@@ -38,7 +34,7 @@ where
 }
 order by ?dataset
 '''
-            base.c.chosen_endpoints = [endpoint[0] for endpoint in base.c.available_endpoints]
+
         base.c.query = query
 
         context = {'model': model, 'session': model.Session, 'user': base.c.user}

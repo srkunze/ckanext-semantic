@@ -10,7 +10,7 @@ class DatasetLocation(EntityLocation, DatasetExtractor):
     
 
     def _extract(self, dataset_filter = ''):
-        rows = self._client.query('''
+        rows = self._client.query_bindings_only('''
 prefix void: <http://rdfs.org/ns/void#>
 
 select ?dataset ?min_latitude ?max_latitude ?min_longitude ?max_longitude

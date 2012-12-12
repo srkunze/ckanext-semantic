@@ -15,7 +15,8 @@ where
     ?vocabulary <''' + specificity_uri + '''> ?specificity.
 }
 ''', datatypes={'vocabulary': str, 'specificity': float})
-        self.specificity = rows
+
+        self.specificity = dict([(row['vocabulary'], row['specificity']) for row in rows])
 
 
     def topic_weight(self, topic_uri):

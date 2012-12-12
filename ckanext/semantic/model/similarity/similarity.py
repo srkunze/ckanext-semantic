@@ -34,8 +34,8 @@ class Similarity(object):
         
         self._clear_rdf()
         self.rows = []
-        self._client = sparql_client.SPARQLClientFactory.create_client(sparql_client.VFClient)
-        self.set_graph(graph)
+        self._client = sparql_client.SPARQLClientFactory.create_client(sparql_client.VFClient, 'standard', 'root')
+        self._client.set_graph(graph)
 
 
     def set_entity(self, entity_uri, entity_class_uri):
@@ -81,11 +81,9 @@ class Similarity(object):
             extractor_class = self._get_valid_extractor_class(entity_class_uri)
             extractor = extractor_class()
             extractor.set_client(self._client)
-
             return extractor
         except KeyError:
             pass
-
         return None
         
 
@@ -113,7 +111,7 @@ class Similarity(object):
         if self._similarity_method_class == methods.TopicSimilarity:
             if str(prefix.ckan.Subscription) in [self._entity_class_uri, self._similar_entity_class_uri]:
                 return method_data.EqualWeightedTopic()
-            return method_data.SpecificityWeightedTopic(str(prefix.vstats.cosSpecificity))
+            return method_data.SpecificityWeightedTopic(str(prefix.vstats.complementaryFrequency), self._client)
             
         elif self._similarity_method_class in [methods.LocationSimilarity, methods.TimeSimilarity]:
             if str(prefix.ckan.Subscription) == self._entity_class_uri:
@@ -180,17 +178,17 @@ class Similarity(object):
         
       
     def get_similarity_count_and_oldest_created(self):
-        row = self._client.query('''
-                               prefix sim: <http://purl.org/ontology/similarity/>
-                               select (count(?similarity) as ?similarity_count) (min(?created) as ?oldest_created)
-                               where
-                               {
-                                   ?similarity a sim:Similarity.
-                                   ?similarity sim:method <''' + self._similarity_method.uri + '''>.
-                                   ?similarity sim:element <''' + self._entity_uri + '''>.
-                                   ?similarity <http://purl.org/dc/terms/created> ?created.
-                               }
-                               ''')[0]
+        row = self._client.query_bindings_only('''
+prefix sim: <http://purl.org/ontology/similarity/>
+select (count(?similarity) as ?similarity_count) (min(?created) as ?oldest_created)
+where
+{
+    ?similarity a sim:Similarity.
+    ?similarity sim:method <''' + self._similarity_method.uri + '''>.
+    ?similarity sim:element <''' + self._entity_uri + '''>.
+    ?similarity <http://purl.org/dc/terms/created> ?created.
+}
+''')[0]
 
         similarity_count = None
         oldest_created = None
@@ -211,38 +209,38 @@ class Similarity(object):
                 filter_string += '?similarity_weight >= ' + str(self.min_similarity_weight)
             
             if self.min_similarity_weight is not None and self.max_similarity_distance is not None:
-                filter_string += ' or '
+                filter_string += ' || '
 
             #HINT: xs:decimal doesn't support infinity
             if self.max_similarity_distance is not None:
                 filter_string += '?similarity_distance <= ' + str(self.max_similarity_distance)
             filter_string += ')'
         
-        rows = self._client.query('''
-                                prefix xs: <http://www.w3.org/2001/XMLSchema#>
-                                prefix sim: <http://purl.org/ontology/similarity/>
-                                select ?similar_entity ?similarity_weight ?similarity_distance
-                                where
-                                {
-                                    ?similarity a sim:Similarity.
-                                    ?similarity sim:method <''' + self._similarity_method.uri + '''>.
-                                    ?similarity sim:element <''' + self._entity_uri + '''>.
-                                    ?similarity sim:element ?similar_entity.
-                                    ?similar_entity a <''' + self._similar_entity_class_uri + '''>
-                                    optional
-                                    {
-                                        ?similarity sim:weight ?similarity_weight.
-                                    }
-                                    optional
-                                    {
-                                        ?similarity sim:distance ?similarity_distance.
-                                    }
-                                    filter(<''' + self._entity_uri + '''> != ?similar_entity)
-                                    ''' + filter_string + '''
-                                }
-                                order by desc(?similarity_weight) ?similarity_distance
-                                limit ''' + str(self.count_limit) + '''
-                                ''')
+        rows = self._client.query_bindings_only('''
+prefix xs: <http://www.w3.org/2001/XMLSchema#>
+prefix sim: <http://purl.org/ontology/similarity/>
+select ?similar_entity ?similarity_weight ?similarity_distance
+where
+{
+    ?similarity a sim:Similarity.
+    ?similarity sim:method <''' + self._similarity_method.uri + '''>.
+    ?similarity sim:element <''' + self._entity_uri + '''>.
+    ?similarity sim:element ?similar_entity.
+    ?similar_entity a <''' + self._similar_entity_class_uri + '''>
+    optional
+    {
+        ?similarity sim:weight ?similarity_weight.
+    }
+    optional
+    {
+        ?similarity sim:distance ?similarity_distance.
+    }
+    filter(<''' + self._entity_uri + '''> != ?similar_entity)
+    ''' + filter_string + '''
+}
+order by desc(?similarity_weight) ?similarity_distance
+limit ''' + str(self.count_limit) + '''
+''')
         
         self.rows = [(row['similar_entity']['value'],
                       row['similarity_weight']['value'] if row.has_key('similarity_weight') else None,

@@ -12,6 +12,41 @@ import shutil
 
 class VirtuosoFedXClient(SPARQLClient):
     def query(self, query_string):
+        try:
+            return self._query(query_string)
+        except SPARQLError as error:
+            return error
+
+
+    def query_bindings_only(self, query_string):
+        try:
+            return self._query(query_string)['results']['bindings']
+        except SPARQLError as error:
+            return error
+
+
+    def query_value(self, query_string, datatype=str):
+        try:
+            results = self._query(query_string)
+            return datatype(results['results']['bindings'][0].values()[0]['value'])
+        except SPARQLError as error:
+            return error
+
+
+    def query_list(self, query_string, datatypes):
+        try:
+            results = []
+            for binding in self._query(query_string)['results']['bindings']:
+                result = {}
+                for name, datatype in datatypes.iteritems():
+                    result[name] = datatype(binding[name]['value'])
+                    results.append(result)
+            return results
+        except SPARQLError as error:
+            return error
+
+
+    def _query(self, query_string):
         if not self._endpoints:
             return {'head': {'vars': []}, 'results': {'bindings': []}}
 
@@ -21,7 +56,7 @@ class VirtuosoFedXClient(SPARQLClient):
             try:
                 return json.loads(response.text)
             except:
-                return response.text
+                raise SPARQLError(response.text)
         
         query_string = query_string.replace('\n', ' ')
         folder = str(uuid.uuid1())
@@ -33,9 +68,7 @@ class VirtuosoFedXClient(SPARQLClient):
         command = command + ['-f', 'JSON', '-folder', folder, '-q', query_string]
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
-        if err:
-            raise ISQLException(err)
-        
+
         try:
             json_data=open('results/%s/q_1.json' % folder, 'r')
             data = json.load(json_data)
@@ -43,25 +76,7 @@ class VirtuosoFedXClient(SPARQLClient):
             shutil.rmtree('results/%s' % folder)
             return data
         except:
-            return out
-
-
-    def query_bindings_only(self, query_string):
-        return self.query(query_string)['results']['bindings']
-
-
-    def query_value(self, query_string, datatype=str):
-        return datatype(self.query(query_string)['results']['bindings'][0].values()[0]['value'])
-
-
-    def query_list(self, query_string, datatypes):
-        results = []
-        for binding in self.query(query_string)['results']['bindings']:
-            result = {}
-            for name, datatype in datatypes.iteritems():
-                result[name] = datatype(binding[name]['value'])
-            results.append(result)
-        return results
+            raise SPARQLError(out)
 
 
     def modify(self, insert_construct=None, insert_where=None, delete_construct=None, delete_where=None):
@@ -110,4 +125,7 @@ class VirtuosoFedXClient(SPARQLClient):
 
 
 class ISQLException(Exception):
+    pass
+
+class SPARQLError(Exception):
     pass

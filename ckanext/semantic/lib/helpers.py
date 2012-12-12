@@ -1,7 +1,9 @@
 import ckan.model as model
+import pylons
 import RDF
 import re
 import urllib
+
 
 host = 'http://localhost:5000/'
 path_to_dataset = 'dataset/'
@@ -49,4 +51,32 @@ def uri_to_object(uri_string):
     match = re.search(host + path_to_user + '(.*)', uri_string)
     if match is not None:
         return model.Session.query(model.User).filter(model.User.name == match.group(1)).one()
+
+
+def get_endpoints(type_, with_name=False):
+    if type_ == 'standard':
+        return [_get_standard_endpoint(with_name)]
+    if type_ == 'additional':
+        return _get_additional_endpoints(with_name)
+    return [_get_standard_endpoint(with_name)] + _get_additional_endpoints(with_name)
+
+
+def _get_standard_endpoint(with_name):
+    if with_name:
+        return (pylons.config.get('ckan.semantic.SPARQL_endpoint_standard'), pylons.config.get('ckan.semantic.SPARQL_endpoint_standard_name'))
+    return pylons.config.get('ckan.semantic.SPARQL_endpoint_standard')
+
+
+def _get_additional_endpoints(with_name):
+    endpoints = []
+    for index in range(0, 20):
+        endpoint_url = pylons.config.get('ckan.semantic.SPARQL_endpoint_additional_%s' % index, None)
+        if not endpoint_url:
+            break
+        if with_name:
+            endpoint = (endpoint_url, pylons.config.get('ckan.semantic.SPARQL_endpoint_additional_%s_name' % index))
+        else:
+            endpoint = endpoint_url
+        endpoints.append(endpoint)
+    return endpoints
 

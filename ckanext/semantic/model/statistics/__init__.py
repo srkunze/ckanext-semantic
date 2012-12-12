@@ -8,7 +8,7 @@ class StatisticsFactory(object):
     def create_statistics(cls, concept):
         if concept not in StatisticsConcept.__subclasses__():
             raise Exception('Given concept is no statistics concept')
-        client = sparql_client.SPARQLClientFactory.create_client(sparql_client.VFClient, 'root')
+        client = sparql_client.SPARQLClientFactory.create_client(sparql_client.VFClient, 'all', 'root')
         statistics = concept(client)
         statistics.set_model(model)
         statistics.set_session(model.Session)

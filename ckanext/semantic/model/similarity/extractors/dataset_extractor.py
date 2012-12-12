@@ -29,14 +29,14 @@ class DatasetExtractor(object):
 
     
     def _extract_evaluated(self):
-        rows = self._client.query('''
-                                  prefix dstats: <http://lodstats.org/dataset#>
-                                  select ?dataset ?evaluated
-                                  where
-                                  {
-                                      ?dataset dstats:evaluated ?evaluated.
-                                  }
-                                  ''')
+        rows = self._client.query_bindings_only('''
+prefix dstats: <http://stats.lod2.eu/vocabulary/dataset#>
+select ?dataset ?evaluated
+where
+{
+    ?dataset dstats:evaluated ?evaluated.
+}
+''')
 
         self._evaluated = dict([(row['dataset']['value'], dateutil.parser.parse(row['evaluated']['value'])) for row in rows])
                                
