@@ -55,6 +55,28 @@ class SPARQLClient(object):
     def query(self, query_string):
         '''
             Use SPARQL to query the given graph.
+            Return a SPARQL results dict.
+        '''
+
+
+    def query_bindings_only(self, query_string):
+        '''
+            Use SPARQL to query the given graph.
+            Return only the bindings of SPARQL results dict.
+        '''
+
+
+    def query_value(self, query_string, datatype=str):
+        '''
+            Use SPARQL to query the given graph.
+            Return only a single value of the given datatype.
+        '''
+
+
+    def query_list(self, query_string, datatypes):
+        '''
+            Use SPARQL to query the given graph.
+            Return a list of the given datatypes dict.
         '''
 
 
