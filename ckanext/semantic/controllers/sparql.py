@@ -3,7 +3,6 @@ import ckan.lib.dictization.model_dictize as d
 import ckan.logic as logic
 import ckan.model as model
 import ckanext.semantic.lib.helpers as h
-import ckanext.semantic.model.store as store
 import datetime
 import lodstats.stats as stats
 import logging
@@ -76,7 +75,7 @@ order by ?dataset
             results['head']['vars'] = list(vars_)                
         else:
             results = logic.get_action('sparql_query')({}, {'query': query, 'endpoints': base.c.chosen_endpoints})
-        print results
+
         if not isinstance(results, dict):
             base.c.query_error = results
             base.c.subscriptable = False
