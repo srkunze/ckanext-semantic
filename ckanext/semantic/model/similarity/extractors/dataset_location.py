@@ -1,6 +1,5 @@
 from . import EntityLocation
 from . import DatasetExtractor
-import ckanext.semantic.model.store as store
 import ckanext.semantic.lib.location as hl
 import math
 
@@ -11,25 +10,25 @@ class DatasetLocation(EntityLocation, DatasetExtractor):
     
 
     def _extract(self, dataset_filter = ''):
-        rows = store.root.query('''
-                                prefix void: <http://rdfs.org/ns/void#>
+        rows = self._client.query('''
+prefix void: <http://rdfs.org/ns/void#>
 
-                                select ?dataset ?min_latitude ?max_latitude ?min_longitude ?max_longitude
-                                where
-                                {
-                                    ?dataset void:propertyPartition ?latPropertyPartition.
-                                    ?latPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#lat>.
-                                    ?latPropertyPartition void:minValue ?min_latitude.
-                                    ?latPropertyPartition void:maxValue ?max_latitude.
+select ?dataset ?min_latitude ?max_latitude ?min_longitude ?max_longitude
+where
+{
+    ?dataset void:propertyPartition ?latPropertyPartition.
+    ?latPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#lat>.
+    ?latPropertyPartition void:minValue ?min_latitude.
+    ?latPropertyPartition void:maxValue ?max_latitude.
 
-                                    ?dataset void:propertyPartition ?longPropertyPartition.
-                                    ?longPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#long>.
-                                    ?longPropertyPartition void:minValue ?min_longitude.
-                                    ?longPropertyPartition void:maxValue ?max_longitude.
-                                    
-                                    ''' + dataset_filter + '''
-                                }
-                                ''')
+    ?dataset void:propertyPartition ?longPropertyPartition.
+    ?longPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#long>.
+    ?longPropertyPartition void:minValue ?min_longitude.
+    ?longPropertyPartition void:maxValue ?max_longitude.
+    
+    ''' + dataset_filter + '''
+}
+''')
         self.entities = {}
         for row in rows:
             min_latitude = float(row['min_latitude']['value'])

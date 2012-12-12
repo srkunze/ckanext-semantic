@@ -3,7 +3,6 @@ from . import SubscriptionExtractor
 import ckan.model as model
 import ckanext.semantic.lib.helpers as h
 import ckanext.semantic.lib.time as ht
-import ckanext.semantic.model.store as store
 import datetime
 import dateutil.parser
 

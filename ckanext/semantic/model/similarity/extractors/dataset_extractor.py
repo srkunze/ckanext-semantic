@@ -1,4 +1,3 @@
-import ckanext.semantic.model.store as store
 import dateutil
 
 
@@ -30,15 +29,14 @@ class DatasetExtractor(object):
 
     
     def _extract_evaluated(self):
-        rows = store.root.query('''
-                                prefix dstats: <http://lodstats.org/dataset#>
-                                 
-                                select ?dataset ?evaluated
-                                where
-                                {
-                                    ?dataset dstats:evaluated ?evaluated.
-                                }
-                                ''')
+        rows = self._client.query('''
+                                  prefix dstats: <http://lodstats.org/dataset#>
+                                  select ?dataset ?evaluated
+                                  where
+                                  {
+                                      ?dataset dstats:evaluated ?evaluated.
+                                  }
+                                  ''')
 
         self._evaluated = dict([(row['dataset']['value'], dateutil.parser.parse(row['evaluated']['value'])) for row in rows])
                                

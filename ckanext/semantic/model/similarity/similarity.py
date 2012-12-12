@@ -1,7 +1,7 @@
 import ckan.model as model
 import ckanext.semantic.lib.helpers as h
 import ckanext.semantic.model.prefix as prefix
-import ckanext.semantic.model.store as store
+import ckanext.semantic.model.sparql_client as sparql_client
 import datetime
 import dateutil.parser
 import extractors
@@ -20,6 +20,9 @@ class Similarity(object):
 
 
     def __init__(self, graph='http://lodstats.org/similarities'):
+        self._client = sparql_client.SPARQLClientFactory.create_client(sparql_client.VFClient)
+        self.set_graph(graph)
+        
         self._similarity_method = None
         self._similarity_method_class = None
         self._entity_uri = None
@@ -78,8 +81,10 @@ class Similarity(object):
     def _get_extractor(self, entity_class_uri):
         try:
             extractor_class = self._get_valid_extractor_class(entity_class_uri)
+            extractor = extractor_class()
+            extractor.set_client(self._client)
 
-            return extractor_class()
+            return extractor
         except KeyError:
             pass
 
@@ -177,7 +182,7 @@ class Similarity(object):
         
       
     def get_similarity_count_and_oldest_created(self):
-        row = store.root.query('''
+        row = self._client.query('''
                                prefix sim: <http://purl.org/ontology/similarity/>
                                select (count(?similarity) as ?similarity_count) (min(?created) as ?oldest_created)
                                where
@@ -215,7 +220,7 @@ class Similarity(object):
                 filter_string += '?similarity_distance <= ' + str(self.max_similarity_distance)
             filter_string += ')'
         
-        rows = store.root.query('''
+        rows = self._client.query('''
                                 prefix xs: <http://www.w3.org/2001/XMLSchema#>
                                 prefix sim: <http://purl.org/ontology/similarity/>
                                 select ?similar_entity ?similarity_weight ?similarity_distance
@@ -300,8 +305,7 @@ class Similarity(object):
         if similarity_distance is not None:
             self.rdf.append(RDF.Statement(similarity_node, prefix.sim.distance, RDF.Node(literal=str(similarity_distance), datatype=prefix.xs.decimal.uri)))
 
-        store.root.modify(graph=self.graph,
-                          insert_construct=h.rdf_to_string(self.rdf),
+        self._client.modify(insert_construct=h.rdf_to_string(self.rdf),
                           delete_construct='?similarity ?predicate ?object.',
                           delete_where='''
                           ?similarity <http://purl.org/ontology/similarity/element> <''' + self._entity_uri + '''>.

@@ -3,6 +3,10 @@ class EntityExtractor(object):
         super(EntityExtractor, self).__init__()
         self._entity_uri = None
         self._extracted = False
+    
+    
+    def set_client(self, client):
+        self._client = client
 
 
     def set_entity(self, entity_uri):
