@@ -12,12 +12,17 @@ import shutil
 
 class VirtuosoFedXClient(SPARQLClient):
     def query(self, query_string):
-        #direct SPARQL endpoint
-        #url = '%s?query=%s' % (self._endpoint, urllib.quote(query_string))
-        #response = requests.get(url, headers={'Accept': 'application/sparql-results+json'})
-        #return json.loads(response.text)
         if not self._endpoints:
             return {'head': {'vars': []}, 'results': {'bindings': []}}
+
+        if len(self._endpoints) == 1:
+            url = '%s?query=%s' % (self._endpoints[0], urllib.quote(query_string))
+            response = requests.get(url, headers={'Accept': 'application/sparql-results+json'})
+            try:
+                return json.loads(response.text)
+            except:
+                return response.text
+        
         query_string = query_string.replace('\n', ' ')
         folder = str(uuid.uuid1())
         

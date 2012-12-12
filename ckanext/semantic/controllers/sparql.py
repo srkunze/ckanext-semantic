@@ -29,7 +29,7 @@ class SPARQLController(base.BaseController):
 
         if not query:
             query='''
-prefix void: http://rdfs.org/ns/void#
+prefix void: <http://rdfs.org/ns/void#>
 
 select *
 where
@@ -39,6 +39,7 @@ where
 }
 order by ?dataset
 '''
+            base.c.chosen_endpoints = [endpoint[0] for endpoint in base.c.available_endpoints]
         base.c.query = query
 
         context = {'model': model, 'session': model.Session, 'user': base.c.user}
@@ -75,8 +76,8 @@ order by ?dataset
             results['head']['vars'] = list(vars_)                
         else:
             results = logic.get_action('sparql_query')({}, {'query': query, 'endpoints': base.c.chosen_endpoints})
-        
-        if isinstance(results, str):
+        print results
+        if not isinstance(results, dict):
             base.c.query_error = results
             base.c.subscriptable = False
             base.c.results = None
