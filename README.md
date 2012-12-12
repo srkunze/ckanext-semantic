@@ -8,7 +8,6 @@ Installation instructions:
  - apply db file to add necessary tables
  - install LODStats via pip (https://github.com/srkunze/LODStats)
  - add to your CKAN configuration ini file
-
 <pre>
 # constants for dataset statistics update
 ckan.semantic.waiting_time = 1
