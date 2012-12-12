@@ -8,7 +8,8 @@ import tempfile
 import urllib
 import uuid
 import shutil
-import os
+
+
 class VirtuosoFedXClient(SPARQLClient):
     def query(self, query_string):
         #direct SPARQL endpoint
