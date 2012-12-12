@@ -14,7 +14,8 @@ Installation instructions:
 ckan.semantic.waiting_time = 1
 ckan.semantic.ratio_old_new = 0.4
 
-# credentials for sparql clients (for delete and insert) pattern: SPARQL_{attribute}_{role}; attribute in [username, password, hostname]; role in [root]
+# credentials for sparql clients (for delete and insert)
+# pattern: SPARQL_{attribute}_{role}; attribute in [username, password, hostname]; role in [root]
 ckan.semantic.SPARQL_username_root = dba
 ckan.semantic.SPARQL_password_root = dba
 ckan.semantic.SPARQL_hostname_root = localhost
@@ -22,7 +23,8 @@ ckan.semantic.SPARQL_hostname_root = localhost
 # federation tool fedX required
 ckan.semantic.FedX = {path to your FedX}/lib/*
 
-# endpoints: SPARQL_endpoint# from 0 to 20
+# endpoints
+# pattern: SPARQL_endpoint# from 0 to 20
 ckan.semantic.SPARQL_endpoint1 = http://localhost:8890/sparql
 ckan.semantic.SPARQL_endpoint1_name = CKAN Store
 ckan.semantic.SPARQL_endpoint2 = http://dbpedia.org/sparql
