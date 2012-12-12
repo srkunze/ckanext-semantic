@@ -18,6 +18,8 @@ log = logging.getLogger(__name__)
 class SPARQLController(base.BaseController):
     def index(self):
         query = base.request.params.get('query', None)
+        base.c.chosen_endpoints = base.request.params.getall('chosen_endpoints')
+
         
         base.c.available_endpoints = []
         for index in range(0, 20):
@@ -26,7 +28,10 @@ class SPARQLController(base.BaseController):
                 base.c.available_endpoints.append((endpoint, pylons.config.get('ckan.semantic.SPARQL_endpoint%s_name' % index, endpoint)))
 
         if not query:
-            query='''select * 
+            query='''
+prefix void: http://rdfs.org/ns/void#
+
+select *
 where
 {
     ?dataset a void:Dataset.
@@ -40,7 +45,7 @@ order by ?dataset
 
         definition = {}
         definition['query'] = urllib.unquote(query)
-        definition['endpoints'] = urllib.unquote(query)
+        definition['endpoints'] = base.c.chosen_endpoints
         definition['type'] = 'sparql'
         definition['data_type'] = 'dataset'
         
@@ -69,7 +74,7 @@ order by ?dataset
 
             results['head']['vars'] = list(vars_)                
         else:
-            results = logic.get_action('sparql_query')({}, {'query': query})
+            results = logic.get_action('sparql_query')({}, {'query': query, 'endpoints': base.c.chosen_endpoints})
         
         if isinstance(results, str):
             base.c.query_error = results

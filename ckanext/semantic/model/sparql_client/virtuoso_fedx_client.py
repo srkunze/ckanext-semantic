@@ -16,7 +16,8 @@ class VirtuosoFedXClient(SPARQLClient):
         #url = '%s?query=%s' % (self._endpoint, urllib.quote(query_string))
         #response = requests.get(url, headers={'Accept': 'application/sparql-results+json'})
         #return json.loads(response.text)
-        
+        if not self._endpoints:
+            return {'head': {'vars': []}, 'results': {'bindings': []}}
         query_string = query_string.replace('\n', ' ')
         folder = str(uuid.uuid1())
         
@@ -29,13 +30,15 @@ class VirtuosoFedXClient(SPARQLClient):
         out, err = process.communicate()
         if err:
             raise ISQLException(err)
-
-        json_data=open('results/%s/q_1.json' % folder, 'r')
-        data = json.load(json_data)
-        json_data.close()
-        shutil.rmtree('results/%s' % folder)
         
-        return data
+        try:
+            json_data=open('results/%s/q_1.json' % folder, 'r')
+            data = json.load(json_data)
+            json_data.close()
+            shutil.rmtree('results/%s' % folder)
+            return data
+        except:
+            return out
 
 
     def query_bindings_only(self, query_string):

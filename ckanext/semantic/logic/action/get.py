@@ -1,4 +1,4 @@
-import ckanext.semantic.model.store as store
+import ckanext.semantic.model.sparql_client as sparql_client
 
 
 def sparql_query(context, data_dict):
@@ -10,5 +10,7 @@ def sparql_query(context, data_dict):
     
     :rtype: JSON formatted SPARQL endpoint response
     '''
-    return store.user.query(data_dict['query'], complete=True)
+    client = sparql_client.SPARQLClientFactory.create_client(sparql_client.VFClient)
+    client.set_endpoints(data_dict['endpoints'])
+    return client.query(data_dict['query'])
 
