@@ -18,6 +18,12 @@ log = logging.getLogger(__name__)
 class SPARQLController(base.BaseController):
     def index(self):
         query = base.request.params.get('query', None)
+        
+        base.c.available_endpoints = []
+        for index in range(0, 20):
+            endpoint = pylons.config.get('ckan.semantic.SPARQL_endpoint%s' % index, None)
+            if endpoint:
+                base.c.available_endpoints.append((endpoint, pylons.config.get('ckan.semantic.SPARQL_endpoint%s_name' % index, endpoint)))
 
         if not query:
             query='''select * 
@@ -34,7 +40,7 @@ order by ?dataset
 
         definition = {}
         definition['query'] = urllib.unquote(query)
-        definition['filters'] = {}
+        definition['endpoints'] = urllib.unquote(query)
         definition['type'] = 'sparql'
         definition['data_type'] = 'dataset'
         
@@ -65,9 +71,6 @@ order by ?dataset
         else:
             results = logic.get_action('sparql_query')({}, {'query': query})
         
-        
-        print pylons.config.get('ckan.semantic.SPARQL_additional_endpoint')
-    
         if isinstance(results, str):
             base.c.query_error = results
             base.c.subscriptable = False

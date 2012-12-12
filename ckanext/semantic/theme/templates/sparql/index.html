@@ -10,18 +10,20 @@
   <section class="module">
     <div class="module-content">
       <form id="dataset-search" class="dataset-search clearfix" method="get" data-module="select-switch">
-         <textarea id="sparql-textarea" name="query">{{ c.query }}</textarea>
+        <p>
+          {% for endpoint in c.available_endpoints %}
+            <input type="checkbox" name="chosen_endpoint" value="{{ endpoint[0] }}" style="top:0" /> {{endpoint[1]}}
+          {% endfor %}
+        </p>
+        <textarea id="sparql-textarea" name="query">{{ c.query }}</textarea>
 
         <span class="control-group search-giant">
           <button style="margin:0; padding: 0; left: 600px; top: 25px; border:1px solid" type="submit" value="{{ _('Search') }}">Submit</button>
         </span>
-
       </form>
       <div class="results">
         <strong>
-
         </strong>
-
       </div>
 
       {% if c.query_error %}
