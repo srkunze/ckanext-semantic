@@ -134,13 +134,13 @@ class SemanticPlugin(plugins.SingletonPlugin):
         client = sparql_client.SPARQLClientFactory.create_client(sparql_client.VFClient)
         semantic_search = search.Search(client)
         semantic_search.execute(search_params['filters'])
-        if not semantic_search.no_filters and not semantic_search.result_ids:
-            search_params['fq'] = search_params.get('fq', '') + '(id=0)'
-        elif semantic_search.result_ids:
+        if semantic_search.result_ids:
             search_params['fq'] = search_params.get('fq', '') + '(id:%s' % semantic_search.result_ids[0]
             for id_ in semantic_search.result_ids[1:]:
                 search_params['fq'] += ' OR id:%s' % id_
             search_params['fq'] += ')'
+        elif not semantic_search.no_filters:
+            search_params['fq'] = search_params.get('fq', '') + '(id=0)'
 
         return search_params
 
