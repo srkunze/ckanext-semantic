@@ -20,9 +20,6 @@ class Similarity(object):
 
 
     def __init__(self, graph='http://lodstats.org/similarities'):
-        self._client = sparql_client.SPARQLClientFactory.create_client(sparql_client.VFClient)
-        self.set_graph(graph)
-        
         self._similarity_method = None
         self._similarity_method_class = None
         self._entity_uri = None
@@ -37,7 +34,8 @@ class Similarity(object):
         
         self._clear_rdf()
         self.rows = []
-        self.graph = graph
+        self._client = sparql_client.SPARQLClientFactory.create_client(sparql_client.VFClient)
+        self.set_graph(graph)
 
 
     def set_entity(self, entity_uri, entity_class_uri):
