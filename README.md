@@ -8,6 +8,7 @@ Installation instructions:
  - apply db file to add necessary tables
  - install LODStats via pip (https://github.com/srkunze/LODStats)
  - add to your CKAN configuration ini file
+
 <pre>
 # constants for dataset statistics update
 ckan.semantic.waiting_time = 1
@@ -31,6 +32,7 @@ ckan.semantic.SPARQL_endpoint2_name = DBPedia Store
 </pre>
 
  - run via paster
+
 <pre>
 paster semantic update_dataset_due_statistics --config=../ckan/development.ini
 paster semantic update_dataset_statistics {dataset_name} --config=../ckan/development.ini
