@@ -10,19 +10,16 @@
       <form method="get">
         <p>Here you can filter by the topic of the dataset in terms of vocabularies, classes and properties.</p>
         <input id="topic_input" autocomplete="off" type="text" class="input" name="topic" style="height:14px; width:115px" placeholder="http://purl.org/ontology/bibo/" />
-        {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params %}
+        {% snippet "snippets/fields_to_hidden.html", fields=c.fields %}
         <button type="submit" class="btn" style="height:34px; margin-top:-10px">Add</button>
       </form>
     </div>
         
-    {% for name_value_pair in c.search_url_params.split('&') %}
-      {% set name_value = name_value_pair.split('=') %}
-      {% set name = name_value[0] %}
-      {% set value = h.unquote(name_value[1]) %}
+    {% for name, value in c.fields %}
       {% if name in ['topic'] %}
         <form method="get" style="margin:0">
           <button type="submit" style="background:white; border-left: 0; border-right: 0; border-top: 1px dotted; border-bottom: 0; height:27px; text-align:left; width:220px; padding-left:15px" >{{ value }}&nbsp; &nbsp; X</button>
-          {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except={'topic=' + value:True} %}
+          {% snippet "snippets/fields_to_hidden.html", fields=c.fields, except=[(name, value)] %}
         </form>
       {% endif %}
     {% endfor %}
@@ -38,18 +35,18 @@
         Longitude (degrees) <input type="text" class="input" name="location_longitude" style="height:14px; width:165px" value="{{ c.fields_grouped.location_longitude[0] if c.fields_grouped.location_longitude }}" placeholder="-3.703" />
         Radius (Kms) <input type="text" class="input" name="location_radius" style="height:14px; width:165px" value="{{ c.fields_grouped.location_radius[0] if c.fields_grouped.location_radius }}" placeholder="50" />
 
-      {% if c.fields_grouped.location_latitude %}
-        {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except_names={'location_latitude':True, 'location_longitude':True, 'location_radius':True} %}
-        <button type="submit" class="btn" style="height:34px; margin-top:-10px">Update</button>
-      {% else %}
-        <button type="submit" class="btn" style="height:34px; margin-top:-10px">Apply</button>
-      {% endif %}
+        {% snippet "snippets/fields_to_hidden.html", fields=c.fields, except_names=['location_latitude', 'location_longitude', 'location_radius'] %}
+        {% if c.fields_grouped.location_latitude %}
+          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Update</button>
+        {% else %}
+          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Apply</button>
+        {% endif %}
 
       </form>
       {% if c.fields_grouped.location_latitude %}
         <form method="get">
           <button type="submit" class="btn" style="height:34px; margin-top:-10px">Remove</button>
-          {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except_names={'location_latitude':True, 'location_longitude':True, 'location_radius':True} %}
+          {% snippet "snippets/fields_to_hidden.html", fields=c.fields, except_names=['location_latitude', 'location_longitude', 'location_radius'] %}
         </form>
       {% endif %}
     </div>
@@ -64,18 +61,18 @@
         From (ISO format) <input type="text" class="input" name="time_min" style="height:14px; width:165px" value="{{ c.fields_grouped.get('time_min', [''])[0] }}" placeholder="1980-01-23" />
         Until (ISO format) <input type="text" class="input" name="time_max" style="height:14px; width:165px" value="{{ c.fields_grouped.get('time_max', [''])[0] }}" placeholder="2001-04" />
 
-      {% if c.fields_grouped.time_min %}
-        {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except_names={'time_min':True, 'time_max':True} %}
-        <button type="submit" class="btn" style="height:34px; margin-top:-10px">Update</button>
-      {% else %}
-        <button type="submit" class="btn" style="height:34px; margin-top:-10px">Apply</button>
-      {% endif %}
+        {% snippet "snippets/fields_to_hidden.html", fields=c.fields, except_names=['time_min', 'time_max'] %}
+        {% if c.fields_grouped.time_min or c.fields_grouped.time_max %}
+          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Update</button>
+        {% else %}
+          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Apply</button>
+        {% endif %}
 
       </form>
       {% if c.fields_grouped.time_min or c.fields_grouped.time_max %}
         <form method="get">
           <button type="submit" class="btn" style="height:34px; margin-top:-10px">Remove</button>
-          {% snippet "snippets/params_to_hidden.html", name_value_pairs=c.search_url_params, except_names={'time_min':True, 'time_max':True} %}
+          {% snippet "snippets/fields_to_hidden.html", fields=c.fields, except_names=['time_min', 'time_max'] %}
         </form>
       {% endif %}
     </div>

@@ -2,6 +2,10 @@
 *.swp
 *.swo
 
+cache.db
+
 build/*
 ckanext_semantic.egg-info/*
 dist/*
+results/*
+

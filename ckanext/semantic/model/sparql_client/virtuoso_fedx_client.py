@@ -2,21 +2,39 @@ from . import SPARQLClient
 import requests
 import json
 import re
+import pylons
 import subprocess
 import tempfile
 import urllib
-
-
-class VirtuosoClient(SPARQLClient):
-    def set_url(self, url):
-        super(VirtuosoClient, self).set_url(url)
-        self._hostname = re.search('http://(.*):(.*)/(.*)', 'http://localhost:8890/sparql').group(1)
-
-
+import uuid
+import shutil
+import os
+class VirtuosoFedXClient(SPARQLClient):
     def query(self, query_string):
-        url = '%s?query=%s' % (self._url, urllib.quote(query_string))
-        response = requests.get(url, headers={'Accept': 'application/sparql-results+json'})
-        return json.loads(response.text)
+        #direct SPARQL endpoint
+        #url = '%s?query=%s' % (self._endpoint, urllib.quote(query_string))
+        #response = requests.get(url, headers={'Accept': 'application/sparql-results+json'})
+        #return json.loads(response.text)
+        
+        query_string = query_string.replace('\n', ' ')
+        folder = str(uuid.uuid1())
+        
+        command = ['java', '-cp', 'bin:%s' % pylons.config.get('ckan.semantic.FedX'), 'com.fluidops.fedx.CLI']
+        for endpoint in self._endpoints:
+            command.append('-s')
+            command.append(endpoint)
+        command = command + ['-f', 'JSON', '-folder', folder, '-q', query_string]
+        process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        out, err = process.communicate()
+        if err:
+            raise ISQLException(err)
+
+        json_data=open('results/%s/q_1.json' % folder, 'r')
+        data = json.load(json_data)
+        json_data.close()
+        shutil.rmtree('results/%s' % folder)
+        
+        return data
 
 
     def query_bindings_only(self, query_string):
@@ -63,15 +81,15 @@ class VirtuosoClient(SPARQLClient):
 
 
     def clear_graph(self):
-        return self._query_ISQL("CLEAR GRAPH <%s>" % self._graph)
+        return self._query_ISQL('CLEAR GRAPH <%s>' % self._graph)
 
 
     def _query_ISQL(self, query):
         temporary_file = tempfile.NamedTemporaryFile()
         temporary_file.write('SPARQL %s;' % query)
         temporary_file.flush()
-
-        command = ["isql-v", self._hostname, self._username, self._password, temporary_file.name]
+        
+        command = ['isql-v', self._hostname, self._username, self._password, temporary_file.name]
         process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = process.communicate()
         if err:

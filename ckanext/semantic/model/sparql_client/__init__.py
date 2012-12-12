@@ -8,12 +8,18 @@ class SPARQLClientFactory:
             raise Exception('Given client class is no SPARQL client')
         client = client_class()
         config_name_prefix = 'ckan.semantic.SPARQL'
-        for config_name_part in ['username', 'password', 'url']:
+        for config_name_part in ['username', 'password', 'hostname']:
             config_name = '%s_%s' % (config_name_prefix, config_name_part)
             if role:
                 config_name += '_' + role
             config_value = pylons.config.get(config_name)
             getattr(client, 'set_%s' % config_name_part)(config_value)
+        endpoints = []
+        for index in range(0, 20):
+            endpoint = pylons.config.get('ckan.semantic.SPARQL_endpoint%s' % index, None)
+            if endpoint:
+                endpoints.append(endpoint)
+        client.set_endpoints(endpoints)
         return client
 
 
@@ -26,8 +32,16 @@ class SPARQLClient(object):
         self._password = password
 
 
-    def set_url(self, url):
-        self._url = url
+    def set_hostname(self, hostname):
+        self._hostname = hostname
+
+
+    def set_port(self, port):
+        self._port = port
+
+
+    def set_endpoints(self, endpoints):
+        self._endpoints = endpoints
 
 
     def set_graph(self, graph):
@@ -52,4 +66,4 @@ class SPARQLClient(object):
         '''
 
 
-from virtuoso_client import VirtuosoClient
+from virtuoso_fedx_client import VirtuosoFedXClient as VFClient

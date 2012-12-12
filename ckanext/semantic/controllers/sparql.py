@@ -8,6 +8,7 @@ import datetime
 import lodstats.stats as stats
 import logging
 import RDF
+import pylons
 import urllib   
 
 
@@ -38,7 +39,8 @@ order by ?dataset
         definition['data_type'] = 'dataset'
         
         try:
-            base.c.subscription = logic.get_action('subscription_show')(context, {'subscription_definition': definition})
+#            base.c.subscription = logic.get_action('subscription_show')(context, {'subscription_definition': definition})
+            base.c.subscription = None
         except logic.NotAuthorized:
             pass
             
@@ -62,6 +64,9 @@ order by ?dataset
             results['head']['vars'] = list(vars_)                
         else:
             results = logic.get_action('sparql_query')({}, {'query': query})
+        
+        
+        print pylons.config.get('ckan.semantic.SPARQL_additional_endpoint')
     
         if isinstance(results, str):
             base.c.query_error = results
