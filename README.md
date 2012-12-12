@@ -10,6 +10,9 @@ Installation instructions:
  - add to your CKAN configuration ini file
 
 <pre>
+# add this to your plugins
+ckan.plugins = semantic
+
 # constants for dataset statistics update
 ckan.semantic.waiting_time = 1
 ckan.semantic.ratio_old_new = 0.4
@@ -38,4 +41,4 @@ paster semantic update_dataset_due_statistics --config=../ckan/development.ini
 paster semantic update_dataset_statistics {dataset_name} --config=../ckan/development.ini
 paster semantic update_vocabulary_statistics --config=../ckan/development.ini
 </pre>
- - create CRON job to run these commands on a periodical basis
+ - create CRON jobs to run these commands on a periodical basis
