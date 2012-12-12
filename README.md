@@ -9,6 +9,7 @@ Installation instructions:
  - install LODStats via pip (https://github.com/srkunze/LODStats)
  - add to your CKAN configuration ini file
 
+<pre>
 # constants for dataset statistics update
 ckan.semantic.waiting_time = 1
 ckan.semantic.ratio_old_new = 0.4
@@ -26,4 +27,4 @@ ckan.semantic.SPARQL_endpoint1 = http://localhost:8890/sparql
 ckan.semantic.SPARQL_endpoint1_name = CKAN Store
 ckan.semantic.SPARQL_endpoint2 = http://dbpedia.org/sparql
 ckan.semantic.SPARQL_endpoint2_name = DBPedia Store
-
+</pre>
