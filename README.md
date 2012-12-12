@@ -30,3 +30,11 @@ ckan.semantic.SPARQL_endpoint1_name = CKAN Store
 ckan.semantic.SPARQL_endpoint2 = http://dbpedia.org/sparql
 ckan.semantic.SPARQL_endpoint2_name = DBPedia Store
 </pre>
+
+ - run via paster
+<pre>
+paster semantic update_dataset_due_statistics --config=../ckan/development.ini
+paster semantic update_dataset_statistics {dataset_name} --config=../ckan/development.ini
+paster semantic update_vocabulary_statistics --config=../ckan/development.ini
+</pre>
+ - create CRON job to run these commands on a periodical basis
