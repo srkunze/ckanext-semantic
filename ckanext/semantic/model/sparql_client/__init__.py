@@ -4,12 +4,12 @@ import pylons
 
 class SPARQLClientFactory:
     @classmethod
-    def create_client(cls, client_class, endpoint_type, role=None):
+    def create_client(cls, client_class, endpoint_class=None, role=None):
         '''
             client_class:
                 class of SPARQL client; needs to be subclass of SPARQLClient
             endpoint_types:
-                'standard' or 'all'
+                'standard', 'additional', 'all', None
             role:
                 'root' or None
         '''
@@ -23,7 +23,8 @@ class SPARQLClientFactory:
                 config_name += '_' + role
             config_value = pylons.config.get(config_name)
             getattr(client, 'set_%s' % config_name_part)(config_value)
-        client.set_endpoints(h.get_endpoints(endpoint_type))
+        if endpoint_class:
+            client.set_endpoints(h.get_endpoints(endpoint_class))
         return client
 
 
