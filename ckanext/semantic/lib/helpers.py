@@ -81,7 +81,7 @@ def _get_additional_endpoints(with_name):
     return endpoints
 
 
-def get_only_configured_endpoints(endpoints):
+def get_configured_endpoints_only(endpoints):
     available_endpoints = get_endpoints(type_='all')
     chosen_endpoints = []
     for endpoint in endpoints:

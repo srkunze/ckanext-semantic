@@ -14,6 +14,6 @@ def sparql_query(context, data_dict):
     :rtype: JSON formatted SPARQL endpoint response
     '''
     client = sparql_client.SPARQLClientFactory.create_client(sparql_client.VFClient)
-    client.set_endpoints(h.get_only_configured_endpoints(data_dict['endpoints']))
+    client.set_endpoints(h.get_configured_endpoints_only(data_dict['endpoints']))
     return client.query(data_dict['query'])
 

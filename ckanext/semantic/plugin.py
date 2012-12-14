@@ -172,12 +172,18 @@ class SemanticPlugin(plugins.SingletonPlugin):
     
     def prepare_creation(self, subscription_definition, parameters):
         subscription_definition['query'] = parameters['query'][0]
-    
+        subscription_definition['endpoints'] = h.get_configured_endpoints_only(parameters['endpoints'])
+        return subscription_definition
+
+
+    def prepare_update(self, subscription_definition, parameters):
+        subscription_definition['query'] = parameters['query'][0]
+        subscription_definition['endpoints'] = h.get_configured_endpoints_only(parameters['endpoints'])
         return subscription_definition
         
         
     def item_data_and_key_name(self, subscription_definition):
-        results = logic.get_action('sparql_query')({}, {'query': subscription_definition['query']})
+        results = logic.get_action('sparql_query')({}, {'query': subscription_definition['query'], 'endpoints': subscription_definition['endpoints']})
 
         if isinstance(results, str):
             return [], None
@@ -192,7 +198,6 @@ class SemanticPlugin(plugins.SingletonPlugin):
                 object_ = h.uri_to_object(value['value'])
                 if isinstance(object_, model.Package):
                     datasets.append(object_)
-        
         return datasets
     
 
