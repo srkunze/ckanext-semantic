@@ -166,7 +166,6 @@ class SemanticPlugin(plugins.SingletonPlugin):
         if subscription_definition['type'] == 'sparql' and \
            subscription_definition['data_type'] == 'dataset':
            return true
-           
         return false
         
     
