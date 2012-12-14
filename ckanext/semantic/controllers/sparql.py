@@ -17,8 +17,7 @@ log = logging.getLogger(__name__)
 class SPARQLController(base.BaseController):
     def index(self):
         query = base.request.params.get('query', None)
-        base.c.chosen_endpoints = base.request.params.getall('chosen_endpoints')
-
+        base.c.chosen_endpoints = h.get_only_configured_endpoints(base.request.params.getall('chosen_endpoints'))
         base.c.available_endpoints = h.get_endpoints(type_='all', with_name=True)
 
         if not query:
