@@ -39,8 +39,9 @@ class VirtuosoFedXClient(SPARQLClient):
             for binding in self._query(query_string)['results']['bindings']:
                 result = {}
                 for name, datatype in datatypes.iteritems():
-                    result[name] = datatype(binding[name]['value'])
-                    results.append(result)
+                    if name in binding:
+                        result[name] = datatype(binding[name]['value'])
+                        results.append(result)
             return results
         except SPARQLError as error:
             return error
@@ -52,7 +53,7 @@ class VirtuosoFedXClient(SPARQLClient):
 
         if len(self._endpoints) == 1:
             url = '%s?query=%s' % (self._endpoints[0], urllib.quote(query_string))
-            response = requests.get(url, headers={'Accept': 'application/sparql-results+json'})
+            response = requests.get(url, headers={'Accept': 'application/sparql-results+json, application/sparql-results+xml'})
             try:
                 return json.loads(response.text)
             except:

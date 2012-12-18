@@ -56,7 +56,7 @@ class SemanticPlugin(plugins.SingletonPlugin):
     def before_map(self, map):
         map.connect('/sparql', controller='ckanext.semantic.controllers.sparql:SPARQLController', action='index')
 
-        map.connect('/vocabulary', controller='ckanext.semantic.controllers.vocabulary:VocabularyController', action='read')
+        map.connect('/vocabulary/{query}', controller='ckanext.semantic.controllers.vocabulary:VocabularyController', action='read')
         
         map.redirect('/recommendation/', '/recommendation')
         map.connect('/recommendation', controller='ckanext.semantic.controllers.recommendation:RecommendationController', action='read')
@@ -163,31 +163,28 @@ class SemanticPlugin(plugins.SingletonPlugin):
     ######################################
     #   plugin.ISubscription interface   #
     def is_responsible(self, subscription_definition):
-        if subscription_definition['type'] == 'sparql' and \
-           subscription_definition['data_type'] == 'dataset':
-           return true
-        return false
+        return subscription_definition['type'] == 'sparql'
         
     
     def prepare_creation(self, subscription_definition, parameters):
         subscription_definition['query'] = parameters['query'][0]
         subscription_definition['endpoints'] = h.get_configured_endpoints_only(parameters['endpoints'])
+        subscription_definition['key'] = None
         return subscription_definition
 
 
     def prepare_update(self, subscription_definition, parameters):
         subscription_definition['query'] = parameters['query'][0]
         subscription_definition['endpoints'] = h.get_configured_endpoints_only(parameters['endpoints'])
+        subscription_definition['key'] = None
         return subscription_definition
         
         
-    def item_data_and_key_name(self, subscription_definition):
+    def item_data_by_definition(self, subscription_definition):
         results = logic.get_action('sparql_query')({}, {'query': subscription_definition['query'], 'endpoints': subscription_definition['endpoints']})
-
-        if isinstance(results, str):
-            return [], None
-
-        return results['results']['bindings'], None
+        if not isinstance(results, dict):
+            return []
+        return results['results']['bindings']
 
 
     def item_to_objects(self, subscription_item):
@@ -216,7 +213,10 @@ class SemanticPlugin(plugins.SingletonPlugin):
     #################################
     #   plugin.IActions interface   #
     def get_actions(self):
-        return {'sparql_query': action.get.sparql_query}
+        return {
+            'sparql_query': logic.side_effect_free(action.get.sparql_query),
+            'uri_suggestions': logic.side_effect_free(action.get.uri_suggestions)
+        }
 
     #   plugin.IActions interface   #
     #################################
