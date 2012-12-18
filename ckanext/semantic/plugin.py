@@ -55,8 +55,6 @@ class SemanticPlugin(plugins.SingletonPlugin):
     #   plugin.IRoutes interface   #               
     def before_map(self, map):
         map.connect('/sparql', controller='ckanext.semantic.controllers.sparql:SPARQLController', action='index')
-
-        map.connect('/vocabulary/{query}', controller='ckanext.semantic.controllers.vocabulary:VocabularyController', action='read')
         
         map.redirect('/recommendation/', '/recommendation')
         map.connect('/recommendation', controller='ckanext.semantic.controllers.recommendation:RecommendationController', action='read')
