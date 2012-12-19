@@ -1,21 +1,46 @@
-var cache = {};
-$.ajax(
-{
-    url: "/vocabulary",
-    dataType: "json",
-    success: function( data )
-    {
-        x = []
-        for(index = 0; index < data.length; index += 1)
-        {
-            x.push(data[index].vocabulary);
+$(function() {
+    $.widget( "custom.catcomplete", $.ui.autocomplete, {
+        _renderMenu: function( ul, items ) {
+            var that = this,
+                currentCategory = "";
+            $.each( items, function( index, item ) {
+                if ( item.category != currentCategory ) {
+                    ul.append( "<li class='ui-autocomplete-category'>" + item.category + "</li>" );
+                    currentCategory = item.category;
+                }
+                that._renderItemData( ul, item );
+            });
         }
-        
-        
-        $('#topic_input').typeahead({ source: x });
-    }
-});
+    });
 
+
+    $( "#topic_input" ).catcomplete({
+        minLength: 3,
+        source: function(request, response){
+            $.ajax({
+                url: "api/action/uri_suggestions?query="+request.term,
+                dataType: 'json',
+                success: function( data ) {
+                    response(data.result);
+                }
+            });
+        },
+        focus: function( event, ui ) {
+            $( "#topic_input" ).val( ui.item.uri );
+            return false;
+        },
+        select: function( event, ui ) {
+            $( "#topic_input" ).val( ui.item.uri );
+            return false;
+        }
+    })
+    .data( "catcomplete" )._renderItem = function( ul, item ) {
+        return $( "<li>" )
+            .data( "item.autocomplete", item )
+            .append( "<a><b>" + item.label + "</b><br>" + item.uri + "</a>" )
+            .appendTo( ul );
+    };
+});
 
 
 var latitude = document.forms.location.location_latitude;

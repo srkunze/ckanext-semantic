@@ -1,0 +1,15 @@
+.ui-autocomplete-category {
+    color: gray;
+    border-bottom: none;
+    clear: both;
+    border-top: 1px solid grey;
+    text-align:right;
+}
+
+.ui-autocomplete {
+        max-height: 400px;
+        overflow-y: auto;
+        /* prevent horizontal scrollbar */
+        overflow-x: hidden;
+        z-index:6;
+    }

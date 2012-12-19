@@ -41,7 +41,8 @@ class VirtuosoFedXClient(SPARQLClient):
                 for name, datatype in datatypes.iteritems():
                     if name in binding:
                         result[name] = datatype(binding[name]['value'])
-                        results.append(result)
+                if result:
+                    results.append(result)
             return results
         except SPARQLError as error:
             return error
