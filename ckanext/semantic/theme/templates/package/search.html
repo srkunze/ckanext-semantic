@@ -10,7 +10,7 @@
       <form method="get">
         <p>Here you can filter by the topic of the dataset in terms of vocabularies, classes and properties.</p>
         <input id="topic_input" autocomplete="off" type="text" class="input" name="topic" style="height:14px; width:115px" placeholder="http://purl.org/ontology/bibo/" />
-        {{ form.hidden_list(fields=c.fields) }}
+        {{ form.hidden_from_list(fields=c.fields) }}
         <button type="submit" class="btn" style="height:34px; margin-top:-10px">Add</button>
       </form>
     </div>
@@ -24,7 +24,7 @@
             <a style="width:218px; left:28px;">
               <button type="submit" style="background:white; border:none; width:200px; margin-left:-10px; color:blue; font-weight:bold" >{{ value }}</button>
             </a>
-            {{ form.hidden_list(fields=c.fields, except=[(name, value)]) }}
+            {{ form.hidden_from_list(fields=c.fields, except=[(name, value)]) }}
           </li>
         </form>
         {% endif %}
@@ -43,7 +43,7 @@
         Longitude (degrees) <input type="text" class="input" name="location_longitude" style="height:14px; width:165px" value="{{ c.fields_grouped.location_longitude[0] if c.fields_grouped.location_longitude }}" placeholder="-3.703" />
         Radius (Kms) <input type="text" class="input" name="location_radius" style="height:14px; width:165px" value="{{ c.fields_grouped.location_radius[0] if c.fields_grouped.location_radius }}" placeholder="50" />
 
-        {{ form.hidden_list(fields=c.fields, except_names=['location_latitude', 'location_longitude', 'location_radius']) }}
+        {{ form.hidden_from_list(fields=c.fields, except_names=['location_latitude', 'location_longitude', 'location_radius']) }}
         {% if c.fields_grouped.location_latitude %}
           <button type="submit" class="btn" style="height:34px; margin-top:-10px">Update</button>
         {% else %}
@@ -54,7 +54,7 @@
       {% if c.fields_grouped.location_latitude %}
         <form method="get">
           <button type="submit" class="btn" style="height:34px; margin-top:-10px">Remove</button>
-          {{ form.hidden_list(fields=c.fields, except_names=['location_latitude', 'location_longitude', 'location_radius']) }}
+          {{ form.hidden_from_list(fields=c.fields, except_names=['location_latitude', 'location_longitude', 'location_radius']) }}
         </form>
       {% endif %}
     </div>
@@ -69,7 +69,7 @@
         From (ISO format) <input type="text" class="input" name="time_min" style="height:14px; width:165px" value="{{ c.fields_grouped.get('time_min', [''])[0] }}" placeholder="1980-01-23" />
         Until (ISO format) <input type="text" class="input" name="time_max" style="height:14px; width:165px" value="{{ c.fields_grouped.get('time_max', [''])[0] }}" placeholder="2001-04" />
 
-        {{ form.hidden_list(fields=c.fields, except_names=['time_min', 'time_max']) }}
+        {{ form.hidden_from_list(fields=c.fields, except_names=['time_min', 'time_max']) }}
         {% if c.fields_grouped.time_min or c.fields_grouped.time_max %}
           <button type="submit" class="btn" style="height:34px; margin-top:-10px">Update</button>
         {% else %}
@@ -80,7 +80,7 @@
       {% if c.fields_grouped.time_min or c.fields_grouped.time_max %}
         <form method="get">
           <button type="submit" class="btn" style="height:34px; margin-top:-10px">Remove</button>
-          {{ form.hidden_list(fields=c.fields, except_names=['time_min', 'time_max']) }}
+          {{ form.hidden_from_list(fields=c.fields, except_names=['time_min', 'time_max']) }}
         </form>
       {% endif %}
     </div>
