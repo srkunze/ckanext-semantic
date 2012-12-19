@@ -45,15 +45,15 @@
 
         {{ form.hidden_from_list(fields=c.fields, except_names=['location_latitude', 'location_longitude', 'location_radius']) }}
         {% if c.fields_grouped.location_latitude %}
-          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Update</button>
+          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Update filter</button>
         {% else %}
-          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Apply</button>
+          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Apply filter</button>
         {% endif %}
 
       </form>
       {% if c.fields_grouped.location_latitude %}
         <form method="get">
-          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Remove</button>
+          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Remove filter</button>
           {{ form.hidden_from_list(fields=c.fields, except_names=['location_latitude', 'location_longitude', 'location_radius']) }}
         </form>
       {% endif %}
@@ -71,15 +71,15 @@
 
         {{ form.hidden_from_list(fields=c.fields, except_names=['time_min', 'time_max']) }}
         {% if c.fields_grouped.time_min or c.fields_grouped.time_max %}
-          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Update</button>
+          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Update filter</button>
         {% else %}
-          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Apply</button>
+          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Apply filter</button>
         {% endif %}
 
       </form>
       {% if c.fields_grouped.time_min or c.fields_grouped.time_max %}
         <form method="get">
-          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Remove</button>
+          <button type="submit" class="btn" style="height:34px; margin-top:-10px">Remove filter</button>
           {{ form.hidden_from_list(fields=c.fields, except_names=['time_min', 'time_max']) }}
         </form>
       {% endif %}

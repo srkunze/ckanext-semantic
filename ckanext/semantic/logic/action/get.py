@@ -23,6 +23,12 @@ def sparql_query(context, data_dict):
 
 def uri_suggestions(context, data_dict):
     '''
+    Return a list of URIs.
+    
+    param query: search terms
+    type query: string
+    
+    rtype: JSON formatted URIs list
     '''
     client = sparql_client.SPARQLClientFactory.create_client(sparql_client.VFClient, 'standard')
     results = client.query_list('''

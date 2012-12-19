@@ -19,6 +19,11 @@
             {% endif %}
           {% endfor %}
         </p>
+        
+        <div>
+            <input id="uri-suggestion" autocomplete="off" type="text" class="input" style="height:14px; width:500px" placeholder="Look for URIs here." />
+        </div>
+        
         <textarea id="sparql-textarea" name="query">{{ c.query }}</textarea>
 
         <span class="control-group search-giant">
@@ -109,21 +114,14 @@
         </form>          
       {% endif %}
     </div>
-  </section>
-  
-  <section class="module module-narrow module-shallow">
-    <h2 class="module-heading"><i class="icon-medium icon-question-sign"></i> Vocabulary Suggestions</h2>
-    <div class="module-content">
-       <input id="vocabulary_suggestions" autocomplete="off" type="text" class="input" name="topic" style="height:14px; width:165px" placeholder="http://purl.org/ontology/bibo/" />
-    </div>
-  </section>
-  
+  </section>  
 {% endblock %}
 
 
 {% block styles %}
   {{ super() }}
   
+  {% resource 'ckanext-semantic/vendor/jqueryui/css/uilightness/jqueryui.css' %}
   {% resource 'ckanext-semantic/vendor/codemirror/lib/codemirror.css' %}
   {% resource 'ckanext-semantic/css/sparql/codemirror.css' %}
   {% resource 'ckanext-semantic/css/sparql/sparql.css' %}
@@ -132,6 +130,7 @@
 {% block scripts %}
   {{ super() }}
   
+  {% resource 'ckanext-semantic/vendor/jqueryui/js/jqueryui.js' %}
   {% resource 'ckanext-semantic/vendor/codemirror/lib/codemirror.js' %}
   {% resource 'ckanext-semantic/vendor/codemirror/mode/sparql/sparql.js' %}
   {% resource 'ckanext-semantic/javascript/sparql/sparql.js' %}

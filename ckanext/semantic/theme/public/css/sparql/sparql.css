@@ -17,3 +17,20 @@
 {
     background: #CCCCCC;
 }
+
+
+.ui-autocomplete-category {
+    color: gray;
+    border-bottom: none;
+    clear: both;
+    border-top: 1px solid grey;
+    text-align:right;
+}
+
+.ui-autocomplete {
+    max-height: 500px;
+    max-width: 500px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+}
