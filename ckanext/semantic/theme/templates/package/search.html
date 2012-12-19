@@ -15,14 +15,22 @@
       </form>
     </div>
         
-    {% for name, value in c.fields %}
-      {% if name in ['topic'] %}
-        <form method="get" style="margin:0">
-          <button type="submit" style="background:white; border-left: 0; border-right: 0; border-top: 1px dotted; border-bottom: 0; height:27px; text-align:left; width:220px; padding-left:15px" >{{ value }}&nbsp; &nbsp; X</button>
-          {{ form.hidden_list(fields=c.fields, except=[(name, value)]) }}
+    <nav>
+      <ul class="unstyled nav nav-simple nav-facet">
+      {% for name, value in c.fields %}
+        {% if name in ['topic'] %}
+        <form method="get">
+          <li class="nav-item active" style="width:220px">
+            <a style="width:218px; left:28px;">
+              <button type="submit" style="background:white; border:none; width:200px; margin-left:-10px; color:blue; font-weight:bold" >{{ value }}</button>
+            </a>
+            {{ form.hidden_list(fields=c.fields, except=[(name, value)]) }}
+          </li>
         </form>
-      {% endif %}
-    {% endfor %}
+        {% endif %}
+      {% endfor %}
+      </ul>
+    </nav>
   </section>
 
   <section class="module module-narrow">

@@ -7,9 +7,8 @@
 }
 
 .ui-autocomplete {
-        max-height: 400px;
-        overflow-y: auto;
-        /* prevent horizontal scrollbar */
-        overflow-x: hidden;
-        z-index:6;
-    }
+    max-height: 300px;
+    overflow-y: auto;
+    /* prevent horizontal scrollbar */
+    overflow-x: hidden;
+}

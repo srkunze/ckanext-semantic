@@ -5,7 +5,12 @@ $(function() {
                 currentCategory = "";
             $.each( items, function( index, item ) {
                 if ( item.category != currentCategory ) {
-                    ul.append( "<li class='ui-autocomplete-category'>" + item.category + "</li>" );
+                    ul.append( "<li class='ui-autocomplete-category'>" + 
+                                      {'vocabulary': 'Vocabularies',
+                                      'class': 'Classes',
+                                      'property': 'Properties'}[item.category]
+                                      
+                               + "</li>" );
                     currentCategory = item.category;
                 }
                 that._renderItemData( ul, item );
@@ -16,6 +21,7 @@ $(function() {
 
     $( "#topic_input" ).catcomplete({
         minLength: 3,
+        position: { my : "left top", at: "right top" },
         source: function(request, response){
             $.ajax({
                 url: "api/action/uri_suggestions?query="+request.term,
