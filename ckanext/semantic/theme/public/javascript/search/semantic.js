@@ -32,7 +32,7 @@ $(function() {
             });
         },
         focus: function( event, ui ) {
-            $( "#topic_input" ).val( ui.item.uri );
+            //$( "#topic_input" ).val( ui.item.uri );
             return false;
         },
         select: function( event, ui ) {
