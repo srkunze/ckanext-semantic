@@ -7,8 +7,8 @@
   <section class="module module-narrow">
     <h2 class="module-heading"><i class="icon-medium icon-filter"></i> Topic (RDF only)</h2>
     <div class="module-content">
-      <form method="get">
-        <p>Here you can filter by the topic of the dataset in terms of vocabularies, classes and properties.</p>
+      <form method="get" name="topic_form">
+        <p>Here you can filter by the topic of the dataset in terms of <b>vocabularies</b>, <b>classes</b> and <b>properties</b>.</p>
         <input id="topic_input" autocomplete="off" type="text" class="input" name="topic" style="height:14px; width:115px" placeholder="http://purl.org/ontology/bibo/" />
         {{ form.hidden_from_list(fields=c.fields) }}
         <button type="submit" class="btn" style="height:34px; margin-top:-10px">Add</button>
@@ -22,7 +22,7 @@
         <form method="get">
           <li class="nav-item active" style="width:220px">
             <a style="width:218px; left:28px;">
-              <button type="submit" style="background:white; border:none; width:200px; margin-left:-10px; color:blue; font-weight:bold" >{{ value }}</button>
+              <button type="submit" style="background:white; border:none; text-align:left; width:200px; margin-left:-10px; color:blue; font-weight:bold" >{{ value }}</button>
             </a>
             {{ form.hidden_from_list(fields=c.fields, except=[(name, value)]) }}
           </li>
@@ -38,7 +38,7 @@
     <div id="map" style="height:280px"></div>
     <div class="module-content">
       <form name="location" method="get">
-        <p>Here you can filter by the region of the dataset.</p>
+        <p>Here you can filter by the <b>region</b> of the dataset.</p>
         Latitude (degrees) <input type="text" class="input" name="location_latitude" style="height:14px; width:165px" value="{{ c.fields_grouped.location_latitude[0] if c.fields_grouped.location_latitude }}" placeholder="40.417" />
         Longitude (degrees) <input type="text" class="input" name="location_longitude" style="height:14px; width:165px" value="{{ c.fields_grouped.location_longitude[0] if c.fields_grouped.location_longitude }}" placeholder="-3.703" />
         Radius (Kms) <input type="text" class="input" name="location_radius" style="height:14px; width:165px" value="{{ c.fields_grouped.location_radius[0] if c.fields_grouped.location_radius }}" placeholder="50" />
@@ -65,7 +65,7 @@
     <h2 class="module-heading"><i class="icon-medium icon-filter"></i> Time (RDF only)</h2>
     <div class="module-content">
       <form name="time" method="get">
-        <p>Here you can filter by the time the dataset is about.</p>
+        <p>Here you can filter by the <b>time</b> the dataset is about.</p>
         From (ISO format) <input type="text" class="input" name="time_min" style="height:14px; width:165px" value="{{ c.fields_grouped.get('time_min', [''])[0] }}" placeholder="1980-01-23" />
         Until (ISO format) <input type="text" class="input" name="time_max" style="height:14px; width:165px" value="{{ c.fields_grouped.get('time_max', [''])[0] }}" placeholder="2001-04" />
 

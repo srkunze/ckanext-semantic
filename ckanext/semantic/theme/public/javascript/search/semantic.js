@@ -21,7 +21,7 @@ $(function() {
 
     $( "#topic_input" ).catcomplete({
         minLength: 3,
-        position: { my : "left top", at: "right top" },
+        position: { my : "left center", at: "right+69px top" },
         source: function(request, response){
             $.ajax({
                 url: "api/action/uri_suggestions?query="+request.term,
@@ -37,6 +37,7 @@ $(function() {
         },
         select: function( event, ui ) {
             $( "#topic_input" ).val( ui.item.uri );
+            document.forms.topic_form.submit();
             return false;
         }
     })
