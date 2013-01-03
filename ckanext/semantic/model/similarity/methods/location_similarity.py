@@ -3,7 +3,7 @@ import ckanext.semantic.lib.location as hl
 
 
 class LocationSimilarity(SimilarityMethod):
-    uri = 'http://www.w3.org/2003/01/geo/wgs84_pos'
+    uri = 'http://stats.lod2.eu/resource/geographical-similarity-method'
 
     def process_similar_entity(self, similar_entity):
         similarity_weight = None

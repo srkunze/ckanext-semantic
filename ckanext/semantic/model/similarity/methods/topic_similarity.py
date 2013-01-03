@@ -2,7 +2,7 @@ from . import SimilarityMethod
 
 
 class TopicSimilarity(SimilarityMethod):
-    uri = 'http://xmlns.com/foaf/0.1/topic'
+    uri = 'http://stats.lod2.eu/resource/topical-similarity-method'
 
     def set_entity(self, entity):
         super(TopicSimilarity, self).set_entity(entity)

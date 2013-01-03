@@ -2,7 +2,7 @@ from . import SimilarityMethod
 
 
 class TimeSimilarity(SimilarityMethod):
-    uri = 'http://www.w3.org/TR/owl-time'
+    uri = 'http://stats.lod2.eu/resource/temporal-similarity-method'
 
     def process_similar_entity(self, similar_entity):
         similarity_weight = None
