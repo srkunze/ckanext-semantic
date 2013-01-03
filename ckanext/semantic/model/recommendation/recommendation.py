@@ -1,5 +1,4 @@
 import ckanext.semantic.lib.helpers as h
-import ckanext.semantic.model.store as store
 import ckanext.semantic.model.user_interests as mui
 import similarity
 import similarity.methods as methods
