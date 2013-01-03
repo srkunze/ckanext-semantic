@@ -59,8 +59,6 @@ class SemanticPlugin(plugins.SingletonPlugin):
         map.redirect('/recommendation/', '/recommendation')
         map.connect('/recommendation', controller='ckanext.semantic.controllers.recommendation:RecommendationController', action='read')
         map.connect('/recommendation/{type_}', controller='ckanext.semantic.controllers.recommendation:RecommendationController', action='read')
-        map.connect('/recommendation/{type_}', controller='ckanext.semantic.controllers.recommendation:RecommendationController', action='read')
-        map.connect('/recommendation/{type_}', controller='ckanext.semantic.controllers.recommendation:RecommendationController', action='read')
 
         map.connect('/dataset/{id}.n3', controller='ckanext.semantic.controllers.dataset:DatasetController', action='read_n3')
 

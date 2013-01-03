@@ -19,7 +19,7 @@ class Similarity(object):
                        methods.TimeSimilarity:{str(prefix.void.Dataset): extractors.DatasetTime, str(prefix.ckan.Subscription): extractors.SubscriptionTime}}
 
 
-    def __init__(self, graph='http://lodstats.org/similarities'):
+    def __init__(self, graph='http://stats.lod2.eu/similarities'):
         self._similarity_method = None
         self._similarity_method_class = None
         self._entity_uri = None
