@@ -71,9 +71,9 @@ Example:
       
       
       {% if package.subscription_reasons_count == 1 %}
-          <a href="#subscription-reasons-{{ package.name }}" data-module="popover-list">{{ package.subscription_reasons_count }} subscription</a> you have
+          <a href="#subscription-reasons-{{ package.name }}" data-module="popover">{{ package.subscription_reasons_count }} subscription</a> you have
       {% elif package.subscription_reasons_count > 1 %}
-          <a href="#subscription-reasons-{{ package.name }}" data-module="popover-list">{{ package.subscription_reasons_count }} subscriptions</a> you have
+          <a href="#subscription-reasons-{{ package.name }}" data-module="popover">{{ package.subscription_reasons_count }} subscriptions</a> you have
       {% endif %}
 
       <p id="subscription-reasons-{{ package.name }}" class="js-hide" title="your similar subscriptions">
