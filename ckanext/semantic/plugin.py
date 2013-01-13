@@ -27,7 +27,7 @@ class SemanticPlugin(plugins.SingletonPlugin):
     plugins.implements(plugins.IConfigurer, inherit=True)
     plugins.implements(plugins.IPackageController, inherit=True)
     plugins.implements(plugins.IRoutes, inherit=True)
-#    plugins.implements(plugins.ISubscription, inherit=True)
+    plugins.implements(plugins.ISubscription, inherit=True)
     
     
     ####################################
@@ -158,8 +158,12 @@ class SemanticPlugin(plugins.SingletonPlugin):
             
     ######################################
     #   plugin.ISubscription interface   #
+    def get_type(self):
+        return 'sparql'
+
+
     def is_responsible(self, subscription_definition):
-        return subscription_definition['type'] == 'sparql'
+        return subscription_definition['type'] == self.get_type()
         
     
     def prepare_creation(self, subscription_definition, parameters):
@@ -169,37 +173,30 @@ class SemanticPlugin(plugins.SingletonPlugin):
         return subscription_definition
 
 
-    def prepare_update(self, subscription_definition, parameters):
-        subscription_definition['query'] = parameters['query'][0]
-        subscription_definition['endpoints'] = h.get_configured_endpoints_only(parameters['endpoints'])
-        subscription_definition['key'] = None
-        return subscription_definition
-        
-        
-    def item_data_by_definition(self, subscription_definition):
+    def get_current_items(self, subscription_definition):
         results = logic.get_action('sparql_query')({}, {'query': subscription_definition['query'], 'endpoints': subscription_definition['endpoints']})
         if not isinstance(results, dict):
-            return []
-        return results['results']['bindings']
+            return [], None
+        return results['results']['bindings'], None
 
 
-    def item_to_objects(self, subscription_item):
+    def get_objects_from_item(self, item):
         datasets = []
-        for key, value in subscription_item.data.iteritems():
+        for key, value in item.data.iteritems():
             if value['type'] == 'uri':
                 object_ = h.uri_to_object(value['value'])
                 if isinstance(object_, model.Package):
                     datasets.append(object_)
         return datasets
-    
 
-    def show_url(self, subscription):
+
+    def get_show_url(self, subscription):
         url = base.h.url_for(controller='ckanext.semantic.controllers.sparql:SPARQLController', action='index')
         url += '?query=' + urllib.quote_plus(subscription['definition']['query'])
         return url
 
 
-    def subscription_equal_definition(self, subscription, definition):
+    def is_subscription_equal_definition(self, subscription, definition):
         return subscription.definition['query'] == definition['query']
 
     #   plugin.ISubscription interface   #
@@ -216,4 +213,3 @@ class SemanticPlugin(plugins.SingletonPlugin):
 
     #   plugin.IActions interface   #
     #################################
-

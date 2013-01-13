@@ -1,7 +1,7 @@
 import ckanext.semantic.lib.helpers as h
-import ckanext.semantic.model.user_interests as mui
-import similarity
-import similarity.methods as methods
+import user_interests as mui
+import ckanext.semantic.model.similarity as similarity
+import ckanext.semantic.model.similarity.methods as methods
 
 
 class Recommendation:

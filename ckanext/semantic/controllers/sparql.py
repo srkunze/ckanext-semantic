@@ -42,7 +42,6 @@ order by ?dataset
         definition['query'] = urllib.unquote(query)
         definition['endpoints'] = base.c.chosen_endpoints
         definition['type'] = 'sparql'
-        definition['data_type'] = 'dataset'
         
         try:
 #            base.c.subscription = logic.get_action('subscription_show')(context, {'subscription_definition': definition})
