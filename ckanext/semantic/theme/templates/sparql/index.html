@@ -48,7 +48,7 @@
           <thead>
             <tr>
               {% for header_name in c.results.head.vars %}
-                <th>{{ header_name }}</th>
+                <th class="sparql_result_head">{{ header_name }}</th>
               {% endfor %}
             </tr>
           </thead>
@@ -57,7 +57,7 @@
           {% for result in c.results.results.bindings %}
             <tr>
             {% for header_name in c.results.head.vars %}
-              <td class="sparql-result status-{{ result.__status__ }}">
+              <td class="sparql-result {{ 'object' if result[header_name].object else '' }} {{ result.__flag__ }} {{ 'number' if result[header_name].datatype in ['http://www.w3.org/2001/XMLSchema#integer', 'http://www.w3.org/2001/XMLSchema#decimal', 'http://www.w3.org/2001/XMLSchema#float', 'http://www.w3.org/2001/XMLSchema#double'] }}">
                 {% if result[header_name].object %}
                   {{ h.link_to(result[header_name].object.title, result[header_name].value) }}
                 {% else %}

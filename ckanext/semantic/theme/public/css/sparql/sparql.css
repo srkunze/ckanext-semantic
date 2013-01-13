@@ -1,21 +1,54 @@
-.sparql-result.status-seen
+.sparql_result_head
+{
+    padding-left: 5px;
+    padding-right: 5px;
+}
+
+.sparql-result
+{
+    padding-left: 5px;
+    padding-right: 25px;
+}
+
+.sparql-result.object,
+.sparql-result.object.seen
 {
     background: #FFFFFF;
 }
 
-.sparql-result.status-added
+.sparql-result.object.added
 {
     background: #CAFFC4;
 }
 
-.sparql-result.status-changed
-{
-    background: #FFF0C4;
-}
-
-.sparql-result.status-removed
+.sparql-result.object.removed
 {
     background: #CCCCCC;
+}
+
+
+.sparql-result,
+.sparql-result.seen
+{
+    background: #F5F5F5;
+}
+
+.sparql-result.added
+{
+    background: #BAEFB4;
+}
+
+.sparql-result.removed
+{
+    background: #BCBCBC;
+}
+
+
+.sparql-result.number
+{
+    text-align: right;
+    padding-left: 25px;
+    padding-right: 5px;
 }
 
 

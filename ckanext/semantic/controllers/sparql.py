@@ -64,7 +64,7 @@ order by ?dataset
             for item in item_list:
                 data = item['data']
                 vars_.update(data.keys())
-                data['__status__'] = item['status']            
+                data['__flag__'] = item['flag']            
                 results['results']['bindings'].append(data)
 
             results['head']['vars'] = list(vars_)                
