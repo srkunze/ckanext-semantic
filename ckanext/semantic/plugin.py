@@ -193,6 +193,8 @@ class SemanticPlugin(plugins.SingletonPlugin):
     def get_show_url(self, subscription):
         url = base.h.url_for(controller='ckanext.semantic.controllers.sparql:SPARQLController', action='index')
         url += '?query=' + urllib.quote_plus(subscription['definition']['query'])
+        for endpoint in subscription['definition']['endpoints']:
+            url += '&chosen_endpoints=' + endpoint
         return url
 
 

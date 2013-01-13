@@ -77,3 +77,18 @@ input.endpoint + input.endpoint
     /* prevent horizontal scrollbar */
     overflow-x: hidden;
 }
+
+div.backgroundcolor:first-child
+{
+    border-left: solid 1px #EEE;
+    border-right: solid 1px #EEE;
+    border-bottom: solid 1px #EEE;
+    border-top: solid 1px #EEE;
+}
+
+div.backgroundcolor + div.backgroundcolor
+{
+    border-left: solid 1px #EEE;
+    border-right: solid 1px #EEE;
+    border-bottom: solid 1px #EEE;
+}

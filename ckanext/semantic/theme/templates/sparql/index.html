@@ -76,16 +76,6 @@
           <input type="hidden" name="return_url" value="{{ request.url }}" />
           <input type="submit" class="btn btn-danger" value="Unfollow query" />
         </form>
-
-        <p>
-            The background colors of the rows have different meaning.
-            <br />
-            <b class="sparql-result status-added">New Row</b>
-            <br />
-            <b class="sparql-result status-changed">Changed Row</b>
-            <br />
-            <b class="sparql-result status-removed">Removed Row</b>
-        </p>
       {% else %}
         <form name="create_subscription_form" method="post" onsubmit="return validate_subscription_name();" action="{{ h.url_for(controller='subscription', action='create') }}">
           <p>
@@ -103,6 +93,17 @@
             <input type="submit" class="btn btn-success" value="Follow query" />
           {% endif %}
         </form>          
+      {% endif %}
+    </div>
+  </section>  
+  <section class="module module-narrow module-shallow">
+    <h2 class="module-heading"><i class="icon-medium icon-question-sign"></i> {{ 'Background colors' }}</h2>
+    <div class="module-content">
+      <div class="sparql-result backgroundcolor object"><b>Dataset</b></div>
+      <div class="sparql-result backgroundcolor"><b>No Dataset</b></div>
+      {% if c.subscription %}
+        <div class="sparql-result backgroundcolor added"><b>New Row</b></div>
+        <div class="sparql-result backgroundcolor removed"><b>Removed Row</b></div>
       {% endif %}
     </div>
   </section>  

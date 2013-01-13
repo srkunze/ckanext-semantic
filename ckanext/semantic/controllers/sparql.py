@@ -44,9 +44,8 @@ order by ?dataset
         definition['type'] = 'sparql'
         
         try:
-#            base.c.subscription = logic.get_action('subscription_show')(context, {'subscription_definition': definition})
-            base.c.subscription = None
-        except logic.NotAuthorized:
+            base.c.subscription = logic.get_action('subscription_show')(context, {'subscription_definition': definition})
+        except logic.NotFound:
             pass
             
         if base.c.subscription:
@@ -85,4 +84,3 @@ order by ?dataset
             base.c.results = results
     
         return base.render('sparql/index.html')
-
