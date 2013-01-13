@@ -1,3 +1,13 @@
+input.endpoint
+{
+    top:0;
+}
+
+input.endpoint + input.endpoint
+{
+    margin-left: 30px;
+}
+
 .sparql_result_head
 {
     padding-left: 5px;

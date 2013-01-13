@@ -12,20 +12,13 @@
       <form id="dataset-search" class="dataset-search clearfix" method="get" data-module="select-switch">
         <p>
           {% for endpoint in c.available_endpoints %}
-            {% if endpoint[0] in c.chosen_endpoints %}
-              <input type="checkbox" name="chosen_endpoints" value="{{ endpoint[0] }}" style="top:0" checked="checked" /> {{endpoint[1]}}
-            {% else %}
-              <input type="checkbox" name="chosen_endpoints" value="{{ endpoint[0] }}" style="top:0" /> {{endpoint[1]}}
-            {% endif %}
+            <input class="endpoint" type="checkbox" name="chosen_endpoints" value="{{ endpoint[0] }}" {{ ('checked="checked"' | safe) if endpoint[0] in c.chosen_endpoints }} /> {{endpoint[1]}}
           {% endfor %}
         </p>
-        
         <div>
-            <input id="uri-suggestion" autocomplete="off" type="text" class="input" style="height:14px; width:500px" placeholder="Look for URIs here." />
+          <input id="uri-suggestion" autocomplete="off" type="text" class="input" style="height:14px; width:500px" placeholder="Look for URIs here." />
         </div>
-        
         <textarea id="sparql-textarea" name="query">{{ c.query }}</textarea>
-
         <span class="control-group search-giant">
           <button style="margin:0; padding: 0; left: 600px; top: 25px; border:1px solid" type="submit" value="{{ _('Search') }}">Submit</button>
         </span>
@@ -38,43 +31,39 @@
       {% if c.query_error %}
         {% trans %}
           <p><strong>There was an error while searching.</strong> Please try again.</p>
-
         {% endtrans %}
-          <p>{{ c.query_error }}</p>
+        <p>{{ c.query_error }}</p>
       {% endif %}
       
-        {% if c.results %}
-        <table border=1>
-          <thead>
-            <tr>
-              {% for header_name in c.results.head.vars %}
-                <th class="sparql_result_head">{{ header_name }}</th>
-              {% endfor %}
-            </tr>
-          </thead>
-          <tbody>
-
-          {% for result in c.results.results.bindings %}
-            <tr>
+      {% if c.results %}
+      <table border=1>
+        <thead>
+          <tr>
             {% for header_name in c.results.head.vars %}
-              <td class="sparql-result {{ 'object' if result[header_name].object else '' }} {{ result.__flag__ }} {{ 'number' if result[header_name].datatype in ['http://www.w3.org/2001/XMLSchema#integer', 'http://www.w3.org/2001/XMLSchema#decimal', 'http://www.w3.org/2001/XMLSchema#float', 'http://www.w3.org/2001/XMLSchema#double'] }}">
-                {% if result[header_name].object %}
-                  {{ h.link_to(result[header_name].object.title, result[header_name].value) }}
-                {% else %}
-                  {{ result[header_name].value }}
-                {% endif %}
-              </td>
+              <th class="sparql_result_head">{{ header_name }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for result in c.results.results.bindings %}
+          <tr>
+            {% for header_name in c.results.head.vars %}
+            <td class="sparql-result {{ 'object' if result[header_name].object else '' }} {{ result.__flag__ }} {{ 'number' if result[header_name].datatype in ['http://www.w3.org/2001/XMLSchema#integer', 'http://www.w3.org/2001/XMLSchema#decimal', 'http://www.w3.org/2001/XMLSchema#float', 'http://www.w3.org/2001/XMLSchema#double'] }}">
+              {% if result[header_name].object %}
+                {{ h.link_to(result[header_name].object.title, result[header_name].value) }}
+              {% else %}
+                {{ result[header_name].value }}
+              {% endif %}
+            </td>
             {% endfor %}
             </tr>
           {% endfor %}
-
-          </tbody>
+        </tbody>
       </table>
       {% endif %}
     </div>
 
   </section>
-
 {% endblock %}
 
 {% block secondary_content %}

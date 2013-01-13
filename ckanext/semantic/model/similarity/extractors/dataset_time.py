@@ -7,15 +7,16 @@ class DatasetTime(EntityTime, DatasetExtractor):
     def _extract(self, dataset_filter = ''):
         rows = self._client.query_bindings_only('''
 prefix void: <http://rdfs.org/ns/void#>
+prefix dstats: <http://stats.lod2.eu/vocabulary/dataset#>
 prefix xs: <http://www.w3.org/2001/XMLSchema#>
 
-select ?dataset (min(?min_time) as ?min_time) ((max(?max_time)) as ?max_time)
-where 
+select ?dataset (min(?min_time) as ?min_time) (max(?max_time) as ?max_time)
+where
 {
     ?dataset void:propertyPartition ?dateTimePropertyPartition.
-    ?dateTimePropertyPartition void:minValue ?min_time.
-    ?dateTimePropertyPartition void:maxValue ?max_time.
-    
+    ?dateTimePropertyPartition dstats:minValue ?min_time.
+    ?dateTimePropertyPartition dstats:maxValue ?max_time.
+
     filter(datatype(?min_time) = xs:dateTime)
     filter(datatype(?max_time) = xs:dateTime)
     
