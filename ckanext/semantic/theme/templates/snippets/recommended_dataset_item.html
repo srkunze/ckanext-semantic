@@ -52,9 +52,9 @@ Example:
   {% if package.dataset_reasons_count > 0 or package.subscription_reasons_count > 0 %}
     <ul class="dataset-resources unstyled">
       {% if package.dataset_reasons_count == 1 %}
-          <a href="#dataset-reasons-{{ package.name }}" data-module="popover-list">{{ package.dataset_reasons_count }} dataset</a> you follow
+          <a href="#dataset-reasons-{{ package.name }}" data-module="popover">{{ package.dataset_reasons_count }} dataset</a> you follow
       {% elif package.dataset_reasons_count > 1 %}
-          <a href="#dataset-reasons-{{ package.name }}" data-module="popover-list">{{ package.dataset_reasons_count }} datasets</a> you follow
+          <a href="#dataset-reasons-{{ package.name }}" data-module="popover">{{ package.dataset_reasons_count }} datasets</a> you follow
       {% endif %}
       
       <p id="dataset-reasons-{{ package.name }}" class="js-hide" title="similar datasets you follow">
