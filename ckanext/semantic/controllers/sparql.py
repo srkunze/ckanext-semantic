@@ -25,11 +25,12 @@ class SPARQLController(base.BaseController):
             query='''
 prefix void: <http://rdfs.org/ns/void#>
 
-select *
+select ?dataset ?triples
 where
 {
     ?dataset a void:Dataset.
     ?dataset void:vocabulary <http://purl.org/ontology/bibo/>.
+    ?dataset void:triples ?triples.
 }
 order by ?dataset
 '''
