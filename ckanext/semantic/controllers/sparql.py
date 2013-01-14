@@ -76,7 +76,9 @@ order by ?dataset
         else:
             for result in results['results']['bindings']:
                 for header_name in results['head']['vars']:
-                    if result[header_name]['type'] == 'uri':
+                    if header_name not in result:
+                        result[header_name] = {'type': None, 'datatype': None, 'value': ''}
+                    elif result[header_name]['type'] == 'uri':
                         result[header_name]['object'] = h.uri_to_object(result[header_name]['value'])
 
             base.c.query_error = None
