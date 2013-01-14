@@ -8,30 +8,43 @@ input.endpoint + input.endpoint
     margin-left: 30px;
 }
 
-.sparql_result_head
+th.sparql-results-head,
+tr.sparql-result td
+{
+    border: solid 1px #000;
+}
+
+th.sparql-results-head th.flag,
+tr.sparql-result td.flag
+{
+    border: solid 0px #000;
+}
+
+tr.sparql-results-head
 {
     padding-left: 5px;
     padding-right: 5px;
 }
 
-.sparql-result
+tr.sparql-result
 {
     padding-left: 5px;
     padding-right: 25px;
 }
 
-.sparql-result.object,
-.sparql-result.object.seen
+.flag,
+.sparql-result .object,
+.sparql-result.seen .object
 {
     background: #FFFFFF;
 }
 
-.sparql-result.object.added
+.sparql-result.added .object
 {
     background: #CAFFC4;
 }
 
-.sparql-result.object.removed
+.sparql-result.removed .object
 {
     background: #CCCCCC;
 }
@@ -54,7 +67,7 @@ input.endpoint + input.endpoint
 }
 
 
-.sparql-result.number
+.sparql-result .number
 {
     text-align: right;
     padding-left: 25px;

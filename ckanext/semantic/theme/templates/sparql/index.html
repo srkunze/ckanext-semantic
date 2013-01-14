@@ -36,19 +36,20 @@
       {% endif %}
       
       {% if c.results %}
-      <table border=1>
+      <table>
         <thead>
           <tr>
             {% for header_name in c.results.head.vars %}
-              <th class="sparql_result_head">{{ header_name }}</th>
+              <th class="sparql-results-head">{{ header_name }}</th>
             {% endfor %}
+            <th class="flag"></th>
           </tr>
         </thead>
         <tbody>
           {% for result in c.results.results.bindings %}
-          <tr>
+          <tr class="sparql-result {{ result.__flag__ }}">
             {% for header_name in c.results.head.vars %}
-            <td class="sparql-result {{ 'object' if result[header_name].object else '' }} {{ result.__flag__ }} {{ 'number' if result[header_name].datatype in ['http://www.w3.org/2001/XMLSchema#integer', 'http://www.w3.org/2001/XMLSchema#decimal', 'http://www.w3.org/2001/XMLSchema#float', 'http://www.w3.org/2001/XMLSchema#double'] }}">
+            <td class="{{ 'object' if result[header_name].object else '' }} {{ 'number' if result[header_name].datatype in ['http://www.w3.org/2001/XMLSchema#integer', 'http://www.w3.org/2001/XMLSchema#decimal', 'http://www.w3.org/2001/XMLSchema#float', 'http://www.w3.org/2001/XMLSchema#double'] }}">
               {% if result[header_name].object %}
                 {{ h.link_to(result[header_name].object.title, result[header_name].value) }}
               {% else %}
@@ -56,7 +57,8 @@
               {% endif %}
             </td>
             {% endfor %}
-            </tr>
+            <td class="flag">{{ {'added': '+', 'removed': '−'}.get(result.__flag__, '') }}</td>
+          </tr>
           {% endfor %}
         </tbody>
       </table>
