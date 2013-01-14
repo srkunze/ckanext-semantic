@@ -2,7 +2,7 @@ from . import SimilarityMethod
 
 
 class TopicSimilarity(SimilarityMethod):
-    uri = 'http://stats.lod2.eu/resource/topical-similarity-method'
+    uri = 'http://stats.lod2.eu/vocabulary/similarity/topical-method'
 
     def set_entity(self, entity):
         super(TopicSimilarity, self).set_entity(entity)
