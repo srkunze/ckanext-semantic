@@ -1,7 +1,7 @@
 import RDF
 
 
-ckan = RDF.NS('http://ckan.org/ontology#')
+ckan = RDF.NS('http://ckan.org/vocabulary#')
 ckan.str = ckan._prefix
 
 dcat = RDF.NS('http://www.w3.org/ns/dcat#')
