@@ -1,6 +1,8 @@
 Extracting semantic data of CKAN -- ckanext-semantic
 ====================================================
-a extension for CKAN
+
+------------------------------------------------------------
+*A extension for CKAN*
 
 **Features**
 
