@@ -16,16 +16,14 @@ Extraction of semantic data of RDF datasets of CKAN
  - install Virtuoso
  - install FedX in case of more endpoints
  - apply db.sql file to add necessary tables
- - install LODStats via pip (https://github.com/srkunze/LODStats)
+ - install LODStats via pip (https://github.com/srkunze/LODStats)::
 
-::
     pip install -e git+https://github.com/srkunze/ckanext-semantic#egg=ckanext-semantic
     pip install -e git+https://github.com/srkunze/LODStats#LODStats
 
 
- - add to your CKAN configuration file
+ - add to your CKAN configuration file::
 
-::
     # add this to your plugins
     ckan.plugins = semantic
     
@@ -50,9 +48,8 @@ Extraction of semantic data of RDF datasets of CKAN
     ckan.semantic.SPARQL_endpoint2_name = DBPedia Store
 
 
- - create CRON jobs to run these commands on a periodical basis
+ - create CRON jobs to run these commands on a periodical basis::
 
-::
     paster semantic update_dataset_due_statistics --config=../ckan/development.ini
     paster semantic update_dataset_statistics {dataset_name} --config=../ckan/development.ini
     paster semantic update_vocabulary_statistics --config=../ckan/development.ini
