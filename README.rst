@@ -3,6 +3,7 @@ A CKAN Extension -- ckanext-semantic
 Extraction of semantic data of RDF datasets of CKAN
 
 **Features**
+
  - enhanced search (search after vocabularies, classes, properties, geographical and temporal coverage)
  - new search type: SPARQL
  - new subscription type: SPARQL subscriptions
