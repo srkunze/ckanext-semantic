@@ -42,3 +42,10 @@ paster semantic update_dataset_statistics {dataset_name} --config=../ckan/develo
 paster semantic update_vocabulary_statistics --config=../ckan/development.ini
 </pre>
  - create CRON jobs to run these commands on a periodical basis
+
+
+Copyright and License
+===
+© Sven R. Kunze
+Licensed under the GNU Affero General Public License (AGPL) v3.0
+http://www.fsf.org/licensing/licenses/agpl-3.0.html
