@@ -1,14 +1,26 @@
-ckanext-lodstats
+A CKAN Extension -- ckanext-semantic
 ================
+Extraction of semantic data of RDF datasets of CKAN
 
-integration of lodstats and personalization features based on it
+Features:
+ - enhanced search (search after vocabularies, classes, properties, geographical and temporal coverage)
+ - new search type: SPARQL
+ - new subscription type: SPARQL subscriptions
+ - enhanced dataaset page
+ - similar datasets
+ - personalized recommendations
 
 Installation instructions:
-
- - apply db file to add necessary tables
+ - install Virtuoso
+ - install FedX in case of more endpoints
+ - apply db.sql file to add necessary tables
  - install LODStats via pip (https://github.com/srkunze/LODStats)
- - add to your CKAN configuration ini file
+<pre>
+pip install -e git+https://github.com/srkunze/ckanext-semantic#egg=ckanext-semantic
+pip install -e git+https://github.com/srkunze/LODStats#LODStats
+</pre>
 
+- add to your CKAN configuration ini file
 <pre>
 # add this to your plugins
 ckan.plugins = semantic
