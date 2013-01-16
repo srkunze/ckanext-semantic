@@ -58,7 +58,7 @@ Extraction of semantic data of RDF datasets of CKAN
 
 Copyright and License
 =====================
-2013 © Sven R. Kunze
+© 2013 Sven R. Kunze
 
 Licensed under the GNU Affero General Public License (AGPL) v3.0
 
