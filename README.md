@@ -15,12 +15,14 @@ Installation instructions:
  - install FedX in case of more endpoints
  - apply db.sql file to add necessary tables
  - install LODStats via pip (https://github.com/srkunze/LODStats)
+ - 
 <pre>
 pip install -e git+https://github.com/srkunze/ckanext-semantic#egg=ckanext-semantic
 pip install -e git+https://github.com/srkunze/LODStats#LODStats
 </pre>
 
 - add to your CKAN configuration ini file
+- 
 <pre>
 # add this to your plugins
 ckan.plugins = semantic
