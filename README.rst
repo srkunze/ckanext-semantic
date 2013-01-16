@@ -1,6 +1,6 @@
-A CKAN Extension -- ckanext-semantic
-====================================
-Extraction of semantic data of RDF datasets of CKAN
+Extracting semantic data of CKAN -- ckanext-semantic
+====================================================
+a extension for CKAN
 
 **Features**
 
