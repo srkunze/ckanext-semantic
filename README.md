@@ -21,7 +21,7 @@ pip install -e git+https://github.com/srkunze/ckanext-semantic#egg=ckanext-seman
 pip install -e git+https://github.com/srkunze/LODStats#LODStats
 </pre>
 
- - add to your CKAN configuration ini file
+ - add to your CKAN configuration file
 
 <pre>
 # add this to your plugins
