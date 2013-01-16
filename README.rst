@@ -11,6 +11,7 @@ Extraction of semantic data of RDF datasets of CKAN
  - personalized recommendations
 
 **Installation instructions**
+
  - install Virtuoso
  - install FedX in case of more endpoints
  - apply db.sql file to add necessary tables
