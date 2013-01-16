@@ -2,7 +2,7 @@ A CKAN Extension -- ckanext-semantic
 ===
 Extraction of semantic data of RDF datasets of CKAN
 
-Features:
+**Features**
  - enhanced search (search after vocabularies, classes, properties, geographical and temporal coverage)
  - new search type: SPARQL
  - new subscription type: SPARQL subscriptions
@@ -10,7 +10,7 @@ Features:
  - similar datasets
  - personalized recommendations
 
-Installation instructions:
+**Installation instructions**
  - install Virtuoso
  - install FedX in case of more endpoints
  - apply db.sql file to add necessary tables
