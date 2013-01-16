@@ -58,7 +58,7 @@ paster semantic update_dataset_statistics {dataset_name} --config=../ckan/develo
 paster semantic update_vocabulary_statistics --config=../ckan/development.ini
 </pre>
 
-
+-----------------------------------------------------------
 
 Copyright and License
 =====================
