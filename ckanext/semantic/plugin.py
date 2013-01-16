@@ -47,6 +47,8 @@ class SemanticPlugin(plugins.SingletonPlugin):
         
         toolkit.add_resource('theme/public', 'ckanext-semantic')
         
+        h.root = config['ckan.site_url']
+        
     #   plugin.IConfigurer interface   # 
     ####################################
 
