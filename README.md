@@ -60,7 +60,7 @@ paster semantic update_vocabulary_statistics --config=../ckan/development.ini
 
 Copyright and License
 ===
-© Sven R. Kunze
+2013 © Sven R. Kunze
 
 Licensed under the GNU Affero General Public License (AGPL) v3.0
 
