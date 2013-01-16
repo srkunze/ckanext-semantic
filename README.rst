@@ -1,5 +1,5 @@
 A CKAN Extension -- ckanext-semantic
-===
+====================================
 Extraction of semantic data of RDF datasets of CKAN
 
 **Features**
@@ -59,7 +59,7 @@ paster semantic update_vocabulary_statistics --config=../ckan/development.ini
 
 
 Copyright and License
-===
+=====================
 2013 © Sven R. Kunze
 
 Licensed under the GNU Affero General Public License (AGPL) v3.0
