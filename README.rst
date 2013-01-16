@@ -56,6 +56,11 @@ Extracting semantic data of CKAN -- ckanext-semantic
     paster semantic update_dataset_statistics {dataset_name} --config=../ckan/development.ini
     paster semantic update_vocabulary_statistics --config=../ckan/development.ini
 
+ - you may need a key for cloudmade; add it here::
+
+    ckanext-semantic/ckanext/semantic/theme/public/javascript/package/semantic.js
+    ckanext-semantic/ckanext/semantic/theme/public/javascript/search/semantic.js
+
 -----------------------------------------------------------
 
 Copyright and License
