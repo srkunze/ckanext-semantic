@@ -18,10 +18,10 @@ Extracting semantic data of CKAN -- ckanext-semantic
  - install Virtuoso v6
  - install FedX v2 (in case of more than 1 endpoint)
  - apply db.sql file to add necessary tables
- - install LODStats::
+ - install LODStats and Redland rdflib::
 
     pip install -e git+https://github.com/srkunze/ckanext-semantic#egg=ckanext-semantic
-    pip install -e git+https://github.com/srkunze/LODStats#lodstats
+    pip install -e git+https://github.com/srkunze/LODStats#egg=lodstats
 
 
  - add to your CKAN configuration file::
