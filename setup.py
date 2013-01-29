@@ -19,7 +19,7 @@ setup(
 	namespace_packages=['ckanext', 'ckanext.semantic'],
 	include_package_data=True,
 	zip_safe=False,
-	install_requires=['requests', 'pytz', 'dateutil'],
+	install_requires=['requests', 'pytz', 'python-dateutil'],
 	entry_points=\
 	"""
         [ckan.plugins]
