@@ -28,6 +28,7 @@ class Search(object):
             self.result_ids = []
             return
         query = self._build_query_from_filters(filters)
+        print query
         self.no_filters = False
         self.results = self._client.query_bindings_only(query)
         self.result_ids = self._post_process_results(self.results, filters)
@@ -45,9 +46,9 @@ class Search(object):
 
     def _build_query_from_filters(self, filters):
         query_dict = {
-            'prefix': 'void: <http://rdfs.org/ns/void#>\nprefix xs: <http://www.w3.org/2001/XMLSchema#>\nprefix dstats: <http://stats.lod2.eu/vocabulary/dataset#>',
+            'prefix': 'prefix void: <http://rdfs.org/ns/void#>\nprefix xs: <http://www.w3.org/2001/XMLSchema#>\nprefix dstats: <http://stats.lod2.eu/vocabulary/dataset#>',
             'select': '?dataset',
-            'where': '?dataset a void:Dataset.',
+            'where': '    ?dataset a void:Dataset.',
             'group_by': '',
         }
         for concept in self._concepts:
@@ -61,11 +62,18 @@ class Search(object):
 
     def _build_query_from_dict(self, query_dict):
         if query_dict['group_by']:
-            query_dict['group_by']= 'group by %s\n' % query_dict['group_by']
-        return 'prefix %s\n' % query_dict['prefix'] + \
-               'select %s\n' % query_dict['select'] + \
-               'where\n{%s}\n' % query_dict['where'] + \
-               query_dict['group_by']
+            query_dict['group_by']= 'group by {group_by}'.format(group_by=query_dict['group_by'])
+        return '''{prefix}
+
+select {select}
+where
+{{
+{where}
+}}
+{group_by}'''.format(prefix=query_dict['prefix'],
+           select=query_dict['select'],
+           where=query_dict['where'],
+           group_by=query_dict['group_by'])
 
 
     def _post_process_results(self, results, filters):

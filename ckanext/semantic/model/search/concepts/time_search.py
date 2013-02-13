@@ -19,12 +19,11 @@ class TimeSearch(SearchConcept):
     def build_query_dict(self, filter_):
         return {
             'select': '(min(?min_time) as ?min_time) (max(?max_time) as ?max_time)',
-            'where': '''?dataset void:propertyPartition ?dateTimePropertyPartition.
-?dateTimePropertyPartition dstats:minValue ?min_time.
-?dateTimePropertyPartition dstats:maxValue ?max_time.
-filter(datatype(?min_time) = xs:dateTime)
-filter(datatype(?max_time) = xs:dateTime)
-''',
+            'where': '''    ?dataset void:propertyPartition ?dateTimePropertyPartition.
+    ?dateTimePropertyPartition dstats:minValue ?min_time.
+    ?dateTimePropertyPartition dstats:maxValue ?max_time.
+    filter(datatype(?min_time) = xs:dateTime)
+    filter(datatype(?max_time) = xs:dateTime)''',
             'group_by': '?dataset',
         }
 

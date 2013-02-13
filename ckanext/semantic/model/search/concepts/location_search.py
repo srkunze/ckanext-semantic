@@ -22,16 +22,16 @@ class LocationSearch(SearchConcept):
     def build_query_dict(self, filter_):
         return {
             'select': '?min_latitude ?max_latitude ?min_longitude ?max_longitude',
-            'where': '''?dataset void:propertyPartition ?latPropertyPartition.
-?latPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#lat>.
-?latPropertyPartition dstats:minValue ?min_latitude.
-?latPropertyPartition dstats:maxValue ?max_latitude.
+            'where': '''    ?dataset void:propertyPartition ?latPropertyPartition.
+    ?latPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#lat>.
+    ?latPropertyPartition dstats:minValue ?min_latitude.
+    ?latPropertyPartition dstats:maxValue ?max_latitude.
 
-?dataset void:propertyPartition ?longPropertyPartition.
-?longPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#long>.
-?longPropertyPartition dstats:minValue ?min_longitude.
-?longPropertyPartition dstats:maxValue ?max_longitude.
-''',
+    ?dataset void:propertyPartition ?longPropertyPartition.
+    ?longPropertyPartition void:property <http://www.w3.org/2003/01/geo/wgs84_pos#long>.
+    ?longPropertyPartition dstats:minValue ?min_longitude.
+    ?longPropertyPartition dstats:maxValue ?max_longitude.''',
+            'group_by': '?min_latitude ?max_latitude ?min_longitude ?max_longitude',
             }
 
 

@@ -16,8 +16,17 @@ class TopicSearch(SearchConcept):
     
     def build_query_dict(self, filter_):
         query_dict = {'where': ''}
+        if filter_:
+            query_dict['where'] += '''    ?dataset void:vocabulary ?vocabulary.
+    ?dataset void:propertyPartition ?propertyPartition.
+    ?propertyPartition void:property ?property.
+    ?dataset void:classPartition ?classPartition.
+    ?classPartition void:class ?class.
+
+'''
         for topic in filter_:
-            #TODO: differentiate between vocabularies, classes, properties and entities
-            query_dict['where'] += '?dataset void:vocabulary <' + topic + '>.\n'
+            query_dict['where'] += '''    filter(?vocabulary=<{topic}> ||
+           ?property=<{topic}> ||
+           ?class=<{topic}>)'''.format(topic=topic)
         return query_dict
 
