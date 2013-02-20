@@ -1,7 +1,3 @@
-DROP TABLE dataset_statistics_configuration;
-DROP TABLE similarity_configuration;
-
-
 CREATE TABLE dataset_statistics_configuration
 (
     dataset_id TEXT PRIMARY KEY,
