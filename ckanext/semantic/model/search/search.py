@@ -47,7 +47,7 @@ class Search(object):
     def _build_query_from_filters(self, filters):
         query_dict = {
             'prefix': 'prefix void: <http://rdfs.org/ns/void#>\nprefix xs: <http://www.w3.org/2001/XMLSchema#>\nprefix dstats: <http://stats.lod2.eu/vocabulary/dataset#>',
-            'select': '?dataset',
+            'select': 'distinct ?dataset',
             'where': '    ?dataset a void:Dataset.',
             'group_by': '',
         }
