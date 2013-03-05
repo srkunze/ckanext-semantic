@@ -1,4 +1,4 @@
 requests
 pytz
-dateutil
+python-dateutil
 
