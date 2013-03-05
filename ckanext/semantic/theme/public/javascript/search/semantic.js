@@ -58,8 +58,8 @@ var map = L.map('map');
 
 map.setView([0, 0], 1);
 
-L.tileLayer('http://{s}.tile.cloudmade.com/{key}/997/256/{z}/{x}/{y}.png', {
-    attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>',
+L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 20
 }).addTo(map);
 
@@ -126,7 +126,7 @@ function result_maps()
         var map = L.map(map_element);
         map.setView([latitude, longitude], 1);
 
-        L.tileLayer('http://{s}.tile.cloudmade.com/{key}/997/256/{z}/{x}/{y}.png', {
+        L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
             attribution: 'Map data &copy; cf. sidebar',
             maxZoom: 20
         }).addTo(map);
