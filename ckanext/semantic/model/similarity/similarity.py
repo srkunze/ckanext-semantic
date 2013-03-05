@@ -333,3 +333,9 @@ limit ''' + str(self.count_limit) + '''
     def _clear_rdf(self):
         self.rdf = RDF.Model()
 
+
+    def delete(self):
+        self._client.modify(delete_construct='?similarity ?predicate ?object.',
+                          delete_where='''
+                          ?similarity <http://purl.org/ontology/similarity/element> <''' + self._entity_uri + '''>.
+                          ?similarity ?predicate ?object.''')

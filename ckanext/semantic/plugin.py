@@ -83,12 +83,12 @@ class SemanticPlugin(plugins.SingletonPlugin):
 
     def _add_similar_datasets(self, pkg_dict):
         dataset_uri = h.dataset_to_uri(pkg_dict['name'])
-        
+
         similarities = similarity.Similarity()
         similarities.set_entity(dataset_uri, str(prefix.void.Dataset))
         similarities.set_similar_entity_class(str(prefix.void.Dataset))
         similarities.count_limit = 5
-        
+
         similarity_methods = {'topic': methods.TopicSimilarity,
                               'location': methods.LocationSimilarity,
                               'time': methods.TimeSimilarity}
@@ -173,6 +173,13 @@ class SemanticPlugin(plugins.SingletonPlugin):
         subscription_definition['endpoints'] = h.get_configured_endpoints_only(parameters['endpoints'])
         subscription_definition['key'] = None
         return subscription_definition
+
+
+    def deleted(self, subscription):
+        similarities = similarity.Similarity()
+        owner = h.user_id_to_object(subscription.owner_id)
+        similarities.set_entity(h.subscription_to_uri(owner.name, subscription.name), str(prefix.ckan.Subscription.uri))
+        similarities.delete()
 
 
     def get_current_items(self, subscription_definition):
