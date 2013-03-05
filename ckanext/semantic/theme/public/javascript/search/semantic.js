@@ -1,8 +1,9 @@
 $(function() {
     $.widget( "custom.catcomplete", $.ui.autocomplete, {
         _renderMenu: function( ul, items ) {
-            var that = this,
-                currentCategory = "";
+            var that = this;
+            var currentCategory = "";
+            ul.css('zIndex', 10000)
             $.each( items, function( index, item ) {
                 if ( item.category != currentCategory ) {
                     ul.append( "<li class='ui-autocomplete-category'>" + 
