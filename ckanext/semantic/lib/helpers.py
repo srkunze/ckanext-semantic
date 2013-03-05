@@ -38,20 +38,23 @@ def rdf_to_string(rdf):
     
     
 def uri_to_object(uri_string):
-    match = re.search(root + path_to_dataset + '(.*)', uri_string)
-    if match is not None:
-        return model.Session.query(model.Package).filter(model.Package.name == match.group(1)).one()
-        
-    match = re.search(root + path_to_user + '(.*)/' + path_to_subscription + '(.*)', uri_string)
-    if match is not None:
-        query = model.Session.query(model.Subscription)
-        query = query.filter(model.Subscription.name == urllib.unquote(match.group(2)))
-        query = query.filter(model.Subscription.owner_id == user_name_to_object(match.group(1)).id)
-        return query.one()
+    try:
+        match = re.search(root + path_to_dataset + '(.*)', uri_string)
+        if match is not None:
+            return model.Session.query(model.Package).filter(model.Package.name == match.group(1)).one()
+            
+        match = re.search(root + path_to_user + '(.*)/' + path_to_subscription + '(.*)', uri_string)
+        if match is not None:
+            query = model.Session.query(model.Subscription)
+            query = query.filter(model.Subscription.name == urllib.unquote(match.group(2)))
+            query = query.filter(model.Subscription.owner_id == user_name_to_object(match.group(1)).id)
+            return query.one()
 
-    match = re.search(root + path_to_user + '(.*)', uri_string)
-    if match is not None:
-        return model.Session.query(model.User).filter(model.User.name == match.group(1)).one()
+        match = re.search(root + path_to_user + '(.*)', uri_string)
+        if match is not None:
+            return model.Session.query(model.User).filter(model.User.name == match.group(1)).one()
+    except:
+        return None
 
 
 def get_endpoints(type_, with_name=False):
